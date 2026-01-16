@@ -36,8 +36,16 @@ jobs:
           CF_HOSTNAME: ${{ secrets.CF_HOSTNAME }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
-          # Sanitize tokens to remove potential whitespace/newlines which cause bad handshake errors
-          export CF_ACCESS_CLIENT_ID=$(echo "$CF_ACCESS_CLIENT_ID" | tr -d '\n\r')
-          export CF_ACCESS_CLIENT_SECRET=$(echo "$CF_ACCESS_CLIENT_SECRET" | tr -d '\n\r')
+          # Sanitize tokens to remove potential whitespace or hidden characters
+          export CF_ACCESS_CLIENT_ID=$(echo "$CF_ACCESS_CLIENT_ID" | tr -d '[:space:]')
+          export CF_ACCESS_CLIENT_SECRET=$(echo "$CF_ACCESS_CLIENT_SECRET" | tr -d '[:space:]')
           
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ProxyCommand="cloudflared access ssh --hostname $CF_HOSTNAME --service-token-id $CF_ACCESS_CLIENT_ID --service-token-secret $CF_ACCESS_CLIENT_SECRET" "$SERVER_USER@$CF_HOSTNAME" 'bash -s' < ./scripts/deploy.sh
+          # Debug: Check if tokens look structurally correct
+          echo "Checking token format..."
+          if [[ "$CF_ACCESS_CLIENT_ID" != *.access ]]; then
+            echo "::warning title=Possible Token Issue::CF_ACCESS_CLIENT_ID does not end in '.access'. Service tokens usually follow this format."
+          fi
+          echo "Token ID length: ${#CF_ACCESS_CLIENT_ID}"
+
+          # Run SSH with cloudflared debug logging enabled
+          ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ProxyCommand="cloudflared access ssh --loglevel debug --hostname $CF_HOSTNAME --service-token-id $CF_ACCESS_CLIENT_ID --service-token-secret $CF_ACCESS_CLIENT_SECRET" "$SERVER_USER@$CF_HOSTNAME" 'bash -s' < ./scripts/deploy.sh
