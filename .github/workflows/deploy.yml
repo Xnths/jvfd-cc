@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repo
+      # 1. Checkout the repo
       - uses: actions/checkout@v4
 
-      # Install cloudflared
+      # 2. Install cloudflared
       - name: Install cloudflared
         run: |
           curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
@@ -21,31 +21,32 @@ jobs:
           sudo mv cloudflared /usr/local/bin/cloudflared
           cloudflared --version
 
-      # Setup SSH key
+      # 3. Setup SSH key
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      # Deploy script via SSH through Cloudflare Access
-      - name: Deploy
+      # 4. Deploy via Cloudflare TCP tunnel
+      - name: Deploy through Cloudflare Access TCP tunnel
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
           CF_HOSTNAME: ${{ secrets.CF_HOSTNAME }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
-          # Debug: test the cloudflared access connection
-          cloudflared access ssh \
+          # Start temporary Cloudflare TCP tunnel in background
+          cloudflared access tcp \
             --hostname "$CF_HOSTNAME" \
+            --destination "127.0.0.1:22" \
             --service-token-id "$CF_ACCESS_CLIENT_ID" \
-            --service-token-secret "$CF_ACCESS_CLIENT_SECRET" \
+            --service-token-secret "$CF_ACCESS_CLIENT_SECRET" &
+          export TUNNEL_PID=$!
+          sleep 5  # Give the tunnel a moment to start
 
-          # SSH through Cloudflare Access and run deploy script
-          ssh -i ~/.ssh/id_rsa \
-              -o StrictHostKeyChecking=no \
-              -o UserKnownHostsFile=/dev/null \
-              -o ProxyCommand="cloudflared access ssh --hostname \"$CF_HOSTNAME\" --service-token-id \"$CF_ACCESS_CLIENT_ID\" --service-token-secret \"$CF_ACCESS_CLIENT_SECRET\"" \
-              "$SERVER_USER@$CF_HOSTNAME" \
-              'bash -s' < ./scripts/deploy.sh
+          # SSH through local tunnel and run deploy script
+          ssh -i ~/.ssh/id_rsa -p 2222 "$SERVER_USER@127.0.0.1" 'bash -s' < ./scripts/deploy.sh
+
+          # Kill the tunnel after deployment
+          kill $TUNNEL_PID
