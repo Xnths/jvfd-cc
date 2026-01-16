@@ -36,4 +36,8 @@ jobs:
           CF_HOSTNAME: ${{ secrets.CF_HOSTNAME }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
+          # Sanitize tokens to remove potential whitespace/newlines which cause bad handshake errors
+          export CF_ACCESS_CLIENT_ID=$(echo "$CF_ACCESS_CLIENT_ID" | tr -d '\n\r')
+          export CF_ACCESS_CLIENT_SECRET=$(echo "$CF_ACCESS_CLIENT_SECRET" | tr -d '\n\r')
+          
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ProxyCommand="cloudflared access ssh --hostname $CF_HOSTNAME --service-token-id $CF_ACCESS_CLIENT_ID --service-token-secret $CF_ACCESS_CLIENT_SECRET" "$SERVER_USER@$CF_HOSTNAME" 'bash -s' < ./scripts/deploy.sh
