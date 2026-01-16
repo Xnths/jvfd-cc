@@ -2,6 +2,9 @@
 
 set -e
 
+# Change to the project directory on the remote server
+cd /var/www/jvfd-cc
+
 echo "Starting deployment..."
 
 echo "Pulling latest changes..."
