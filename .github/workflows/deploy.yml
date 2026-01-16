@@ -42,21 +42,4 @@ jobs:
           export CF_HOSTNAME=$(echo "$CF_HOSTNAME" | tr -d '[:space:]')
           export SERVER_USER=$(echo "$SERVER_USER" | tr -d '[:space:]')
           
-          # Debug: Check if tokens look structurally correct
-          echo "Checking token format..."
-          if [[ "$CF_ACCESS_CLIENT_ID" != *.access ]]; then
-            echo "::warning title=Possible Token Issue::CF_ACCESS_CLIENT_ID does not end in '.access'. Service tokens usually follow this format."
-          fi
-          echo "Token ID length: ${#CF_ACCESS_CLIENT_ID}"
-
-          # Connectivity Check: Probe the endpoint to see if Access accepts the token
-          echo "Probing Cloudflare Access endpoint..."
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID" -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET" "https://$CF_HOSTNAME")
-          echo "HTTP Status form Endpoint: $HTTP_STATUS"
-          if [[ "$HTTP_STATUS" == "403" ]]; then
-            echo "::error::Cloudflare Access returned 403 Forbidden. This usually means the Service Token is invalid or the specific IP is blocked by a policy."
-            exit 1
-          fi
-
-          # Run SSH with cloudflared debug logging enabled
-          ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ProxyCommand="cloudflared access ssh --loglevel debug --hostname $CF_HOSTNAME --service-token-id $CF_ACCESS_CLIENT_ID --service-token-secret $CF_ACCESS_CLIENT_SECRET" "$SERVER_USER@$CF_HOSTNAME" 'bash -s' < ./scripts/deploy.sh
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ProxyCommand="cloudflared access ssh --hostname $CF_HOSTNAME --service-token-id $CF_ACCESS_CLIENT_ID --service-token-secret $CF_ACCESS_CLIENT_SECRET" "$SERVER_USER@$CF_HOSTNAME" 'bash -s' < ./scripts/deploy.sh
