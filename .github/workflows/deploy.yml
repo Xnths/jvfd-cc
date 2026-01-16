@@ -13,11 +13,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: install cloudflared
+        env:
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          CF_HOSTNAME: ${{ secrets.CF_HOSTNAME }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
           curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
           chmod +x cloudflared
           sudo mv cloudflared /usr/local/bin/cloudflared
-          cloudflared access ssh --hostname $CF_HOSTNAME --loglevel debug
+          cloudflared access ssh --hostname $CF_HOSTNAME --loglevel debug 
 
       - name: setup ssh key
         run: |
