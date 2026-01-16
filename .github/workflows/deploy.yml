@@ -36,7 +36,12 @@ jobs:
           CF_HOSTNAME: ${{ secrets.CF_HOSTNAME }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
-          cloudflared access ssh --hostname ${CF_HOSTNAME}
+          cloudflared access ssh \
+            --hostname "$CF_HOSTNAME" \
+            --service-token-id "$CF_ACCESS_CLIENT_ID" \
+            --service-token-secret "$CF_ACCESS_CLIENT_SECRET" \
+            -v
+
           ssh -i ~/.ssh/id_rsa \
               -o StrictHostKeyChecking=no \
               -o UserKnownHostsFile=/dev/null \
