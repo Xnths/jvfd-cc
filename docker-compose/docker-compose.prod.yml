@@ -1,7 +1,7 @@
 services:
   frontend:
     build:
-      context: .
+      context: ./
       dockerfile: Dockerfile
       target: production
     env_file:
