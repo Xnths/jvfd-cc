@@ -21,7 +21,6 @@ services:
       - media_volume:/app/media
       - /var/log/nginx:/var/log/nginx
     depends_on:
-      - backend
       - frontend
 
 volumes:
