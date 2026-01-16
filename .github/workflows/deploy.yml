@@ -10,26 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the repo
       - uses: actions/checkout@v4
 
-      # 2. Install cloudflared
-      - name: Install cloudflared
+      - name: install cloudflared
         run: |
           curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
           chmod +x cloudflared
           sudo mv cloudflared /usr/local/bin/cloudflared
-          cloudflared --version
 
-      # 3. Setup SSH key
-      - name: Setup SSH key
+      - name: setup ssh key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      # 4. Deploy via Cloudflare TCP tunnel
-      - name: Deploy through Cloudflare Access TCP tunnel
+      - name: deploy
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
@@ -41,5 +36,5 @@ jobs:
           export CF_ACCESS_CLIENT_SECRET=$(echo "$CF_ACCESS_CLIENT_SECRET" | tr -d '[:space:]')
           export CF_HOSTNAME=$(echo "$CF_HOSTNAME" | tr -d '[:space:]')
           export SERVER_USER=$(echo "$SERVER_USER" | tr -d '[:space:]')
-          
+
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ProxyCommand="cloudflared access ssh --hostname $CF_HOSTNAME --service-token-id $CF_ACCESS_CLIENT_ID --service-token-secret $CF_ACCESS_CLIENT_SECRET" "$SERVER_USER@$CF_HOSTNAME" 'bash -s' < ./scripts/deploy.sh
