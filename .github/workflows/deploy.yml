@@ -31,6 +31,7 @@ jobs:
         run: |
           cloudflared access tcp \
             --hostname ${{ secrets.CF_HOSTNAME }} \
+            --destination ssh://localhost:22 \
             --url localhost:2222 &
           sleep 5
 
