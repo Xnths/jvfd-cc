@@ -17,6 +17,7 @@ jobs:
           curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
           chmod +x cloudflared
           sudo mv cloudflared /usr/local/bin/cloudflared
+          cloudflared access ssh --hostname $CF_HOSTNAME --loglevel debug
 
       - name: setup ssh key
         run: |
@@ -31,7 +32,6 @@ jobs:
           CF_HOSTNAME: ${{ secrets.CF_HOSTNAME }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
-          # Sanitize tokens to remove potential whitespace or hidden characters
           export CF_ACCESS_CLIENT_ID=$(echo "$CF_ACCESS_CLIENT_ID" | tr -d '[:space:]')
           export CF_ACCESS_CLIENT_SECRET=$(echo "$CF_ACCESS_CLIENT_SECRET" | tr -d '[:space:]')
           export CF_HOSTNAME=$(echo "$CF_HOSTNAME" | tr -d '[:space:]')
