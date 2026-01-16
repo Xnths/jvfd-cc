@@ -32,7 +32,6 @@ jobs:
           SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
           ssh \
-            -o StrictHostKeyChecking=no \
             -o ProxyCommand="cloudflared access ssh --hostname $CF_HOSTNAME" \
             $SERVER_USER@$CF_HOSTNAME \
             'bash -s' < ./scripts/deploy.sh
