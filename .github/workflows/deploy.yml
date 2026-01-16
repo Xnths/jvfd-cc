@@ -35,6 +35,10 @@ jobs:
             -i ~/.ssh/id_rsa \
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            -o ProxyCommand="cloudflared access ssh --hostname %h" \
+            -o ProxyCommand="cloudflared access ssh \
+              --hostname %h \
+              --service-token-id $CF_ACCESS_CLIENT_ID \
+              --service-token-secret $CF_ACCESS_CLIENT_SECRET" \
             $SERVER_USER@$CF_HOSTNAME \
             'bash -s' < ./scripts/deploy.sh
+
