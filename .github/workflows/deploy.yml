@@ -41,7 +41,6 @@ jobs:
             --hostname "$CF_HOSTNAME" \
             --service-token-id "$CF_ACCESS_CLIENT_ID" \
             --service-token-secret "$CF_ACCESS_CLIENT_SECRET" \
-            -v
 
           # SSH through Cloudflare Access and run deploy script
           ssh -i ~/.ssh/id_rsa \
