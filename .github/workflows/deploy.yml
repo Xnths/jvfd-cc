@@ -22,7 +22,8 @@ jobs:
           curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
           chmod +x cloudflared
           sudo mv cloudflared /usr/local/bin/cloudflared
-          cloudflared access ssh --hostname $CF_HOSTNAME --loglevel debug 
+          cloudflared --version
+ 
 
       - name: setup ssh key
         run: |
@@ -42,4 +43,4 @@ jobs:
           export CF_HOSTNAME=$(echo "$CF_HOSTNAME" | tr -d '[:space:]')
           export SERVER_USER=$(echo "$SERVER_USER" | tr -d '[:space:]')
 
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ProxyCommand="cloudflared access ssh --hostname $CF_HOSTNAME --service-token-id $CF_ACCESS_CLIENT_ID --service-token-secret $CF_ACCESS_CLIENT_SECRET" "$SERVER_USER@$CF_HOSTNAME" 'bash -s' < ./scripts/deploy.sh
+          ssh -v -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ProxyCommand="/usr/local/bin/cloudflared access ssh --hostname $CF_HOSTNAME --service-token-id $CF_ACCESS_CLIENT_ID --service-token-secret $CF_ACCESS_CLIENT_SECRET" "$SERVER_USER@$CF_HOSTNAME" 'bash -s' < ./scripts/deploy.sh
