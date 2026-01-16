@@ -1,0 +1,95 @@
+import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+
+export function Footer() {
+  return (
+    <footer className="bg-slate-900 text-slate-300 py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto mb-8">
+          <div>
+            <h3 className="text-white mb-4">Psychology Clinic</h3>
+            <p className="text-sm leading-relaxed">
+              Professional mental health services with compassion and expertise.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-white mb-4">Quick Links</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a href="#services" className="hover:text-white transition-colors">
+                  Services
+                </a>
+              </li>
+              <li>
+                <a href="#about" className="hover:text-white transition-colors">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="#team" className="hover:text-white transition-colors">
+                  Our Team
+                </a>
+              </li>
+              <li>
+                <a href="#contact" className="hover:text-white transition-colors">
+                  Contact
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white mb-4">Services</h4>
+            <ul className="space-y-2 text-sm">
+              <li>Individual Therapy</li>
+              <li>Couples Counseling</li>
+              <li>Family Therapy</li>
+              <li>Group Sessions</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white mb-4">Connect With Us</h4>
+            <div className="flex gap-4">
+              <a
+                href="#"
+                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
+                aria-label="Twitter"
+              >
+                <Twitter className="w-5 h-5" />
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-800 pt-8 text-center text-sm">
+          <p>© 2025 Psychology Clinic. All rights reserved.</p>
+          <p className="mt-2 text-slate-400">
+            Licensed professionals committed to your mental wellness.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
