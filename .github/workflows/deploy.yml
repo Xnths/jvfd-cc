@@ -38,7 +38,11 @@ jobs:
       - name: deploy
         run: |
           ssh \
+            -T \
+            -o BatchMode=yes \
             -o StrictHostKeyChecking=no \
+            -o ConnectTimeout=10 \
             -p 2222 \
             ${{ secrets.SERVER_USER }}@localhost \
-            ./scripts/deploy.sh
+            'bash -s' < ./scripts/deploy.sh
+
