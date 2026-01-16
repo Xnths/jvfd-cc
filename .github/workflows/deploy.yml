@@ -24,25 +24,15 @@ jobs:
           printf "%s\n" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-      - name: open cloudflare tcp tunnel
+      - name: deploy
         env:
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
-        run: |
-          cloudflared access tcp \
-            --hostname ${{ secrets.CF_HOSTNAME }} \
-            --destination ssh://localhost:22 \
-            --url localhost:2222 &
-          sleep 5
-
-      - name: deploy
+          CF_HOSTNAME: ${{ secrets.CF_HOSTNAME }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
           ssh \
-            -T \
-            -o BatchMode=yes \
             -o StrictHostKeyChecking=no \
-            -o ConnectTimeout=10 \
-            -p 2222 \
-            ${{ secrets.SERVER_USER }}@localhost \
+            -o ProxyCommand="cloudflared access ssh --hostname $CF_HOSTNAME" \
+            $SERVER_USER@$CF_HOSTNAME \
             'bash -s' < ./scripts/deploy.sh
-
