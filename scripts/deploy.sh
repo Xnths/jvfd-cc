@@ -5,6 +5,9 @@ set -e
 # Change to the project directory on the remote server
 cd /var/www/jvfd-cc
 
+# Fix "dubious ownership" error
+git config --global --add safe.directory /var/www/jvfd-cc
+
 echo "Starting deployment..."
 
 echo "Pulling latest changes..."
