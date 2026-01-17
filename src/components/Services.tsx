@@ -4,33 +4,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 const services = [
   {
     icon: Brain,
-    title: "Individual Therapy",
-    description: "One-on-one sessions tailored to your unique needs, addressing anxiety, depression, stress, and personal growth.",
+    title: "Psicoterapia individual",
+    description: "Atendimento clínico individual com foco na análise funcional do comportamento, considerando contingências históricas e atuais que organizam o repertório do indivíduo.",
   },
   {
     icon: Users,
-    title: "Couples Counseling",
-    description: "Strengthen your relationship through improved communication, conflict resolution, and emotional connection.",
+    title: "Atendimento a adultos e adolescentes",
+    description: "Intervenções psicológicas voltadas ao desenvolvimento e modificação de repertórios comportamentais em diferentes contextos sociais e familiares.",
   },
   {
     icon: Heart,
-    title: "Family Therapy",
-    description: "Build healthier family dynamics and resolve conflicts in a supportive, understanding environment.",
+    title: "Processos de regulação emocional",
+    description: "Acompanhamento clínico direcionado à ampliação de repertórios de enfrentamento e manejo de respostas emocionais em situações aversivas.",
   },
   {
     icon: Lightbulb,
-    title: "Cognitive Behavioral Therapy",
-    description: "Evidence-based treatment to help identify and change negative thought patterns and behaviors.",
+    title: "Intervenções baseadas em evidências",
+    description: "Planejamento terapêutico fundamentado em dados empíricos da Análise do Comportamento e das Neurociências.",
   },
   {
     icon: Shield,
-    title: "Trauma & PTSD Treatment",
-    description: "Specialized support for processing traumatic experiences in a safe and compassionate setting.",
+    title: "Avaliação e acompanhamento clínico",
+    description: "Levantamento funcional de queixas psicológicas e monitoramento sistemático de variáveis comportamentais ao longo do processo terapêutico.",
   },
   {
     icon: Smile,
-    title: "Stress Management",
-    description: "Develop effective coping strategies and techniques to manage life's challenges with confidence.",
+    title: "Promoção de qualidade de vida",
+    description: "Construção de repertórios comportamentais mais adaptativos, favorecendo autonomia, bem-estar e funcionamento cotidiano.",
   },
 ];
 
@@ -39,9 +39,9 @@ export function Services() {
     <section className="py-20 bg-slate-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-slate-900 mb-4">Our Services</h2>
+          <h2 className="text-slate-900 mb-4 text-2xl">Serviços oferecidos</h2>
           <p className="text-slate-600 max-w-2xl mx-auto text-lg">
-            We offer comprehensive psychological services designed to support your mental health journey
+            Atendimentos psicológicos fundamentados na ciência do comportamento e em práticas clínicas baseadas em evidências
           </p>
         </div>
 

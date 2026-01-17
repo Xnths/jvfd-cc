@@ -3,14 +3,15 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-      target: development
+      target: runner
     networks:
       - app-network
     env_file:
       - ../.env
     ports:
       - "3000:3000"
-    entrypoint: [ "sh", "entrypoint-test.sh" ]
+    volumes:
+      - ./:/app
 
 networks:
   app-network:

@@ -11,23 +11,18 @@ import { toast } from "sonner";
 const contactInfo = [
   {
     icon: Phone,
-    title: "Phone",
-    details: "+1 (555) 123-4567",
+    title: "Telefone Celular",
+    details: "+55 (11) 95559-1996",
   },
   {
     icon: Mail,
     title: "Email",
-    details: "info@psychologyclinic.com",
+    details: "jvfd2014@hotmail.com",
   },
   {
     icon: MapPin,
-    title: "Address",
-    details: "123 Wellness Street, Suite 200, New York, NY 10001",
-  },
-  {
-    icon: Clock,
-    title: "Hours",
-    details: "Mon-Fri: 8am-8pm, Sat: 9am-5pm",
+    title: "Endereço do consultório",
+    details: "Rua Harmonia, 1323 - Vila Madalena, São Paulo - SP, 05435-001",
   },
 ];
 
@@ -53,14 +48,14 @@ export function Contact() {
     <section id="contact" className="py-20 bg-slate-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-slate-900 mb-4">Get in Touch</h2>
+          <h2 className="text-slate-900 mb-4 text-2xl">Contato</h2>
           <p className="text-slate-600 max-w-2xl mx-auto text-lg">
-            Ready to take the first step? Contact us to schedule an appointment or learn more about our services
+            Entre em contato com o profissional
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          <div>
+        <div className="gap-12 max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-center">
+          {/* <div>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-slate-700 mb-2">
@@ -127,7 +122,7 @@ export function Contact() {
                 Send Message
               </Button>
             </form>
-          </div>
+          </div> */}
 
           <div className="space-y-6">
             {contactInfo.map((info, index) => {
