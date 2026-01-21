@@ -22,11 +22,10 @@ export function Hero() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-3xl">
           <h1 className="text-white mb-6 text-5xl md:text-6xl lg:text-7xl leading-tight">
-            Psicoterapia por análise do comportamento
+            Clínica João Fernandes
           </h1>
           <p className="text-slate-300 mb-10 text-xl md:text-2xl leading-relaxed max-w-2xl">
-            Atendimento psicológico fundamentado na Análise do Comportamento,
-            com foco na compreensão funcional em contextos clínicos e cotidianos.
+            Atendimento psicológico.
           </p>
           <div className="flex flex-wrap gap-4">
             <Button
@@ -40,7 +39,7 @@ export function Hero() {
               size="lg"
               variant="outline"
               onClick={scrollToContact}
-              className="border-2 border-white text-white hover:bg-white hover:text-slate-900 px-8 py-6 text-lg transition-all"
+              className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-slate-900 px-8 py-6 text-lg transition-all"
             >
               Saiba mais
             </Button>
