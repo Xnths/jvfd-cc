@@ -2,11 +2,11 @@ import { CheckCircle } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 
 const values = [
-  "Atuação clínica baseada na Análise do Comportamento",
-  "Atendimento psicológico presencial e online",
-  "Avaliação e acompanhamento de repertórios comportamentais",
-  "Intervenções orientadas por evidências empíricas",
-  "Experiência em contextos clínicos e hospitalares",
+  "Graduado em Psicologia pela Pontifícia Universidade Católica de São Paulo - PUCSP",
+  "Aperfeiçoado em Psicologia Hospitalar pela Psicocare",
+  "Pós graduando em Neuropsicologia pelo Hospital Israelita Albert Einstein",
+  "Pós graduando em Neurociências, Comportamento e Psicopatologia pela Pontifícia Universidade Católica do Paraná - PUCPR",
+  "Formação Complementar do tipo Curso em Filosofia Oriental pela Universidade Harvard",
 ];
 
 export function About() {
@@ -19,7 +19,7 @@ export function About() {
               Sobre o profissional
             </h2>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              Possui graduação em Psicologia pela Pontifícia Universidade Católica de São Paulo - PUCSP (2019). Aperfeiçoado em Psicologia Hospitalar pela Psicocare (2019). Envolvido em linhas de pesquisa ao longo de toda a graduação (Iniciação Científica, Monitorias, Apresentações em Congressos, Simpósios, Organização de eventos acadêmicos estudantis). Atualmente cursa 2 Pós-graduações, se especializando em Neuropsicologia pelo Hospital Israelita Albert Einstein e em Neurociências, Comportamento e Psicopatologia pela PUCPR. Atua como Psicólogo Clínico na abordagem Analítico-Comportamental.
+              Psicólogo Clínico atuante no mercado desde 2019 e envolvido em linhas de pesquisa ao longo de toda a graduação (Iniciação Científica, Monitorias, Apresentações em Congressos, Simpósios, Organização de eventos acadêmicos estudantis). Realiza atendimentos psicoterapêuticos à luz da abordagem Analítico-Comportamental.
             </p>
 
             <div className="space-y-4">
@@ -33,10 +33,10 @@ export function About() {
           </div>
 
           <div className="relative">
-            <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-xl">
+            <div className="aspect-[4/4] rounded-lg overflow-hidden shadow-xl">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1620302044935-444961a5d028?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwc3ljaG9sb2d5JTIwY2xpbmljJTIwcmVjZXB0aW9ufGVufDF8fHx8MTc2Mzg1MTkxNXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                alt="Ambiente clínico para atendimento psicológico"
+                src="jv.jpeg"
+                alt="Foto do profissional"
                 className="w-full h-full object-cover"
               />
             </div>

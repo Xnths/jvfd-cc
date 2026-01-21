@@ -12,7 +12,7 @@ export function Hero() {
     <section className="relative h-screen min-h-[600px] flex items-center">
       <div className="absolute inset-0 z-0">
         <ImageWithFallback
-          src="https://images.unsplash.com/photo-1758873268053-675432cd8922?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjB0aGVyYXB5JTIwb2ZmaWNlfGVufDF8fHx8MTc2Mzc1MTA5Nnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+          src="consultorio.jpg"
           alt="Ambiente clínico para atendimento psicológico"
           className="w-full h-full object-cover"
         />
@@ -22,10 +22,12 @@ export function Hero() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-3xl">
           <h1 className="text-white mb-6 text-5xl md:text-6xl lg:text-7xl leading-tight">
-            Clínica João Fernandes
+            Consultório Psicológico
+            <br />
+            João Fernandes
           </h1>
           <p className="text-slate-300 mb-10 text-xl md:text-2xl leading-relaxed max-w-2xl">
-            Atendimento psicológico.
+            Atendimentos Psicológicos e Psicoterapêuticos de Excelência, com ênfase tanto no bem estar dos pacientes ao longo do processo, quanto na comprovação científica dos métodos e técnicas utilizadas.
           </p>
           <div className="flex flex-wrap gap-4">
             <Button

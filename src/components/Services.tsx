@@ -1,37 +1,37 @@
-import { Brain, Users, Heart, Lightbulb, Shield, Smile } from "lucide-react";
+import { Brain, Users, Heart, Lightbulb, Shield, Smile, Armchair, AlertCircle, ShieldAlert, NotebookPen } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
 const services = [
   {
     icon: Brain,
     title: "Psicoterapia individual",
-    description: "Atendimento clínico individual com foco na análise funcional do comportamento, considerando contingências históricas e atuais que organizam o repertório do indivíduo.",
+    description: "Atendimento Psicoterapêutico visando melhora da qualidade de vida do paciente, a ser realizado de forma presencial ou online.",
   },
   {
     icon: Users,
-    title: "Atendimento a adultos e adolescentes",
-    description: "Intervenções psicológicas voltadas ao desenvolvimento e modificação de repertórios comportamentais em diferentes contextos sociais e familiares.",
+    title: "Realização de Acompanhamento para estudos",
+    description: "Acompanhamento específico para o aprendizado de técnicas comportamentais de estudo. Adolescentes em período de provas de vestibular, adultos que prestam Concurso ou ainda curiosos que queiram aperfeiçoar seu repertório de estudos podem se beneficiar desse serviço",
   },
   {
-    icon: Heart,
-    title: "Processos de regulação emocional",
-    description: "Acompanhamento clínico direcionado à ampliação de repertórios de enfrentamento e manejo de respostas emocionais em situações aversivas.",
+    icon: NotebookPen,
+    title: "Supervisão em Psicologia",
+    description: "Também é ofertado o serviço de supervisor clínico à outros psicólogos/as que atendam na abordagem teórico-prática da Análise do Comportamento",
   },
   {
     icon: Lightbulb,
-    title: "Intervenções baseadas em evidências",
-    description: "Planejamento terapêutico fundamentado em dados empíricos da Análise do Comportamento e das Neurociências.",
+    title: "Avaliação Psicológica e Psicodiagnóstica",
+    description: "Realiza-se o serviço de acompanhamento psicoterapêutico direcionada a uma demanda ou contexto muito específico. Por exemplo: encaminhamento por Psiquiatras ou ainda pela equipe pedagógica de escolas, para auxílio em diagnósticos comportamentais",
   },
   {
-    icon: Shield,
-    title: "Avaliação e acompanhamento clínico",
-    description: "Levantamento funcional de queixas psicológicas e monitoramento sistemático de variáveis comportamentais ao longo do processo terapêutico.",
+    icon: ShieldAlert,
+    title: "Regulação Emocional em Momentos de Crise",
+    description: "O serviço de Psicoterapia Individual é ofertado, porém com o objetivo de acolhimento e intervenção em momentos de urgência emocional. Exemplos: Divórcio recente, Gravidez, Luto, Suicídio, Diagnósticos de doenças crônicas de ordem biológica ou psiquiátrica, entre outros.",
   },
   {
-    icon: Smile,
-    title: "Promoção de qualidade de vida",
-    description: "Construção de repertórios comportamentais mais adaptativos, favorecendo autonomia, bem-estar e funcionamento cotidiano.",
-  },
+    icon: Armchair,
+    title: "Psicoterapia de casal ou familiar",
+    description: "A Psicoterapia com foco na resolução de demandas/conflitos entre casais e/ou entre familiares também está a disposição.",
+  }
 ];
 
 export function Services() {
@@ -41,7 +41,7 @@ export function Services() {
         <div className="text-center mb-16">
           <h2 className="text-slate-900 mb-4 text-2xl">Serviços oferecidos</h2>
           <p className="text-slate-600 max-w-2xl mx-auto text-lg">
-            Atendimentos psicológicos fundamentados na ciência do comportamento e em práticas clínicas baseadas em evidências
+            Atendimentos Psicológicos fundamentados na Ciência do Comportamento e em práticas clínicas baseadas em evidências
           </p>
         </div>
 
