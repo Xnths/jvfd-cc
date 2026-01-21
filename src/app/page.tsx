@@ -5,6 +5,7 @@ import { Team } from "@/components/Team";
 import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import { FAQ } from "@/components/faq";
 
 export default function Home() {
     return (
@@ -13,6 +14,7 @@ export default function Home() {
             <Services />
             <About />
             <Team />
+            <FAQ />
             <Contact />
             <Footer />
             <Toaster />
