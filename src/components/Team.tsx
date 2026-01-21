@@ -86,8 +86,8 @@ export function Team() {
               key={index}
               onClick={() => api?.scrollTo(index)}
               className={`h-2 rounded-full transition-all ${current === index
-                  ? "w-6 bg-slate-900"
-                  : "w-2 bg-slate-300"
+                ? "w-6 bg-slate-900"
+                : "w-2 bg-slate-300"
                 }`}
             />
           ))}
