@@ -1,4 +1,6 @@
+import { whatsappUrl } from "@/lib/constant";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 
 export function Footer() {
   return (
@@ -6,10 +8,11 @@ export function Footer() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto mb-8">
           <div>
-            <h3 className="text-white mb-4">Psychology Clinic</h3>
+            <h3 className="text-white mb-4">João Vitor Fernandes Domingues</h3>
             <p className="text-sm leading-relaxed">
-              Professional mental health services with compassion and expertise.
+              CRP: 0000000000
             </p>
+            <p>Rua Harmonia, 1323 - Vila Madalena, São Paulo - SP, 05435-001</p>
           </div>
 
           <div>
@@ -52,32 +55,22 @@ export function Footer() {
             <h4 className="text-white mb-4">Connect With Us</h4>
             <div className="flex gap-4">
               <a
-                href="#"
-                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
+                href="https://www.instagram.com/ciencia_comportamental_"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
-                aria-label="LinkedIn"
+                aria-label="WhatsApp"
               >
-                <Linkedin className="w-5 h-5" />
+                <FaWhatsapp className="w-5 h-5" />
               </a>
             </div>
           </div>

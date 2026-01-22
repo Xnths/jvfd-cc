@@ -9,19 +9,20 @@ import { Card, CardContent } from "./ui/card";
 import { toast } from "sonner";
 import { whatsappUrl } from "@/lib/constant";
 import Link from "next/link";
+import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 const contactInfo = [
   {
-    icon: Phone,
-    title: "Telefone Celular",
+    icon: FaWhatsapp,
+    title: "WhatsApp",
     details: "+55 (11) 95559-1996",
     url: whatsappUrl
   },
   {
-    icon: Mail,
-    title: "Email",
-    details: "jvfd2014@hotmail.com",
-    url: "mailto:jvfd2014@hotmail.com",
+    icon: FaInstagram,
+    title: "Instagram",
+    details: "@ciencia_comportamental_",
+    url: "https://www.instagram.com/ciencia_comportamental_/",
   },
   {
     icon: MapPin,

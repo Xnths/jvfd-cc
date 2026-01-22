@@ -1,7 +1,17 @@
-import { Brain, Users, Heart, Lightbulb, Shield, Smile, Armchair, AlertCircle, ShieldAlert, NotebookPen } from "lucide-react";
+import { Brain, Users, Heart, Lightbulb, Shield, Smile, Armchair, AlertCircle, ShieldAlert, NotebookPen, Camera, Video, Pin } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
 const services = [
+  // {
+  //   icon: Video,
+  //   title: "Consulta online",
+  //   description: "Atendimento pelo Google Meet"
+  // },
+  // {
+  //   icon: Pin,
+  //   title: "Consulta presencial",
+  //   description: "Atendimento em consultório próximo à Vila Madalena, São Paulo - SP"
+  // },
   {
     icon: Brain,
     title: "Psicoterapia individual",
@@ -9,18 +19,18 @@ const services = [
   },
   {
     icon: Users,
-    title: "Realização de Acompanhamento para estudos",
+    title: "Acompanhamento para estudos",
     description: "Acompanhamento específico para o aprendizado de técnicas comportamentais de estudo. Adolescentes em período de provas de vestibular, adultos que prestam Concurso ou ainda curiosos que queiram aperfeiçoar seu repertório de estudos podem se beneficiar desse serviço",
   },
   {
     icon: NotebookPen,
     title: "Supervisão em Psicologia",
-    description: "Também é ofertado o serviço de supervisor clínico à outros psicólogos/as que atendam na abordagem teórico-prática da Análise do Comportamento",
+    description: "Supervisão clínica à outros psicólogos/as que atendam na abordagem teórico-prática da Análise do Comportamento",
   },
   {
     icon: Lightbulb,
     title: "Avaliação Psicológica e Psicodiagnóstica",
-    description: "Realiza-se o serviço de acompanhamento psicoterapêutico direcionada a uma demanda ou contexto muito específico. Por exemplo: encaminhamento por Psiquiatras ou ainda pela equipe pedagógica de escolas, para auxílio em diagnósticos comportamentais",
+    description: "Avaliação psicológica e psicodiagnóstica para auxílio em diagnósticos comportamentais",
   },
   {
     icon: ShieldAlert,
@@ -39,7 +49,7 @@ export function Services() {
     <section className="py-20 bg-slate-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-slate-900 mb-4 text-2xl">Serviços oferecidos</h2>
+          <h2 className="text-slate-900 mb-4 text-2xl">Atendimentos</h2>
           <p className="text-slate-600 max-w-2xl mx-auto text-lg">
             Atendimentos Psicológicos fundamentados na Ciência do Comportamento e em práticas clínicas baseadas em evidências
           </p>

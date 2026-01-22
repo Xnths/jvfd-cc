@@ -1,7 +1,8 @@
 import { Hero } from "@/components/Hero";
 import { Services } from "@/components/Services";
+import { Excellence } from "@/components/Excellence";
 import { About } from "@/components/About";
-import { Team } from "@/components/Team";
+import { Testimonials } from "@/components/testimonias";
 import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
@@ -13,8 +14,9 @@ export default function Home() {
             <Hero />
             <Services />
             <About />
-            <Team />
             <FAQ />
+            <Testimonials />
+            <Excellence />
             <Contact />
             <Footer />
             <Toaster />
