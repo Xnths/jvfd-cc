@@ -33,6 +33,7 @@ export function Hero() {
             </strong>
           </h1>
           <p className="text-slate-300 mb-10 text-xl md:text-2xl leading-relaxed max-w-2xl">
+            {/* Atendimentos Psicológicos e Psicoterapêuticos de Excelência, com ênfase tanto no bem estar dos pacientes ao longo do processo, quanto na comprovação científica dos métodos e técnicas utilizadas. */}
             Atendimentos Psicológicos e Psicoterapêuticos de Excelência, com ênfase tanto no bem estar dos pacientes ao longo do processo, quanto na comprovação científica dos métodos e técnicas utilizadas.
           </p>
           <div className="flex flex-wrap gap-4">
@@ -45,15 +46,6 @@ export function Hero() {
               <FaWhatsapp className="w-6 h-6" />
               Agendar atendimento
             </Link>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={scrollToContact}
-              className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-slate-900 px-8 py-6 text-lg transition-all"
-            >
-              <Info className="w-6 h-6" />
-              Saiba mais
-            </Button>
           </div>
         </div>
       </div>
