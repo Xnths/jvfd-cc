@@ -1,14 +1,6 @@
 import { CheckCircle } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 
-const values = [
-  "Graduado em Psicologia pela Pontifícia Universidade Católica de São Paulo - PUCSP",
-  "Aperfeiçoado em Psicologia Hospitalar pela Psicocare",
-  "Pós graduando em Neuropsicologia pelo Hospital Israelita Albert Einstein",
-  "Pós graduando em Neurociências, Comportamento e Psicopatologia pela Pontifícia Universidade Católica do Paraná - PUCPR",
-  "Formação Complementar do tipo Curso em Filosofia Oriental pela Universidade Harvard",
-];
-
 export function About() {
   return (
     <section className="py-20 bg-white" id="about">
@@ -21,15 +13,6 @@ export function About() {
             <p className="text-slate-600 mb-6 leading-relaxed">
               Psicólogo Clínico atuante no mercado desde 2019 e envolvido em linhas de pesquisa ao longo de toda a graduação (Iniciação Científica, Monitorias, Apresentações em Congressos, Simpósios, Organização de eventos acadêmicos estudantis). Realiza atendimentos psicoterapêuticos à luz da abordagem Analítico-Comportamental.
             </p>
-
-            <div className="space-y-4">
-              {values.map((value, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-slate-700">{value}</p>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="relative">

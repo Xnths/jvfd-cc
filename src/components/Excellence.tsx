@@ -1,4 +1,4 @@
-import { GraduationCap, Award, BookOpen, Medal } from "lucide-react";
+import { GraduationCap, Award, BookOpen, Medal, Hospital, Brain, Activity } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
 const qualifications = [
@@ -6,29 +6,36 @@ const qualifications = [
         icon: GraduationCap,
         title: "Bacharelado em Psicologia",
         institution: "Pontifícia Universidade Católica de São Paulo (PUCSP)",
-        year: "2018",
-        description: "Formação generalista com ênfase em processos clínicos e saúde mental."
+        year: "—",
+        description: "História de exposição acadêmica a contingências de ensino em análise funcional do comportamento humano em contextos clínicos e institucionais."
+    },
+    {
+        icon: Hospital,
+        title: "Aperfeiçoamento em Psicologia Hospitalar",
+        institution: "Psicocare",
+        year: "—",
+        description: "Treino aplicado em ambientes hospitalares com ênfase em seleção ambiental, manejo de contingências aversivas e promoção de repertórios adaptativos."
+    },
+    {
+        icon: Brain,
+        title: "Pós-graduação em Neuropsicologia",
+        institution: "Hospital Israelita Albert Einstein",
+        year: "—",
+        description: "Formação em correlações entre variação neurobiológica e padrões comportamentais sob uma perspectiva funcional e evolucionária."
+    },
+    {
+        icon: Activity,
+        title: "Pós-graduação em Neurociências, Comportamento e Psicopatologia",
+        institution: "Pontifícia Universidade Católica do Paraná (PUCPR)",
+        year: "—",
+        description: "Análise integrada de processos selecionados por consequências em níveis filogenético, ontogenético e cultural."
     },
     {
         icon: BookOpen,
-        title: "Especialização em Análise do Comportamento",
-        institution: "Instituto de Terapia por Contingências de Reforçamento (ITCR)",
-        year: "2020",
-        description: "Pós-graduação focada em intervenção clínica analítico-comportamental."
-    },
-    {
-        icon: Award,
-        title: "Formação em Terapia de Aceitação e Compromisso (ACT)",
-        institution: "Centro de Estudo em Psicologia",
-        year: "2021",
-        description: "Curso avançado de extensão em terapias contextuais."
-    },
-    {
-        icon: Medal,
-        title: "Certificação em Psicopatologia",
-        institution: "Instituto de Psiquiatria",
-        year: "2022",
-        description: "Aprofundamento em diagnóstico e manejo clínico."
+        title: "Curso em Filosofia Oriental",
+        institution: "Universidade Harvard",
+        year: "—",
+        description: "Contato sistemático com práticas culturais orientais analisadas como arranjos históricos de contingências e seleção cultural."
     }
 ];
 
