@@ -11,6 +11,8 @@ services:
       NEXT_TELEMETRY_DISABLED: 1
     expose:
       - "3000"
+    networks:
+      - cloudflare-net
 
   nginx:
     image: nginx:latest
@@ -20,3 +22,9 @@ services:
       - "80:80"
     depends_on:
       - frontend
+    networks:
+      - cloudflare-net
+
+networks:
+  cloudflare-net:
+    external: true
