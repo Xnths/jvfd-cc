@@ -1,5 +1,6 @@
 services:
-  frontend:
+  clinic-frontend:
+    container_name: clinic-frontend
     build:
       context: ../
       dockerfile: Dockerfile
@@ -14,16 +15,29 @@ services:
     networks:
       - cloudflare-net
 
-  nginx:
+  clinic-nginx:
     image: nginx:latest
+    container_name: clinic-nginx
     volumes:
       - ../nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
     ports:
       - "80:80"
     depends_on:
-      - frontend
+      - clinic-frontend
     networks:
       - cloudflare-net
+
+  clinic-cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: clinic-cloudflared
+    env_file:
+      - .env
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared:/etc/cloudflared
+    networks:
+      - cloudflare-net
+    restart: unless-stopped
 
 networks:
   cloudflare-net:

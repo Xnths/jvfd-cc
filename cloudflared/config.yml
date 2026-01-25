@@ -1,0 +1,12 @@
+tunnel: 560303f8-9f25-45a2-aee3-4917c46daf88
+credentials-file: /etc/cloudflared/credentials.json
+
+protocol: http2
+
+edge-bind-address: 0.0.0.0
+edge-port: 443
+
+ingress:
+  - hostname: dev.xnths.com
+    service: http://clinic-nginx:80
+  - service: http_status:404
