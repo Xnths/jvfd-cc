@@ -36,17 +36,6 @@ export function Hero() {
             {/* Atendimentos Psicológicos e Psicoterapêuticos de Excelência, com ênfase tanto no bem estar dos pacientes ao longo do processo, quanto na comprovação científica dos métodos e técnicas utilizadas. */}
             Atendimentos Psicológicos e Psicoterapêuticos de Excelência, com ênfase tanto no bem estar dos pacientes ao longo do processo, quanto na comprovação científica dos métodos e técnicas utilizadas.
           </p>
-          <div className="flex flex-wrap gap-4">
-            <Link
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-red-600/80 hover:bg-red-700 text-white px-8 py-2 text-lg rounded-lg"
-            >
-              <FaWhatsapp className="w-6 h-6" />
-              Agendar atendimento
-            </Link>
-          </div>
         </div>
       </div>
     </section>

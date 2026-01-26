@@ -12,7 +12,7 @@ import {
 import Autoplay from "embla-carousel-autoplay"
 
 const testimonials = [
-  { testimonial: "Excelente! Minhas crises de ansiedade e meus transtornos alimentares melhoraram MUITO desde que começamos. Além disso, me sinto emocionalmente muito mais madura para lidar com as questões do dia a dia. Não sei como seria viver sem ❤️" },
+  { testimonial: "Excelente! Minhas crises de ansiedade e meus transtornos alimentares melhoraram muito desde que começamos. Além disso, me sinto emocionalmente muito mais madura para lidar com as questões do dia a dia. Não sei como seria viver sem ❤️" },
   { testimonial: "João de fato foi um presente na minha vida. Através das nossas sessões, pude aprender a lidar com os meus traumas do passado e posso dizer que hoje vivo de uma forma muito mais leve e feliz. Serei eternamente grato por todo o suporte que me foi dado." },
   { testimonial: "Quero expressar minha imensa gratidão por esse profissional incrível. Um psicólogo extremamente competente, humano e acolhedor. O acompanhamento fez toda a diferença na minha vida, ajudando-me a compreender melhor meus comportamentos e a lidar com minhas dificuldades de forma mais saudável." },
   { testimonial: "Maravilhoso, amando, adorando e achando tudo absolutamente perfeito." },
