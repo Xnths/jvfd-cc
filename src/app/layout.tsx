@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
         images: [
             {
-                url: "/opengraph-image",
+                url: "https://dev.xnths.com/main.jpeg",
                 width: 1200,
                 height: 630,
                 alt: "João Vitor Fernandes – Psicólogo Analítico-Comportamental",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
         title: "Psicólogo Analítico-Comportamental | Vila Madalena, SP",
         description:
             "Psicologia baseada em evidências, atendimento presencial e online.",
-        images: ["/opengraph-image"],
+        images: ["https://dev.xnths.com/main.jpeg"],
     },
 
     alternates: {
