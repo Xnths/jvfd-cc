@@ -34,7 +34,7 @@ services:
       - .env
     command: tunnel --config /etc/cloudflared/config.yml run
     volumes:
-      - ./cloudflared:/etc/cloudflared
+      - ../cloudflared:/etc/cloudflared
     networks:
       - cloudflare-net
     restart: unless-stopped
