@@ -1,16 +1,10 @@
 "use client"
 
-import { Button } from "./ui/button";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import Link from "next/link";
-import { Info } from "lucide-react";
-import { FaWhatsapp } from "react-icons/fa";
-import { whatsappUrl } from "@/lib/constant";
+import { useSectionAnalytics } from "@/hooks/use-section-analytics";
 
 export function Hero() {
-  const scrollToContact = () => {
-    document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
-  };
+  useSectionAnalytics("hero")
 
   return (
     <section className="relative h-screen min-h-[600px] flex items-center" id="hero">

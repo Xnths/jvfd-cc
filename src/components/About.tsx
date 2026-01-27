@@ -1,7 +1,11 @@
-import { CheckCircle } from "lucide-react";
+"use client"
+
 import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { useSectionAnalytics } from "@/hooks/use-section-analytics";
 
 export function About() {
+  useSectionAnalytics("about")
+
   return (
     <section className="py-20 bg-white" id="about">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

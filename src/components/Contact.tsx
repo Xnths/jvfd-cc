@@ -1,8 +1,11 @@
+"use client"
+
 import { MapPin } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { whatsappUrl } from "@/lib/constant";
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { useSectionAnalytics } from "@/hooks/use-section-analytics";
 
 const contactInfo = [
   {
@@ -26,6 +29,8 @@ const contactInfo = [
 ];
 
 export function Contact() {
+  useSectionAnalytics("contact")
+
   return (
     <section id="contact" className="py-20 bg-slate-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

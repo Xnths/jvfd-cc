@@ -1,5 +1,7 @@
 "use client";
 
+import { useSectionAnalytics } from "@/hooks/use-section-analytics";
+
 const faq = [
     {
         id: "item-2",
@@ -28,6 +30,8 @@ const faq = [
 ];
 
 export function FAQ() {
+    useSectionAnalytics("faq")
+
     return (
         <section className="w-full max-w-3xl mx-auto px-4 py-16" id="faq">
             <h2 className="text-2xl font-semibold mb-[64px] text-center">

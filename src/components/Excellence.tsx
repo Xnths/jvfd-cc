@@ -1,5 +1,8 @@
+"use client"
+
 import { GraduationCap, BookOpen, Hospital, Brain, Activity } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardHeader, CardTitle } from "./ui/card";
+import { useSectionAnalytics } from "@/hooks/use-section-analytics";
 
 const qualifications = [
     {
@@ -30,6 +33,8 @@ const qualifications = [
 ];
 
 export function Excellence() {
+    useSectionAnalytics("excellence")
+
     return (
         <section className="py-20 bg-white" id="excellence">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">

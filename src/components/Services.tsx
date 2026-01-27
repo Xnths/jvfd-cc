@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Brain,
   Users,
@@ -16,6 +18,7 @@ import {
 import { Button } from "./ui/button";
 import { FaWhatsapp } from "react-icons/fa";
 import { whatsappUrl } from "@/lib/constant";
+import { useSectionAnalytics } from "@/hooks/use-section-analytics";
 
 const services = [
   {
@@ -57,6 +60,8 @@ const services = [
 ];
 
 export function Services() {
+  useSectionAnalytics("services")
+
   return (
     <section className="py-20 bg-slate-50" id="services">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
