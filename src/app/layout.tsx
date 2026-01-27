@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { FloatingCatButton } from "@/components/floating-cat-button";
+import AnalyticsInit from "@/components/analytics-init";
 
 export const metadata: Metadata = {
     metadataBase: new URL("https://dev.xnths.com"),
@@ -134,6 +135,7 @@ export default function RootLayout({
             <body>
                 {children}
                 <FloatingCatButton />
+                <AnalyticsInit />
             </body>
         </html>
     );
