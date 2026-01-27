@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="bg-slate-900 text-slate-300 py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto mb-8">
-          <div className="col-span-2">
+          <div className="col-span-3">
             <h4 className="text-white mb-4">Acesso rápido</h4>
             <ul className="space-y-2 text-sm">
               <li>
@@ -32,17 +32,6 @@ export function Footer() {
               </li>
             </ul>
           </div>
-
-          <div>
-            <h4 className="text-white mb-4">Atendimentos</h4>
-            <ul className="space-y-2 text-sm">
-              <li>Consultas Online</li>
-              <li>Consultas Presenciais</li>
-              <li>Consultas de Família</li>
-              <li>Consultas de Grupo</li>
-            </ul>
-          </div>
-
           <div>
             <h4 className="text-white mb-4">Contato</h4>
             <div className="flex gap-4">

@@ -46,9 +46,6 @@ export function Testimonials() {
           <h2 className="text-slate-900 mb-4 text-2xl">
             Depoimentos de pacientes
           </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto text-base sm:text-lg">
-            Relatos de pessoas que participaram de processos terapêuticos baseados na Análise do Comportamento
-          </p>
         </div>
 
         <Carousel

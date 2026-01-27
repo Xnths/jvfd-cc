@@ -2,34 +2,28 @@
 
 const faq = [
     {
-        id: "item-1",
-        question: "Como funciona a primeira sessão?",
-        answer:
-            "A primeira sessão é um contato inicial para mapear demandas, esclarecer o funcionamento do atendimento e estabelecer as condições do processo terapêutico.",
-    },
-    {
         id: "item-2",
         question: "O atendimento é presencial ou online?",
         answer:
-            "O atendimento pode ocorrer de forma online ou presencial, conforme a organização do serviço e a disponibilidade acordada.",
+            "Os atendimentos podem ser realizados de forma presencial ou online.",
+    },
+    {
+        id: "item-1",
+        question: "Como funciona a primeira sessão?",
+        answer:
+            "A primeira sessão é gratuita e visa um contato inicial para entender as necessidades e esclarecer o funcionamento do atendimento.",
     },
     {
         id: "item-3",
         question: "Qual a duração das sessões?",
         answer:
-            "As sessões têm duração média de 50 minutos, ocorrendo em frequência semanal, salvo rearranjos previamente combinados.",
+            "As sessões têm em média 50 minutos, ocorrendo em frequência semanal, salvo rearranjos previamente combinados.",
     },
     {
         id: "item-4",
-        question: "As sessões são sigilosas?",
+        question: "São aceitos convênios?",
         answer:
-            "Sim. O sigilo é mantido conforme as normas éticas da prática profissional, com exceção das condições previstas em regulamentação.",
-    },
-    {
-        id: "item-5",
-        question: "Como funciona o cancelamento?",
-        answer:
-            "Cancelamentos devem ser comunicados com antecedência mínima, conforme acordado, para evitar a cobrança da sessão.",
+            "Não, mas há a emissão de recibos que podem ser utilizados para reembolsos em planos de saúde.",
     },
 ];
 

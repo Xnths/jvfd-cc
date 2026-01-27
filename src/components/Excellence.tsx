@@ -34,7 +34,7 @@ export function Excellence() {
         <section className="py-20 bg-white">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
-                    <h2 className="text-slate-900 mb-4 text-2xl">Excelência Profissional</h2>
+                    <h2 className="text-slate-900 mb-4 text-2xl">Formações e qualificações</h2>
                     <p className="text-slate-600 max-w-2xl mx-auto text-lg">
                         Compromisso com o aprendizado contínuo e a qualificação técnica para oferecer o melhor atendimento.
                     </p>
@@ -45,7 +45,7 @@ export function Excellence() {
                         const Icon = item.icon;
                         return (
                             <Card key={index} className="border-slate-200 hover:shadow-lg transition-shadow bg-slate-50">
-                                <CardHeader className="flex flex-row items-center gap-4">
+                                <CardHeader className="flex flex-row items-center gap-4 mb-4 flex-1">
                                     <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
                                         <Icon className="w-6 h-6 text-blue-600" />
                                     </div>
@@ -54,8 +54,6 @@ export function Excellence() {
                                         <p className="text-sm text-slate-500 font-medium">{item.institution}</p>
                                     </div>
                                 </CardHeader>
-                                <CardContent>
-                                </CardContent>
                             </Card>
                         );
                     })}

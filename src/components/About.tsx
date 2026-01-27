@@ -15,7 +15,7 @@ export function About() {
               <span className="text-slate-900 text-sm opacity-70">CRP: 06/157908</span>
             </div>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              Psicólogo Clínico Analítico-Comportamental atuante no mercado desde 2019 e envolvido em linhas de pesquisa ao longo de toda a graduação (Iniciação Científica, Monitorias, Apresentações em Congressos, Simpósios, Organização de eventos acadêmicos estudantis). Realiza atendimentos psicoterapêuticos à luz da abordagem Analítico-Comportamental.
+              Psicólogo clínico com atuação fundamentada na Análise do comportamento, exercendo prática profissional desde 2019. Possui sólida formação acadêmica, com participação contínua em atividades de pesquisa ao longo da graduação, incluindo iniciações científicas, monitorias, apresentações em congressos e simpósios, além da organização de eventos acadêmicos.
             </p>
           </div>
           <div className="relative">
