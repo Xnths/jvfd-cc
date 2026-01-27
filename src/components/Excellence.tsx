@@ -31,7 +31,7 @@ const qualifications = [
 
 export function Excellence() {
     return (
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-white" id="excellence">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
                     <h2 className="text-slate-900 mb-4 text-2xl">Formações e qualificações</h2>

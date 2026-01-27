@@ -1,12 +1,5 @@
-"use client"
-
-import { useState } from "react";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
+import { MapPin } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
-import { toast } from "sonner";
 import { whatsappUrl } from "@/lib/constant";
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
@@ -33,23 +26,6 @@ const contactInfo = [
 ];
 
 export function Contact() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Thank you for your message. We'll get back to you within 24 hours.");
-    setFormData({ name: "", email: "", phone: "", message: "" });
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   return (
     <section id="contact" className="py-20 bg-slate-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

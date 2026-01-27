@@ -13,7 +13,7 @@ export function Hero() {
   };
 
   return (
-    <section className="relative h-screen min-h-[600px] flex items-center">
+    <section className="relative h-screen min-h-[600px] flex items-center" id="hero">
       <div className="absolute inset-0 z-0">
         <ImageWithFallback
           src="consultory.png"

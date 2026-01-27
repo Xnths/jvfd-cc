@@ -12,12 +12,22 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <a href="#services" className="hover:text-white transition-colors">
-                  Atendimentos
+                  Como posso te ajudar?
+                </a>
+              </li>
+              <li>
+                <a href="#testimonials" className="hover:text-white transition-colors">
+                  Depoimentos
                 </a>
               </li>
               <li>
                 <a href="#about" className="hover:text-white transition-colors">
                   Sobre
+                </a>
+              </li>
+              <li>
+                <a href="#excellence" className="hover:text-white transition-colors">
+                  Formações
                 </a>
               </li>
               <li>
