@@ -13,7 +13,7 @@ const faq = [
         id: "item-1",
         question: "Como funciona a primeira sessão?",
         answer:
-            "A primeira sessão é gratuita e visa um contato inicial para entender as necessidades e esclarecer o funcionamento do atendimento.",
+            "A primeira sessão visa um contato inicial para entender as necessidades e esclarecer detalhes do atendimento.",
     },
     {
         id: "item-3",

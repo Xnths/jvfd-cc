@@ -4,48 +4,46 @@ import "./globals.css";
 import { FloatingCatButton } from "@/components/floating-cat-button";
 import AnalyticsInit from "@/components/analytics-init";
 
+import { siteConfig } from "@/lib/config";
+
 export const metadata: Metadata = {
-    metadataBase: new URL("https://dev.xnths.com"),
+    metadataBase: new URL(siteConfig.url),
 
     title: {
-        default:
-            "Psicólogo Analítico-Comportamental | Vila Madalena, SP - João Vitor Fernandes",
-        template: "%s | João Vitor Fernandes – Psicólogo",
+        default: siteConfig.name,
+        template: `%s | ${siteConfig.name}`,
     },
 
-    description:
-        "Psicólogo Analítico-Comportamental com atendimento online e presencial na Vila Madalena, SP. Psicologia baseada em evidências.",
+    description: siteConfig.description,
+
+    keywords: siteConfig.keywords,
 
     openGraph: {
         type: "website",
         locale: "pt_BR",
-        url: "https://dev.xnths.com",
-        siteName: "João Vitor Fernandes | Psicologia",
-
-        title: "Psicólogo Analítico-Comportamental | Vila Madalena, SP",
-        description:
-            "Atendimento psicológico baseado em evidências na Vila Madalena, São Paulo.",
-
+        url: siteConfig.url,
+        siteName: siteConfig.name,
+        title: siteConfig.name,
+        description: siteConfig.description,
         images: [
             {
-                url: "https://dev.xnths.com/main.jpeg",
+                url: siteConfig.ogImage,
                 width: 1200,
                 height: 630,
-                alt: "João Vitor Fernandes – Psicólogo Analítico-Comportamental",
+                alt: siteConfig.name,
             },
         ],
     },
 
     twitter: {
         card: "summary_large_image",
-        title: "Psicólogo Analítico-Comportamental | Vila Madalena, SP",
-        description:
-            "Psicologia baseada em evidências, atendimento presencial e online.",
-        images: ["https://dev.xnths.com/main.jpeg"],
+        title: siteConfig.name,
+        description: siteConfig.description,
+        images: [siteConfig.ogImage],
     },
 
     alternates: {
-        canonical: "https://dev.xnths.com",
+        canonical: siteConfig.url,
     },
 };
 
@@ -67,25 +65,24 @@ export default function RootLayout({
                         __html: JSON.stringify({
                             "@context": "https://schema.org",
                             "@type": "MedicalOrganization",
-                            name: "João Vitor Fernandes - Psicólogo Analítico-Comportamental",
-                            description:
-                                "Psicólogo Analítico-Comportamental em Vila Madalena, SP. Atendimento baseado em evidências para manejo de contingências e regulação comportamental.",
-                            image: "https://seudominiooficial.com.br/jv.jpeg",
-                            url: "https://seudominiooficial.com.br/",
-                            telephone: "+5511955591996",
+                            name: siteConfig.name,
+                            description: siteConfig.description,
+                            image: siteConfig.ogImage,
+                            url: siteConfig.url,
+                            telephone: siteConfig.contact.phone,
                             priceRange: "R$ 400,00",
                             address: {
                                 "@type": "PostalAddress",
-                                streetAddress: "Rua Harmonia, 1323",
-                                addressLocality: "São Paulo",
-                                addressRegion: "SP",
-                                postalCode: "05435-001",
-                                addressCountry: "BR",
+                                streetAddress: siteConfig.contact.address.street,
+                                addressLocality: siteConfig.contact.address.locality,
+                                addressRegion: siteConfig.contact.address.region,
+                                postalCode: siteConfig.contact.address.postalCode,
+                                addressCountry: siteConfig.contact.address.country,
                             },
                             geo: {
                                 "@type": "GeoCoordinates",
-                                latitude: -23.55396,
-                                longitude: -46.69175,
+                                latitude: siteConfig.contact.geo.latitude,
+                                longitude: siteConfig.contact.geo.longitude,
                             },
                             openingHoursSpecification: [
                                 {
@@ -102,7 +99,7 @@ export default function RootLayout({
                                 },
                             ],
                             sameAs: [
-                                "https://www.instagram.com/ciencia_comportamental_/",
+                                siteConfig.links.instagram,
                             ],
                             medicalSpecialty: [
                                 "Psychology",
