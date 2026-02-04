@@ -3,7 +3,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-      target: runner
+      target: dependencies
+    command: pnpm dev
     networks:
       - app-network
     env_file:
@@ -11,7 +12,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./:/app
+      - ../:/app
+      - /app/node_modules
 
 networks:
   app-network:
