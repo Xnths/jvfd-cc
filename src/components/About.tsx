@@ -19,7 +19,10 @@ export function About() {
               <span className="text-slate-900 text-sm opacity-70">CRP: 06/157908</span>
             </div>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              Psicólogo clínico com atuação fundamentada na Análise do comportamento, exercendo prática profissional desde 2019. Possui sólida formação acadêmica, com participação contínua em atividades de pesquisa ao longo da graduação, incluindo iniciações científicas, monitorias, apresentações em congressos e simpósios, além da organização de eventos acadêmicos.
+              Psicólogo clínico com atuação fundamentada na Análise do Comportamento, exercendo prática profissional desde 2019. Possui sólida formação acadêmica, com participação contínua em atividades de pesquisa e atualização.
+            </p>
+            <p className="text-slate-600 mb-6 leading-relaxed">
+              Para além da técnica, acredito que a terapia é um encontro humano. Meu compromisso é oferecer uma escuta atenta e livre de julgamentos, construindo um vínculo de confiança que permita a você explorar suas questões com segurança e caminhar em direção ao que valoriza.
             </p>
           </div>
           <div className="relative">

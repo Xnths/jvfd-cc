@@ -25,37 +25,37 @@ const services = [
     icon: Brain,
     title: "Quando lidar sozinho já não está funcionando",
     description:
-      "A psicoterapia individual oferece um espaço estruturado para compreender padrões de comportamento, emoções recorrentes e dificuldades persistentes, possibilitando mudanças graduais e sustentáveis.",
+      "A psicoterapia oferece um espaço de escuta ativa e sem julgamentos. Juntos, vamos compreender padrões que trazem sofrimento e construir novas formas de lidar com suas emoções e desafios.",
   },
   {
     icon: Users,
-    title: "Dificuldade de concentração, rotina desorganizada ou baixo rendimento",
+    title: "Dificuldade de concentração e organização",
     description:
-      "O acompanhamento psicológico pode auxiliar no desenvolvimento de estratégias comportamentais para estudo, organização e manejo do tempo, especialmente em contextos de alta exigência como vestibulares e concursos.",
+      "Se a rotina parece caótica ou o rendimento caiu, podemos desenvolver estratégias práticas e personalizadas para melhorar seu foco e  gestão de tempo, respeitando seu ritmo.",
   },
   {
     icon: ShieldAlert,
-    title: "Momentos de crise exigem acolhimento imediato",
+    title: "Acolhimento imediato para momentos difíceis",
     description:
-      "Em situações de sofrimento intenso — como luto, separações, adoecimento ou atentar contra a própria vida — o atendimento psicológico oferece acolhimento, estabilização emocional e orientação clínica inicial.",
+      "Em crises intensas — como luto, separações ou ansiedade extrema — o mais importante é não passar por isso sozinho. Ofereço suporte para estabilizar suas emoções e encontrar segurança.",
   },
   {
     icon: Armchair,
-    title: "Conflitos recorrentes em relacionamentos ou na família",
+    title: "Conflitos nos relacionamentos",
     description:
-      "A psicoterapia com casais ou famílias auxilia na compreensão de padrões de interação, melhora da comunicação e redução de conflitos que se repetem ao longo do tempo.",
+      "Problemas com parceiros ou família são comuns, mas desgastantes. Vamos trabalhar para melhorar a comunicação, estabelecer limites saudáveis e entender a dinâmica dessas relações.",
   },
   {
     icon: Lightbulb,
-    title: "Dúvidas sobre o que está acontecendo com você",
+    title: "Autoconhecimento e Entendimento",
     description:
-      "A avaliação psicológica contribui para a compreensão funcional de comportamentos, emoções e queixas apresentadas, auxiliando no direcionamento clínico mais adequado.",
+      "Muitas vezes, não sabemos explicar o que sentimos. A avaliação psicológica ajuda a dar nome e sentido para suas angústias, sendo o primeiro passo para a mudança.",
   },
   {
     icon: NotebookPen,
-    title: "Psicólogos também precisam de suporte clínico",
+    title: "Supervisão para Psicólogos",
     description:
-      "A supervisão clínica em Análise do Comportamento oferece um espaço técnico para discussão de casos, tomada de decisão ética e refinamento da prática profissional.",
+      "Para colegas de profissão, ofereço supervisão clínica em Análise do Comportamento, focada em discussão de casos, ética e aprimoramento técnico com parceira.",
   },
 ];
 

@@ -7,25 +7,25 @@ const faq = [
         id: "item-2",
         question: "O atendimento é presencial ou online?",
         answer:
-            "Os atendimentos podem ser realizados de forma presencial ou online.",
+            "Como você preferir. O atendimento online acontece por videochamada segura, ideal para quem precisa de flexibilidade ou está longe. O presencial ocorre no consultório na Vila Madalena, SP. Ambos têm a mesma qualidade e eficácia.",
     },
     {
         id: "item-1",
         question: "Como funciona a primeira sessão?",
         answer:
-            "A primeira sessão visa um contato inicial para entender as necessidades e esclarecer detalhes do atendimento.",
+            "É um momento para nos conhecermos, sem pressão. Você poderá me contar o que o trouxe à terapia, suas dúvidas e expectativas. Eu explicarei como trabalho e juntos definiremos os próximos passos. Fique à vontade para falar apenas o que se sentir confortável.",
     },
     {
         id: "item-3",
-        question: "Qual a duração das sessões?",
+        question: "Qual a duração da terapia?",
         answer:
-            "As sessões têm em média 50 minutos, ocorrendo em frequência semanal, salvo rearranjos previamente combinados.",
+            "Cada processo é único. As sessões duram cerca de 50 minutos e geralmente são semanais. A duração total do tratamento varia conforme seus objetivos e necessidades, tudo alinhado com transparência entre nós.",
     },
     {
         id: "item-4",
-        question: "São aceitos convênios?",
+        question: "Aceita convênios?",
         answer:
-            "Não, mas há a emissão de recibos que podem ser utilizados para reembolsos em planos de saúde.",
+            "O atendimento é particular, mas forneço recibos para reembolso no seu plano de saúde. Também emitimos nota fiscal para dedução no Imposto de Renda.",
     },
 ];
 
