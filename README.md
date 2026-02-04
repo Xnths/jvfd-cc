@@ -1,11 +1,13 @@
+# João Vitor Fernandes - Psicólogo
 
-  # Psychology Clinic Landing Page
+The client asked to develop a landing page for his psychology clinic.
 
-  This is a code bundle for Psychology Clinic Landing Page. The original project is available at https://www.figma.com/design/v9uah5patQ4eARROixyBqn/Psychology-Clinic-Landing-Page.
+This is a simple application, which tries to get patients to contact the clinic. The application is built using Next.js, TypeScript, Tailwind CSS, and Shadcn UI.
 
-  ## Running the code
+The design was created using LLM from Figma and prompts by Google Gemini.
 
-  Run `npm i` to install the dependencies.
+## Getting started
 
-  Run `npm run dev` to start the development server.
-  
+Run `./docker-up.sh dev` on folder docker-compose to deploy the application to the development environment.
+
+In production, run `./deploy.sh` on folder scripts.
