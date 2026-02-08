@@ -1,1 +1,3 @@
-export const whatsappUrl = "https://wa.me/5511955591996?text=Ol%C3%A1%2C%20gostaria%20de%20agendar%20um%20atendimento";
+const phone = "5511955591996";
+const message = encodeURIComponent("Olá, João! Vi seu site e gostaria de saber mais sobre a terapia.");
+export const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
