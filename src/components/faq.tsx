@@ -13,7 +13,7 @@ const faq = [
         id: "item-1",
         question: "Como funciona a primeira sessão?",
         answer:
-            "É um momento para nos conhecermos, sem pressão. Você poderá me contar o que o trouxe à terapia, suas dúvidas e expectativas. Eu explicarei como trabalho e juntos definiremos os próximos passos. Fique à vontade para falar apenas o que se sentir confortável.",
+            "É um momento para nos conhecermos, sem pressão. Você poderá me contar o que o trouxe à terapia, suas dúvidas e expectativas. Eu explicarei como trabalho e juntos definiremos os próximos passos.",
     },
     {
         id: "item-3",
@@ -25,7 +25,7 @@ const faq = [
         id: "item-4",
         question: "Aceita convênios?",
         answer:
-            "O atendimento é particular, mas forneço recibos para reembolso no seu plano de saúde. Também emitimos nota fiscal para dedução no Imposto de Renda.",
+            "O atendimento é particular, mas forneço recibos para reembolso no seu plano de saúde.",
     },
 ];
 

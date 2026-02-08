@@ -7,6 +7,6 @@ edge-bind-address: 0.0.0.0
 edge-port: 443
 
 ingress:
-  - hostname: dev.xnths.com
+  - hostname: psicologojoaofernandes.com
     service: http://clinic-nginx:80
   - service: http_status:404
