@@ -5,7 +5,7 @@ import { Card, CardContent } from "./ui/card";
 import { whatsappUrl } from "@/lib/constant";
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
-import { useSectionAnalytics } from "@/hooks/use-section-analytics";
+
 
 const contactInfo = [
   {
@@ -29,7 +29,7 @@ const contactInfo = [
 ];
 
 export function Contact() {
-  useSectionAnalytics("contact")
+
 
   return (
     <section id="contact" className="py-20 bg-slate-50">

@@ -1,10 +1,10 @@
 "use client"
 
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { useSectionAnalytics } from "@/hooks/use-section-analytics";
+
 
 export function Hero() {
-  useSectionAnalytics("hero")
+
 
   return (
     <section className="relative h-screen min-h-[600px] flex items-center" id="hero">

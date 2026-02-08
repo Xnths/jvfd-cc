@@ -1,10 +1,10 @@
 "use client"
 
 import Image from "next/image";
-import { useSectionAnalytics } from "@/hooks/use-section-analytics";
+
 
 export function About() {
-  useSectionAnalytics("about")
+
 
   return (
     <section className="py-20 bg-white" id="about">
