@@ -3,20 +3,15 @@
 import Link from "next/link";
 import { FaWhatsapp } from "react-icons/fa";
 import { whatsappUrl } from "@/lib/constant";
-
-import { logEvent } from "firebase/analytics";
-import { initAnalytics } from "@/lib/firebase";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
+import { sendGAEvent } from "@next/third-parties/google";
 
 export function FloatingCatButton() {
     const { getElapsedTime } = useTimeToAction();
 
-    const handleClick = async () => {
-        const analytics = await initAnalytics();
-        if (!analytics) return;
-
-        logEvent(analytics, "schedule_click", {
-            source: "floating_button",
+    const handleClick = () => {
+        sendGAEvent('event', 'schedule_click', {
+            source: 'floating_button',
             time_to_click_ms: getElapsedTime()
         });
     };
