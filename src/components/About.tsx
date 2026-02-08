@@ -1,6 +1,6 @@
 "use client"
 
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import Image from "next/image";
 import { useSectionAnalytics } from "@/hooks/use-section-analytics";
 
 export function About() {
@@ -27,9 +27,11 @@ export function About() {
           </div>
           <div className="relative">
             <div className="aspect-[4/4] rounded-lg overflow-hidden shadow-xl">
-              <ImageWithFallback
+              <Image
                 src="jv.jpeg"
-                alt="Foto do profissional"
+                alt="Psicólogo João Fernandes"
+                priority={true}
+                fetchPriority="high"
                 className="w-full h-full object-cover"
               />
             </div>
