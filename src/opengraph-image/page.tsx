@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/config";
 import { ImageResponse } from "@vercel/og";
 
 export const runtime = "edge";
@@ -14,7 +15,7 @@ export default function OpenGraphImage() {
                 }}
             >
                 <img
-                    src="https://dev.xnths.com/main.jpeg"
+                    src={`${siteConfig.url}/main.jpeg`}
                     style={{
                         width: "40%",
                         objectFit: "cover",

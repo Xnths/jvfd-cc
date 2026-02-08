@@ -1,8 +1,8 @@
 export const siteConfig = {
     name: "João Vitor Fernandes - Psicólogo",
     description: "Psicólogo Analítico-Comportamental em Vila Madalena, SP. Atendimento baseado em evidências para manejo de contingências e regulação comportamental.",
-    url: "https://dev.xnths.com",
-    ogImage: "https://dev.xnths.com/main.jpeg",
+    url: "https://psicologojoaofernandes.com",
+    ogImage: "https://psicologojoaofernandes.com/main.jpeg",
     links: {
         instagram: "https://www.instagram.com/ciencia_comportamental_/",
         whatsapp: "https://wa.me/5511955591996?text=Ol%C3%A1%2C%20gostaria%20de%20agendar%20um%20atendimento",
