@@ -11,32 +11,32 @@ export function Footer() {
             <h4 className="text-white mb-4">Acesso rápido</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#services" className="hover:text-white transition-colors">
+                <a href="/#services" className="hover:text-white transition-colors">
                   Como posso te ajudar?
                 </a>
               </li>
               <li>
-                <a href="#testimonials" className="hover:text-white transition-colors">
+                <a href="/#testimonials" className="hover:text-white transition-colors">
                   Depoimentos
                 </a>
               </li>
               <li>
-                <a href="#about" className="hover:text-white transition-colors">
+                <a href="/#about" className="hover:text-white transition-colors">
                   Sobre
                 </a>
               </li>
               <li>
-                <a href="#excellence" className="hover:text-white transition-colors">
+                <a href="/#excellence" className="hover:text-white transition-colors">
                   Formações
                 </a>
               </li>
               <li>
-                <a href="#faq" className="hover:text-white transition-colors">
+                <a href="/#faq" className="hover:text-white transition-colors">
                   FAQ
                 </a>
               </li>
               <li>
-                <a href="#contact" className="hover:text-white transition-colors">
+                <a href="/#contact" className="hover:text-white transition-colors">
                   Contato
                 </a>
               </li>
