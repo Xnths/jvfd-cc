@@ -9,6 +9,9 @@ services:
       - app-network
     env_file:
       - ../.env
+    environment:
+      DATABASE_URI: ${DATABASE_URI}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
     ports:
       - "3000:3000"
     volumes:
