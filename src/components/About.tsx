@@ -28,7 +28,9 @@ export function About() {
           <div className="relative">
             <div className="aspect-[4/4] rounded-lg overflow-hidden shadow-xl">
               <Image
-                src="jv.jpeg"
+                width={500}
+                height={500}
+                src="/jv.jpeg"
                 alt="Psicólogo João Fernandes"
                 priority={true}
                 fetchPriority="high"

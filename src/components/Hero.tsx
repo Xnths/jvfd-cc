@@ -10,7 +10,7 @@ export function Hero() {
     <section className="relative h-screen min-h-[600px] flex items-center" id="hero">
       <div className="absolute inset-0 z-0">
         <ImageWithFallback
-          src="consultory.png"
+          src="/consultorio.png"
           alt="Ambiente clínico para atendimento psicológico"
           className="w-full h-full object-cover"
         />
