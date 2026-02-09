@@ -5,6 +5,8 @@ services:
       context: ../
       dockerfile: Dockerfile
       target: runner
+      args:
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID}
     env_file:
       - ../.env
     environment:
