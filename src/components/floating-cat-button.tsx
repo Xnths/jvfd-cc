@@ -10,9 +10,18 @@ export function FloatingCatButton() {
     const { getElapsedTime } = useTimeToAction();
 
     const handleClick = () => {
+        const elapsedTime = getElapsedTime() || 0;
+
+        console.log("Sending GA Event:", {
+            event: 'schedule_click',
+            source: 'floating_button',
+            time_to_click_ms: elapsedTime
+        });
+
         sendGAEvent('event', 'schedule_click', {
             source: 'floating_button',
-            time_to_click_ms: getElapsedTime()
+            time_to_click_ms: elapsedTime,
+            debug_mode: true // Enables event to be seen in GA4 DebugView
         });
     };
 
