@@ -13,15 +13,26 @@ type Params = {
 }
 
 export async function generateStaticParams() {
-    const payload = await getPayload({ config: configPromise })
-    const treatments = await payload.find({
-        collection: 'treatments',
-        limit: 100,
-    })
+    // If DATABASE_URI is not set, we are likely building in an environment without DB access
+    // Skip static generation to allow build to succeed. Pages will be generated on demand.
+    if (!process.env.DATABASE_URI) {
+        return []
+    }
 
-    return treatments.docs.map((treatment) => ({
-        slug: treatment.slug,
-    }))
+    try {
+        const payload = await getPayload({ config: configPromise })
+        const treatments = await payload.find({
+            collection: 'treatments',
+            limit: 100,
+        })
+
+        return treatments.docs.map((treatment) => ({
+            slug: treatment.slug,
+        }))
+    } catch (error) {
+        console.warn('Could not connect to database during generateStaticParams. Skipping static generation.', error)
+        return []
+    }
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
