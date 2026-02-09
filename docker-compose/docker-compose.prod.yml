@@ -40,6 +40,20 @@ services:
   #     - cloudflare-net
   #   restart: unless-stopped
 
+  mongo:
+    image: mongo:latest
+    container_name: clinic-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - cloudflare-net
+    restart: always
+
 networks:
   cloudflare-net:
     driver: bridge
+
+volumes:
+  mongo-data:

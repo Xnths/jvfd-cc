@@ -15,6 +15,19 @@ services:
       - ../:/app
       - /app/node_modules
 
+  mongo:
+    image: mongo:latest
+    container_name: clinic-mongo-dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data-dev:/data/db
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mongo-data-dev:

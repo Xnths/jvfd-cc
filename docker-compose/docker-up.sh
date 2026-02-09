@@ -11,7 +11,7 @@ else
     env_file=".env.prod"
 fi
 
-docker compose -f "$compose_file" down -v
+docker compose -f "$compose_file" down
 docker system prune --all -f
 
 if [ -f "../.env" ]; then

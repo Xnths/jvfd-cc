@@ -21,7 +21,6 @@ export function FloatingCatButton() {
         sendGAEvent('event', 'schedule_click', {
             source: 'floating_button',
             time_to_click_ms: elapsedTime,
-            debug_mode: true // Enables event to be seen in GA4 DebugView
         });
     };
 
