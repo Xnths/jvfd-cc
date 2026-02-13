@@ -1,4 +1,6 @@
 import { getPayload } from "payload";
+
+export const dynamic = "force-dynamic";
 import configPromise from "@payload-config";
 import { notFound } from "next/navigation";
 import { RichText } from "@/components/RichText";
