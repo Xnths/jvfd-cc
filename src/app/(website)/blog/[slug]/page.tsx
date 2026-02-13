@@ -79,14 +79,4 @@ export default async function PostPage({ params }: PostPageProps) {
     );
 }
 
-export async function generateStaticParams() {
-    const payload = await getPayload({ config: configPromise });
-    const posts = await payload.find({
-        collection: "posts",
-        limit: 100,
-    });
 
-    return posts.docs.map((post) => ({
-        slug: post.slug,
-    }));
-}
