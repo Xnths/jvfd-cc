@@ -1,5 +1,5 @@
 import { whatsappUrl } from "@/lib/constant";
-import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { Facebook, Twitter, Instagram, Linkedin, Mail, GraduationCap } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
 export function Footer() {
@@ -44,7 +44,7 @@ export function Footer() {
           </div>
           <div>
             <h4 className="text-white mb-4">Contato</h4>
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
               <a
                 href="https://www.instagram.com/ciencia_comportamental_"
                 target="_blank"
@@ -63,6 +63,22 @@ export function Footer() {
               >
                 <FaWhatsapp className="w-5 h-5" />
               </a>
+              <a
+                href="mailto:jvfd2014@hotmail.com"
+                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
+                aria-label="Email"
+              >
+                <Mail className="w-5 h-5" />
+              </a>
+              <a
+                href="https://lattes.cnpq.br/2507330776380191"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-colors"
+                aria-label="Currículo Lattes"
+              >
+                <GraduationCap className="w-5 h-5" />
+              </a>
             </div>
           </div>
         </div>
@@ -78,6 +94,15 @@ export function Footer() {
           <p className="mt-2 text-slate-400">
             Rua Harmonia, 1323 - Vila Madalena, São Paulo - SP, 05435-001
           </p>
+          <div className="mt-4 flex gap-4 text-sm">
+            <a href="/politica-de-privacidade" className="text-slate-400 hover:text-white transition-colors underline">
+              Política de Privacidade
+            </a>
+            <span className="text-slate-600">|</span>
+            <a href="/termos-de-uso" className="text-slate-400 hover:text-white transition-colors underline">
+              Termos de Uso
+            </a>
+          </div>
         </div>
       </div>
     </footer>

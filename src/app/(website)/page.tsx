@@ -7,6 +7,7 @@ import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { FAQ } from "@/components/faq";
+import { Discussions } from "@/components/Discussions";
 
 export default function Home() {
     return (
@@ -16,6 +17,7 @@ export default function Home() {
             <Testimonials />
             <About />
             <Excellence />
+            <Discussions />
             <FAQ />
             <Contact />
             <Footer />

@@ -1,7 +1,8 @@
 "use client"
 
-import { GraduationCap, BookOpen, Hospital, Brain, Activity } from "lucide-react";
+import { GraduationCap, BookOpen, Hospital, Brain, Activity, ExternalLink } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "./ui/card";
+import Link from "next/link";
 
 
 const qualifications = [
@@ -62,6 +63,22 @@ export function Excellence() {
                             </Card>
                         );
                     })}
+                    <Card key={"lattes"} className="border-slate-200 hover:shadow-lg transition-shadow bg-slate-50">
+                        <CardHeader className="flex flex-row items-center justify-between gap-4 mb-4 flex-1">
+                            <div className="flex flex-row items-center gap-4">
+                                <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                                    <GraduationCap className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <CardTitle className="text-slate-900 text-lg">Currículo Lattes</CardTitle>
+                                    <p className="text-sm text-slate-500 font-medium">Plataforma Lattes</p>
+                                </div>
+                            </div>
+                            <Link href="https://lattes.cnpq.br/2507330776380191" target="_blank" rel="noopener noreferrer" >
+                                <ExternalLink className="w-5 h-5" />
+                            </Link>
+                        </CardHeader>
+                    </Card>
                 </div>
             </div>
         </section>
