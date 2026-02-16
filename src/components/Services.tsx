@@ -20,6 +20,8 @@ import { Button } from "./ui/button";
 import { FaWhatsapp } from "react-icons/fa";
 import { whatsappUrl } from "@/lib/constant";
 import Link from "next/link";
+import { sendGAEvent } from "@next/third-parties/google";
+import { useTimeToAction } from "@/hooks/use-time-to-action";
 
 
 const services = [
@@ -68,7 +70,16 @@ const services = [
 ];
 
 export function Services() {
+  const { getElapsedTime } = useTimeToAction();
 
+  const handleWhatsAppClick = () => {
+    const elapsedTime = getElapsedTime() || 0;
+
+    sendGAEvent('event', 'schedule_click', {
+      source: 'services_cta',
+      time_to_click_ms: elapsedTime,
+    });
+  };
 
   return (
     <section className="py-20 bg-slate-50" id="services">
@@ -121,6 +132,7 @@ export function Services() {
             asChild
             size="lg"
             className="bg-red-600 hover:bg-red-700 text-white gap-2"
+            onClick={handleWhatsAppClick}
           >
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
               <FaWhatsapp className="w-5 h-5" />

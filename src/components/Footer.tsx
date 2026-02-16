@@ -1,8 +1,23 @@
+"use client";
+
 import { whatsappUrl } from "@/lib/constant";
 import { Facebook, Twitter, Instagram, Linkedin, Mail, GraduationCap, Building2 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
+import { sendGAEvent } from "@next/third-parties/google";
+import { useTimeToAction } from "@/hooks/use-time-to-action";
 
 export function Footer() {
+  const { getElapsedTime } = useTimeToAction();
+
+  const handleWhatsAppClick = () => {
+    const elapsedTime = getElapsedTime() || 0;
+
+    sendGAEvent('event', 'schedule_click', {
+      source: 'footer',
+      time_to_click_ms: elapsedTime,
+    });
+  };
+
   return (
     <footer className="bg-slate-900 text-slate-300 py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -58,6 +73,7 @@ export function Footer() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={handleWhatsAppClick}
                 className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 focus:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
                 aria-label="Contato via WhatsApp"
               >
