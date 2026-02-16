@@ -7,6 +7,8 @@ services:
       target: runner
       args:
         NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID}
+        DATABASE_URI: ${DATABASE_URI}
+        PAYLOAD_SECRET: ${PAYLOAD_SECRET}
     env_file:
       - ../.env
     environment:
