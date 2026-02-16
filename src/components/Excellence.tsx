@@ -74,7 +74,7 @@ export function Excellence() {
                                     <p className="text-sm text-slate-500 font-medium">Plataforma Lattes</p>
                                 </div>
                             </div>
-                            <Link href="https://lattes.cnpq.br/2507330776380191" target="_blank" rel="noopener noreferrer" >
+                            <Link href="https://lattes.cnpq.br/2507330776380191" target="_blank" rel="noopener noreferrer" aria-label="Acessar Currículo Lattes">
                                 <ExternalLink className="w-5 h-5" />
                             </Link>
                         </CardHeader>

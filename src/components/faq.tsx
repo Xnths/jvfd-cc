@@ -19,7 +19,7 @@ const faq = [
         id: "item-3",
         question: "Qual a duração da terapia?",
         answer:
-            "Cada processo é único. As sessões duram cerca de 50 minutos e geralmente são semanais. A duração total do tratamento varia conforme seus objetivos e necessidades, tudo alinhado com transparência entre nós.",
+            "Cada processo é único. As sessões duram cerca de 50 minutos e geralmente são semanais. A duração total do acompanhamento varia conforme seus objetivos e necessidades, tudo alinhado com transparência entre nós.",
     },
     {
         id: "item-4",

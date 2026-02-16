@@ -13,16 +13,17 @@ export const metadata: Metadata = {
         template: `%s | Psicólogo João Fernandes`,
     },
 
-    description: "Psicólogo Comportamental (PUCSP) na Vila Madalena, SP. Terapia baseada em evidências para ansiedade, depressão e autoconhecimento. Agende online ou presencial.",
+    description: "Psicólogo Comportamental (PUCSP) na Vila Madalena, SP. Terapia baseada em evidências para questões emocionais, autoconhecimento e desenvolvimento pessoal. Agende online ou presencial.",
 
     keywords: [
         "psicólogo vila madalena",
         "terapia cognitivo comportamental",
         "psicólogo online",
-        "tratamento ansiedade sp",
+        "psicoterapia sp",
         "joão vitor fernandes",
         "consultório de psicologia zona oeste",
-        "terapia para luto",
+        "apoio psicológico",
+        "desenvolvimento pessoal",
     ],
 
     openGraph: {
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
         url: siteConfig.url,
         siteName: "Consultório de Psicologia João Fernandes",
         title: "Psicólogo João Fernandes | Agende sua Sessão",
-        description: "Psicoterapia presencial (Rua Harmonia, Vila Madalena) e Online. Abordagem científica e acolhedora.",
+        description: "Psicoterapia presencial (Rua Harmonia, Vila Madalena) e Online. Abordagem científica e acolhedora para seu bem-estar.",
         images: [
             {
                 url: siteConfig.ogImage,
@@ -103,10 +104,10 @@ export default function RootLayout({
             "Behavioral Analysis"
         ],
         "knowsAbout": [
-            { "@type": "Thing", "name": "Ansiedade" },
-            { "@type": "Thing", "name": "Depressão" },
+            { "@type": "Thing", "name": "Psicoterapia" },
+            { "@type": "Thing", "name": "Bem-estar Emocional" },
             { "@type": "Thing", "name": "Terapia Comportamental" },
-            { "@type": "Thing", "name": "Luto" },
+            { "@type": "Thing", "name": "Gestão de Emoções" },
             { "@type": "Thing", "name": "Desenvolvimento Pessoal" }
         ],
         "availableService": [
@@ -132,7 +133,13 @@ export default function RootLayout({
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />
 
-                {children}
+                <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-background text-foreground rounded-md shadow-md border border-border">
+                    Pular para o conteúdo principal
+                </a>
+
+                <main id="main-content">
+                    {children}
+                </main>
 
                 <FloatingCatButton />
                 {gaId && <GoogleAnalytics gaId={gaId} />}

@@ -6,7 +6,6 @@ import { whatsappUrl } from "@/lib/constant";
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
-
 const contactInfo = [
   {
     icon: FaWhatsapp,

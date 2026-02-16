@@ -19,7 +19,7 @@ export default function TermsOfUsePage() {
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">1. Caráter Informativo</h2>
                 <p className="mb-4">
-                    O conteúdo disponibilizado neste site tem finalidade <strong>exclusivamente informativa e educativa</strong>. Os textos, vídeos e materiais aqui presentes não substituem, em hipótese alguma, o aconselhamento, diagnóstico ou tratamento profissional de um psicólogo ou médico.
+                    O conteúdo disponibilizado neste site tem finalidade <strong>exclusivamente informativa e educativa</strong>. Os textos, vídeos e materiais aqui presentes não substituem, em hipótese alguma, o aconselhamento, avaliação ou acompanhamento profissional de um psicólogo ou médico.
                 </p>
                 <p className="mb-4">
                     Se você estiver enfrentando problemas de saúde mental ou situações de crise, procure ajuda profissional imediatamente ou entre em contato com os serviços de emergência (como o CVV - 188).

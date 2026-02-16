@@ -38,7 +38,7 @@ export const PreviewButton: React.FC = () => {
             )}
 
             {hasSlug && (
-                <a href={href} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 underline text-center block mt-2">
+                <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 underline text-center block mt-2">
                     Abrir em nova aba
                 </a>
             )}

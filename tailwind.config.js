@@ -16,11 +16,11 @@ module.exports = {
 					300: '#f9a8d4',
 					400: '#f472b6',
 					500: '#ec4899',
-					600: '#e3396c',
-					700: '#be185d',
-					800: '#9d174d',
-					900: '#831843',
-					950: '#500724',
+					600: '#be185d', // Shifted from 700 for better contrast (Passes AA)
+					700: '#9d174d', // Shifted from 800
+					800: '#831843', // Shifted from 900
+					900: '#500724', // Shifted from 950
+					950: '#4a041d', // New darker shade
 				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

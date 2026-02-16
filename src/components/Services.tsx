@@ -40,7 +40,7 @@ const services = [
     icon: ShieldAlert,
     title: "Acolhimento imediato para momentos difíceis",
     description:
-      "Em crises intensas — como luto, separações ou ansiedade extrema — o mais importante é não passar por isso sozinho. Ofereço suporte para estabilizar suas emoções e encontrar segurança.",
+      "Em momentos de grande angústia — como perdas significativas, separações ou inquietações intensas — o mais importante é não passar por isso sozinho. Ofereço suporte para estabilizar suas emoções e encontrar segurança.",
     href: "/plantao",
   },
   {
