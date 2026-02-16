@@ -39,7 +39,7 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-4">
                     <strong>João Vitor Fernandes</strong><br />
                     Atendimento pautado no Código de Ética Profissional do Psicólogo.<br />
-                    E-mail: <a href="mailto:jvfd2014@hotmail.com" className="text-blue-600 hover:underline">jvfd2014@hotmail.com</a><br />
+                    E-mail: <a href="mailto:jvfd2014@hotmail.com" className="text-blue-600 hover:underline">jvfd2014@hotmail.com</a> / <a href="mailto:fernandesdominguesjoaovitor@gmail.com" className="text-blue-600 hover:underline">fernandesdominguesjoaovitor@gmail.com</a><br />
                     Telefone: <a href="tel:+5511955591996" className="text-blue-600 hover:underline">(11) 95559-1996</a><br />
                     CRP: 06/187056<br />
                     Currículo Lattes: <a href="https://lattes.cnpq.br/2507330776380191" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Acessar Currículo</a>

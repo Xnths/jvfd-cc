@@ -37,7 +37,7 @@ export default function TermsOfUsePage() {
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">4. Contato</h2>
                 <p className="mb-4">
-                    Para questões relacionadas a estes termos, entre em contato através do e-mail: <a href="mailto:jvfd2014@hotmail.com" className="text-blue-600 hover:underline">jvfd2014@hotmail.com</a>.
+                    Para questões relacionadas a estes termos, entre em contato através do e-mail: <a href="mailto:jvfd2014@hotmail.com" className="text-blue-600 hover:underline">jvfd2014@hotmail.com</a> ou <a href="mailto:fernandesdominguesjoaovitor@gmail.com" className="text-blue-600 hover:underline">fernandesdominguesjoaovitor@gmail.com</a>.
                 </p>
 
                 <p className="mt-8 text-sm text-slate-500">

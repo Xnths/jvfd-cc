@@ -7,6 +7,7 @@ import {
   ShieldAlert,
   Armchair,
   NotebookPen,
+  ArrowRight,
 } from "lucide-react";
 import {
   Card,
@@ -100,10 +101,13 @@ export function Services() {
                       {service.title}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-slate-600">
+                  <CardContent className="flex-1 flex flex-col justify-between">
+                    <CardDescription className="text-slate-600 mb-6">
                       {service.description}
                     </CardDescription>
+                    <div className="flex items-center text-red-600 font-medium group-hover:text-red-700 transition-colors mt-auto">
+                      Saiba mais <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </div>
                   </CardContent>
                 </Card>
               </Link>
