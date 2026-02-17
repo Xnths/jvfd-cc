@@ -5,6 +5,7 @@ import configPromise from "@payload-config";
 import { notFound } from "next/navigation";
 import { RichText } from "@/components/RichText";
 import { Metadata } from "next";
+import Image from "next/image";
 
 interface PostPageProps {
     params: Promise<{
@@ -75,6 +76,19 @@ export default async function PostPage({ params }: PostPageProps) {
                     </p>
                 )}
             </header>
+
+            {post.image && typeof post.image === 'object' && 'url' in post.image && (
+                <div className="mb-12">
+                    <Image
+                        src={post.image.url}
+                        alt={post.image.alt || post.title}
+                        width={1200}
+                        height={630}
+                        className="w-full h-auto rounded-xl object-cover"
+                        priority
+                    />
+                </div>
+            )}
 
             <div className="prose prose-lg prose-slate mx-auto prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-img:rounded-xl">
                 <RichText content={post.content} />

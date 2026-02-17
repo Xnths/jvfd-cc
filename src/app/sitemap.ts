@@ -20,6 +20,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.8,
     }))
 
+    const treatments = await payload.find({
+        collection: 'treatments',
+        limit: 100,
+    })
+
+    const treatmentEntries: MetadataRoute.Sitemap = treatments.docs.map((treatment) => ({
+        url: `${siteUrl}/${treatment.slug}`,
+        lastModified: new Date(treatment.updatedAt),
+        changeFrequency: 'monthly',
+        priority: 0.9,
+    }))
+
     const staticEntries: MetadataRoute.Sitemap = [
         {
             url: siteUrl,
@@ -41,5 +53,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
     ]
 
-    return [...staticEntries, ...blogEntries]
+    return [...staticEntries, ...treatmentEntries, ...blogEntries]
 }
