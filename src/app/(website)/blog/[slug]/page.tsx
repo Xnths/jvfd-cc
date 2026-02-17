@@ -7,18 +7,19 @@ import { RichText } from "@/components/RichText";
 import { Metadata } from "next";
 
 interface PostPageProps {
-    params: {
+    params: Promise<{
         slug: string;
-    };
+    }>;
 }
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
+    const { slug } = await params;
     const payload = await getPayload({ config: configPromise });
     const posts = await payload.find({
         collection: "posts",
         where: {
             slug: {
-                equals: params.slug,
+                equals: slug,
             },
         },
     });
@@ -36,12 +37,13 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 }
 
 export default async function PostPage({ params }: PostPageProps) {
+    const { slug } = await params;
     const payload = await getPayload({ config: configPromise });
     const posts = await payload.find({
         collection: "posts",
         where: {
             slug: {
-                equals: params.slug,
+                equals: slug,
             },
         },
     });

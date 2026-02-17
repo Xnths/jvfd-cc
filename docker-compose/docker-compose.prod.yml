@@ -16,8 +16,8 @@ services:
       NEXT_TELEMETRY_DISABLED: 1
       DATABASE_URI: ${DATABASE_URI}
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
-    expose:
-      - "3000"
+    volumes:
+      - media-data:/app/media
     networks:
       - cloudflare-net
 
@@ -61,3 +61,4 @@ networks:
 
 volumes:
   mongo-data:
+  media-data:
