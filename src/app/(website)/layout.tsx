@@ -9,21 +9,22 @@ export const metadata: Metadata = {
     metadataBase: new URL(siteConfig.url),
 
     title: {
-        default: "Psicólogo João Fernandes | Terapia na Vila Madalena & Online",
+        default: "Psicólogo João Fernandes | Terapia Comportamental Online e Presencial",
         template: `%s | Psicólogo João Fernandes`,
     },
 
-    description: "Psicólogo Comportamental (PUCSP) na Vila Madalena, SP. Terapia baseada em evidências para questões emocionais, autoconhecimento e desenvolvimento pessoal. Agende online ou presencial.",
+    description: "Psicólogo Particular e Especialista em Análise do Comportamento (PUCSP). Psicoterapia online para todo o Brasil ou presencial na Vila Madalena, SP. Agende sua sessão.",
 
     keywords: [
-        "psicólogo vila madalena",
-        "terapia cognitivo comportamental",
         "psicólogo online",
-        "psicoterapia sp",
-        "joão vitor fernandes",
-        "consultório de psicologia zona oeste",
-        "apoio psicológico",
-        "desenvolvimento pessoal",
+        "agendar psicólogo online",
+        "psicólogo particular online",
+        "terapia comportamental",
+        "análise do comportamento",
+        "psicólogo vila madalena",
+        "psicólogo comportamental sp",
+        "psicoterapia individual particular",
+        "joão vitor fernandes psicólogo"
     ],
 
     openGraph: {
@@ -31,8 +32,8 @@ export const metadata: Metadata = {
         locale: "pt_BR",
         url: siteConfig.url,
         siteName: "Consultório de Psicologia João Fernandes",
-        title: "Psicólogo João Fernandes | Agende sua Sessão",
-        description: "Psicoterapia presencial (Rua Harmonia, Vila Madalena) e Online. Abordagem científica e acolhedora para seu bem-estar.",
+        title: "Psicólogo João Fernandes | Terapia Comportamental",
+        description: "Psicoterapia baseada em evidências. Atendimento Online para todo o Brasil e Presencial na Vila Madalena, SP.",
         images: [
             {
                 url: siteConfig.ogImage,
@@ -114,12 +115,32 @@ export default function RootLayout({
             {
                 "@type": "MedicalTherapy",
                 "name": "Psicoterapia Individual",
-                "description": "Atendimento clínico baseado em Análise do Comportamento."
+                "description": "Espaço de escuta ativa e sem julgamentos para compreender padrões de sofrimento e construir novas formas de lidar com emoções."
             },
             {
                 "@type": "MedicalTherapy",
-                "name": "Supervisão Clínica",
-                "description": "Para estudantes e profissionais de psicologia."
+                "name": "Terapia para Foco e Organização",
+                "description": "Desenvolvimento de estratégias práticas e personalizadas para melhorar o foco e a gestão de tempo."
+            },
+            {
+                "@type": "MedicalTherapy",
+                "name": "Plantão Psicológico e Acolhimento",
+                "description": "Suporte para estabilizar emoções em momentos de grande angústia, como perdas significativas ou separações."
+            },
+            {
+                "@type": "MedicalTherapy",
+                "name": "Terapia de Casal",
+                "description": "Atendimento focado em melhorar a comunicação, estabelecer limites saudáveis e entender a dinâmica dos relacionamentos."
+            },
+            {
+                "@type": "MedicalTherapy",
+                "name": "Avaliação Psicológica e Autoconhecimento",
+                "description": "Processo focado em dar nome e sentido para angústias e sentimentos complexos."
+            },
+            {
+                "@type": "MedicalTherapy",
+                "name": "Supervisão Clínica para Psicólogos",
+                "description": "Supervisão em Análise do Comportamento focada em discussão de casos, ética e aprimoramento técnico."
             }
         ]
     };

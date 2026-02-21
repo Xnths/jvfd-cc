@@ -1,9 +1,9 @@
 "use client"
 
 import { whatsappUrl } from "@/lib/constant";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
+import Image from "next/image";
 
 export function Hero() {
   const { getElapsedTime } = useTimeToAction();
@@ -20,10 +20,13 @@ export function Hero() {
   return (
     <section className="relative h-screen min-h-[700px] flex items-center z-50" id="hero">
       <div className="absolute inset-0 z-0">
-        <ImageWithFallback
+        <Image
+          width={1920}
+          height={1080}
           src="/consultorio.png"
           alt="Ambiente clínico para atendimento psicológico na Vila Madalena"
           className="w-full h-full object-cover"
+          priority
         />
         {/* Overlay levemente mais escuro para garantir contraste no texto */}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-transparent"></div>

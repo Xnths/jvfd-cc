@@ -39,6 +39,15 @@ export const Posts: CollectionConfig = {
             },
         },
         {
+            name: 'keywords',
+            type: 'text',
+            label: 'Palavras-chave (SEO)',
+            admin: {
+                description: 'Palavras-chave separadas por vírgula para SEO.',
+                position: 'sidebar',
+            },
+        },
+        {
             name: 'content',
             type: 'richText',
             label: 'Conteúdo',

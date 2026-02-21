@@ -31,9 +31,12 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
         };
     }
 
+    const post = posts.docs[0];
+
     return {
-        title: `${posts.docs[0].title} | Blog João Fernandes`,
-        description: posts.docs[0].excerpt,
+        title: `${post.title} | Blog João Fernandes`,
+        description: post.excerpt,
+        keywords: post.keywords ? String(post.keywords).split(',').map((k: string) => k.trim()) : undefined,
     };
 }
 
@@ -71,9 +74,9 @@ export default async function PostPage({ params }: PostPageProps) {
                     {post.title}
                 </h1>
                 {post.excerpt && (
-                    <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                    <h2 className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
                         {post.excerpt}
-                    </p>
+                    </h2>
                 )}
             </header>
 

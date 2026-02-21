@@ -4,6 +4,9 @@ import { withPayload } from '@payloadcms/next/withPayload'
 const nextConfig = {
     output: "standalone",
     productionBrowserSourceMaps: true,
+    images: {
+        formats: ['image/avif', 'image/webp'],
+    },
     async headers() {
         return [
             {
