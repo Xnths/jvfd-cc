@@ -24,11 +24,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_GA_ID
 ENV NEXT_PUBLIC_GA_ID=$NEXT_PUBLIC_GA_ID
 
-ARG DATABASE_URI
-ENV DATABASE_URI=$DATABASE_URI
-
-ARG PAYLOAD_SECRET
-ENV PAYLOAD_SECRET=$PAYLOAD_SECRET
+# DATABASE_URI and PAYLOAD_SECRET are runtime-only (passed via docker run -e)
+# Do NOT set them at build time or they get inlined into the Next.js bundle
 
 RUN pnpm build
 

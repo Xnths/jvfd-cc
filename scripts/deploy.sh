@@ -48,8 +48,6 @@ echo "Active environment: $ACTIVE_COLOR. Deploying to: $NEW_COLOR."
 echo "Building $NEW_COLOR image..."
 docker build \
     --build-arg NEXT_PUBLIC_GA_ID="$NEXT_PUBLIC_GA_ID" \
-    --build-arg DATABASE_URI="$DATABASE_URI" \
-    --build-arg PAYLOAD_SECRET="$PAYLOAD_SECRET" \
     -t "clinic-frontend:$NEW_COLOR" \
     -f Dockerfile .
 
