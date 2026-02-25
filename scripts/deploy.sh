@@ -6,7 +6,6 @@ set -e
 PROJECT_DIR="/var/www/jvfd-cc"
 COMPOSE_FILE="docker-compose/docker-compose.prod.yml"
 NGINX_CONF_DIR="nginx/conf.d"
-NETWORK_NAME="jvfd-cc_cloudflare-net"
 
 cd "$PROJECT_DIR"
 
@@ -27,6 +26,18 @@ else
     echo "Erro: Arquivo .env não encontrado!"
     exit 1
 fi
+
+# Garantir que a rede Docker e serviços de suporte (Nginx, Mongo) estejam rodando
+echo "Ensuring supporting services (nginx, mongo) are up..."
+docker compose -f "$COMPOSE_FILE" up -d mongo clinic-nginx
+
+# Detectar o nome da rede criada pelo compose dinamicamente
+NETWORK_NAME=$(docker network ls --format '{{.Name}}' | grep 'cloudflare-net' | head -n1)
+if [ -z "$NETWORK_NAME" ]; then
+    echo "Erro: Rede cloudflare-net não encontrada!"
+    exit 1
+fi
+echo "Using network: $NETWORK_NAME"
 
 # Detectar qual versão está rodando
 if docker ps --format '{{.Names}}' | grep -q "clinic-frontend-blue"; then
