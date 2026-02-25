@@ -2,7 +2,8 @@
 
 set -e
 
-PROJECT_DIR="/var/www/jvfd-cc"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 COMPOSE_FILE="docker-compose/docker-compose.prod.yml"
 NGINX_CONF_DIR="nginx/conf.d"
 
@@ -25,7 +26,7 @@ else
 fi
 
 echo "Ensuring supporting services (nginx, mongo) are up..."
-docker compose -f "$COMPOSE_FILE" up -d mongo clinic-nginx
+docker compose -f "$COMPOSE_FILE" --env-file .env up -d mongo clinic-nginx
 
 NETWORK_NAME=$(docker network ls --format '{{.Name}}' | grep 'cloudflare-net' | head -n1)
 if [ -z "$NETWORK_NAME" ]; then

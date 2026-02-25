@@ -51,7 +51,9 @@ services:
     volumes:
       - mongo-data:/data/db
     networks:
-      - cloudflare-net
+      cloudflare-net:
+        aliases:
+          - mongo
     restart: always
 
 networks:
