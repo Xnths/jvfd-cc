@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { FaWhatsapp } from "react-icons/fa";
-import { whatsappUrl } from "@/lib/constant";
+import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
 
 export function FloatingCatButton() {
+    const whatsappUrl = useWhatsappUrl();
     const { getElapsedTime } = useTimeToAction();
 
     const handleClick = () => {
@@ -19,7 +19,7 @@ export function FloatingCatButton() {
     };
 
     return (
-        <Link
+        <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -27,15 +27,16 @@ export function FloatingCatButton() {
             className="
         fixed bottom-6 right-6 z-40
         flex items-center gap-3
-        bg-red-600 hover:bg-red-700
+        bg-green-600 hover:bg-green-700
         text-white px-5 py-3
         rounded-full shadow-lg
         text-base font-medium
+        cursor-pointer
         transition-all
+        hover:animate-none
       "
         >
             <FaWhatsapp className="w-6 h-6" />
-            Agendar atendimento
-        </Link>
+        </a>
     );
 }

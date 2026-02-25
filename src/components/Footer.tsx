@@ -1,12 +1,13 @@
 "use client";
 
-import { whatsappUrl } from "@/lib/constant";
-import { Facebook, Twitter, Instagram, Linkedin, Mail, GraduationCap, Building2 } from "lucide-react";
+import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
+import { Instagram, Linkedin, Mail, GraduationCap, Building2 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { sendGAEvent } from "@next/third-parties/google";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 
 export function Footer() {
+  const whatsappUrl = useWhatsappUrl();
   const { getElapsedTime } = useTimeToAction();
 
   const handleWhatsAppClick = () => {

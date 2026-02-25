@@ -10,16 +10,18 @@ import { Footer } from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { FAQ } from "@/components/faq";
 import { Discussions } from "@/components/Discussions";
+import { SoftCta } from "@/components/SoftCta";
 
 export default function Home() {
     return (
         <div className="min-h-screen">
             <Hero />
+            <SoftCta />
+            <Discussions />
             <Services />
             <Testimonials />
             <About />
             <Excellence />
-            <Discussions />
             <FAQ />
             <Contact />
             <Footer />

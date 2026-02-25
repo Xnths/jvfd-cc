@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import configPromise from "@payload-config";
 import { notFound } from "next/navigation";
 import { RichText } from "@/components/RichText";
+import { BlogArticleFooter } from "@/components/BlogArticleFooter";
 import { Metadata } from "next";
 import Image from "next/image";
 
@@ -58,6 +59,26 @@ export default async function PostPage({ params }: PostPageProps) {
         notFound();
     }
 
+    // Fetch latest 3 posts excluding the current one
+    const relatedPostsResult = await payload.find({
+        collection: "posts",
+        limit: 3,
+        sort: "-publishedDate",
+        where: {
+            slug: {
+                not_equals: slug,
+            },
+        },
+    });
+
+    const relatedPosts = relatedPostsResult.docs.map((p) => ({
+        id: p.id as string,
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt,
+        publishedDate: p.publishedDate,
+    }));
+
     return (
         <article className="container mx-auto px-4 py-20 min-h-screen max-w-4xl">
             <header className="mb-12 text-center">
@@ -87,6 +108,7 @@ export default async function PostPage({ params }: PostPageProps) {
                         alt={post.image.alt || post.title}
                         width={1200}
                         height={630}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 896px"
                         className="w-full h-auto rounded-xl object-cover"
                         priority
                     />
@@ -96,8 +118,8 @@ export default async function PostPage({ params }: PostPageProps) {
             <div className="prose prose-lg prose-slate mx-auto prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-img:rounded-xl">
                 <RichText content={post.content} />
             </div>
+
+            <BlogArticleFooter relatedPosts={relatedPosts} />
         </article>
     );
 }
-
-

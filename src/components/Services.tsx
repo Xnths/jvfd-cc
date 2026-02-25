@@ -18,7 +18,7 @@ import {
 } from "./ui/card";
 import { Button } from "./ui/button";
 import { FaWhatsapp } from "react-icons/fa";
-import { whatsappUrl } from "@/lib/constant";
+import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import Link from "next/link";
 import { sendGAEvent } from "@next/third-parties/google";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
@@ -70,6 +70,7 @@ const services = [
 ];
 
 export function Services() {
+  const whatsappUrl = useWhatsappUrl();
   const { getElapsedTime } = useTimeToAction();
 
   const handleWhatsAppClick = () => {
@@ -131,12 +132,12 @@ export function Services() {
           <Button
             asChild
             size="lg"
-            className="bg-red-600 hover:bg-red-700 text-white gap-2"
+            className="bg-green-600 hover:bg-green-700 text-white gap-2"
             onClick={handleWhatsAppClick}
           >
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
               <FaWhatsapp className="w-5 h-5" />
-              Agendar consulta pelo WhatsApp
+              Conversar pelo WhatsApp
             </a>
           </Button>
         </div>
@@ -144,3 +145,4 @@ export function Services() {
     </section>
   );
 }
+

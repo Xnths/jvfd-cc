@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { FloatingCatButton } from "@/components/floating-cat-button";
 import { siteConfig } from "@/lib/config";
 import { GoogleAnalytics } from '@next/third-parties/google'
+
+const inter = Inter({
+    subsets: ["latin"],
+    display: "swap",
+    variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
     metadataBase: new URL(siteConfig.url),
@@ -146,11 +153,12 @@ export default function RootLayout({
     };
 
     return (
-        <html lang="pt-BR">
-            <body className="antialiased">
+        <html lang="pt-BR" className={inter.variable}>
+            <body className={`${inter.className} antialiased`}>
                 <Script
                     id="json-ld-psychologist"
                     type="application/ld+json"
+                    strategy="afterInteractive"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
                 />
 

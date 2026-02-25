@@ -2,38 +2,40 @@
 
 import { MapPin } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
-import { whatsappUrl } from "@/lib/constant";
+import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { sendGAEvent } from "@next/third-parties/google";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 
-const contactInfo = [
-  {
-    icon: FaWhatsapp,
-    title: "WhatsApp",
-    details: "+55 (11) 95559-1996",
-    url: whatsappUrl,
-    type: "whatsapp"
-  },
-  {
-    icon: FaInstagram,
-    title: "Instagram",
-    details: "@ciencia_comportamental_",
-    url: "https://www.instagram.com/ciencia_comportamental_/",
-    type: "instagram"
-  },
-  {
-    icon: MapPin,
-    title: "Endereço do consultório",
-    details: "Rua Harmonia, 1323 - Vila Madalena, São Paulo - SP, 05435-001",
-    url: "https://www.google.com/maps/place/Rua+Harmonia,+1323+-+Vila+Madalena,+S%C3%A3o+Paulo+-+SP,+05435-001/@-23.5666667,-46.6666667,17z/data=!3m1!4b1!4m5!3m4!1s0x94ce59f1b3b3b3b3:0x94ce59f1b3b3b3b3!8m2!3d-23.5666667!4d-46.6666667",
-    type: "map"
-  },
-];
 
 export function Contact() {
+  const whatsappUrl = useWhatsappUrl();
   const { getElapsedTime } = useTimeToAction();
+
+  const contactInfo = [
+    {
+      icon: FaWhatsapp,
+      title: "WhatsApp",
+      details: "+55 (11) 95559-1996",
+      url: whatsappUrl,
+      type: "whatsapp"
+    },
+    {
+      icon: FaInstagram,
+      title: "Instagram",
+      details: "@ciencia_comportamental_",
+      url: "https://www.instagram.com/ciencia_comportamental_/",
+      type: "instagram"
+    },
+    {
+      icon: MapPin,
+      title: "Endereço do consultório",
+      details: "Rua Harmonia, 1323 - Vila Madalena, São Paulo - SP, 05435-001",
+      url: "https://www.google.com/maps/place/Rua+Harmonia,+1323+-+Vila+Madalena,+S%C3%A3o+Paulo+-+SP,+05435-001/@-23.5666667,-46.6666667,17z/data=!3m1!4b1!4m5!3m4!1s0x94ce59f1b3b3b3b3:0x94ce59f1b3b3b3b3!8m2!3d-23.5666667!4d-46.6666667",
+      type: "map"
+    },
+  ];
 
   const handleContactClick = (type: string) => {
     if (type === 'whatsapp') {

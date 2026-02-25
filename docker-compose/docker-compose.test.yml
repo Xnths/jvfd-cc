@@ -10,7 +10,7 @@ services:
     env_file:
       - ../.env
     environment:
-      DATABASE_URI: ${DATABASE_URI}
+      DATABASE_URI: mongodb://mongo:27017/jvfd-cc
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
     ports:
       - "3000:3000"
