@@ -25,8 +25,8 @@ else
     exit 1
 fi
 
-echo "Ensuring supporting services (nginx, mongo) are up..."
-docker compose -f "$COMPOSE_FILE" --env-file .env up -d mongo clinic-nginx
+echo "Ensuring mongo is up..."
+docker compose -f "$COMPOSE_FILE" --env-file .env up -d mongo
 
 NETWORK_NAME="cloudflare-net"
 if ! docker network inspect "$NETWORK_NAME" > /dev/null 2>&1; then
@@ -94,7 +94,13 @@ echo "Health check passed!"
 
 echo "Switching Nginx to $NEW_COLOR..."
 cp "$NGINX_CONF_DIR/$NEW_COLOR.conf" "$NGINX_CONF_DIR/default.conf"
-docker exec clinic-nginx nginx -s reload
+
+# Start nginx if not running, otherwise reload config
+if docker ps --format '{{.Names}}' | grep -q "clinic-nginx"; then
+    docker exec clinic-nginx nginx -s reload
+else
+    docker compose -f "$COMPOSE_FILE" --env-file .env up -d clinic-nginx
+fi
 
 echo "Traffic switched to $NEW_COLOR."
 
