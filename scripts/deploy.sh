@@ -28,9 +28,9 @@ fi
 echo "Ensuring supporting services (nginx, mongo) are up..."
 docker compose -f "$COMPOSE_FILE" --env-file .env up -d mongo clinic-nginx
 
-NETWORK_NAME=$(docker network ls --format '{{.Name}}' | grep 'cloudflare-net' | head -n1)
-if [ -z "$NETWORK_NAME" ]; then
-    echo "Erro: Rede cloudflare-net não encontrada!"
+NETWORK_NAME="cloudflare-net"
+if ! docker network inspect "$NETWORK_NAME" > /dev/null 2>&1; then
+    echo "Erro: Rede $NETWORK_NAME não encontrada!"
     exit 1
 fi
 echo "Using network: $NETWORK_NAME"
