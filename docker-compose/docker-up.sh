@@ -11,12 +11,12 @@ else
     env_file=".env.prod"
 fi
 
-docker compose -f "$compose_file" down
-docker system prune --all -f
-
 if [ -f "../.env" ]; then
     export $(grep -v '^#' ../.env | xargs)
 fi
+
+docker compose -f "$compose_file" down
+docker system prune --all -f
 
 docker compose -f "$compose_file" up --build >> "$logfile" 2>&1 &
 compose_pid=$!

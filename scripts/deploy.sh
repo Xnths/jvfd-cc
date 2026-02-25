@@ -2,28 +2,106 @@
 
 set -e
 
-# Change to the project directory on the remote server
-cd /var/www/jvfd-cc
+# Configurações
+PROJECT_DIR="/var/www/jvfd-cc"
+COMPOSE_FILE="docker-compose/docker-compose.prod.yml"
+NGINX_CONF_DIR="nginx/conf.d"
+NETWORK_NAME="jvfd-cc_cloudflare-net"
+
+cd "$PROJECT_DIR"
 
 # Fix "dubious ownership" error
-git config --global --add safe.directory /var/www/jvfd-cc
+git config --global --add safe.directory "$PROJECT_DIR"
 
-echo "Starting deployment..."
+echo "Starting zero-downtime deployment..."
 
 echo "Pulling latest changes..."
 git pull origin main
 
-echo "Building Docker images..."
-docker compose -f docker-compose/docker-compose.prod.yml down --remove-orphans
-docker system prune --all -f
-set -a
-source .env
-docker compose -f docker-compose/docker-compose.prod.yml build
+# Carregar variáveis de ambiente
+if [ -f ".env" ]; then
+    set -a
+    source .env
+    set +a
+else
+    echo "Erro: Arquivo .env não encontrado!"
+    exit 1
+fi
 
-echo "Restarting services..."
-docker compose -f docker-compose/docker-compose.prod.yml up -d 2>&1 &
+# Detectar qual versão está rodando
+if docker ps --format '{{.Names}}' | grep -q "clinic-frontend-blue"; then
+    ACTIVE_COLOR="blue"
+    NEW_COLOR="green"
+else
+    ACTIVE_COLOR="green"
+    NEW_COLOR="blue"
+fi
 
-echo "Cleaning up unused images..."
-docker image prune -f
+echo "Active environment: $ACTIVE_COLOR. Deploying to: $NEW_COLOR."
 
-echo "Deployment completed successfully!"
+# 1. Build da nova imagem
+echo "Building $NEW_COLOR image..."
+docker build \
+    --build-arg NEXT_PUBLIC_GA_ID="$NEXT_PUBLIC_GA_ID" \
+    --build-arg DATABASE_URI="$DATABASE_URI" \
+    --build-arg PAYLOAD_SECRET="$PAYLOAD_SECRET" \
+    -t "clinic-frontend:$NEW_COLOR" \
+    -f Dockerfile .
+
+# 2. Subir o novo container
+echo "Starting $NEW_COLOR container..."
+# Remove container antigo se existir (de um deploy falhado anterior)
+docker rm -f "clinic-frontend-$NEW_COLOR" 2>/dev/null || true
+
+docker run -d \
+    --name "clinic-frontend-$NEW_COLOR" \
+    --network "$NETWORK_NAME" \
+    --restart always \
+    --env-file .env \
+    -v jvfd-cc_media-data:/app/media \
+    "clinic-frontend:$NEW_COLOR"
+
+# 3. Health Check
+echo "Performing health check on $NEW_COLOR container..."
+MAX_RETRIES=10
+COUNT=0
+HEALTHY=false
+
+while [ $COUNT -lt $MAX_RETRIES ]; do
+    # Tenta dar curl no container novo através da rede docker
+    if docker run --rm --network "$NETWORK_NAME" curlimages/curl -s -f "http://clinic-frontend-$NEW_COLOR:3000" > /dev/null; then
+        HEALTHY=true
+        break
+    fi
+    echo "Waiting for container to be ready... ($((COUNT+1))/$MAX_RETRIES)"
+    sleep 3
+    COUNT=$((COUNT+1))
+done
+
+if [ "$HEALTHY" = false ]; then
+    echo "ERRO: Health check falhou para o container $NEW_COLOR!"
+    echo "Logs do container falho:"
+    docker logs "clinic-frontend-$NEW_COLOR" | tail -n 20
+    echo "Limpando container falho..."
+    docker rm -f "clinic-frontend-$NEW_COLOR"
+    exit 1
+fi
+
+echo "Health check passed!"
+
+# 4. Atualizar Nginx
+echo "Switching Nginx to $NEW_COLOR..."
+cp "$NGINX_CONF_DIR/$NEW_COLOR.conf" "$NGINX_CONF_DIR/default.conf"
+docker exec clinic-nginx nginx -s reload
+
+echo "Traffic switched to $NEW_COLOR."
+
+# 5. Cleanup - Derrubar a versão antiga
+echo "Stopping $ACTIVE_COLOR container..."
+docker stop "clinic-frontend-$ACTIVE_COLOR" 2>/dev/null || true
+docker rm "clinic-frontend-$ACTIVE_COLOR" 2>/dev/null || true
+
+# Limpar imagens antigas e cache
+docker system prune -f
+
+echo "Deployment completed successfully! Zero downtime achieved."
