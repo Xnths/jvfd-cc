@@ -72,7 +72,7 @@ export function ContactForm() {
                             </div>
                         </div>
 
-                        <p className="text-slate-500 text-xs text-center">
+                        <p className="text-slate-500 text-xs text-center flex items-center gap-1">
                             Ou <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-medium inline-flex items-center gap-1"><FaWhatsapp className="w-3.5 h-3.5" /> clique aqui</a> se estiver no celular.
                         </p>
                     </div>

@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { FAQ } from "@/components/faq";
 import { Discussions } from "@/components/Discussions";
 import { SoftCta } from "@/components/SoftCta";
+import { NewsletterForm } from "@/components/NewsletterForm";
 
 export default function Home() {
     return (
@@ -18,6 +19,11 @@ export default function Home() {
             <Hero />
             <SoftCta />
             <Discussions />
+            <section className="py-12 bg-white">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-2xl">
+                    <NewsletterForm />
+                </div>
+            </section>
             <Services />
             <Testimonials />
             <About />
@@ -29,3 +35,4 @@ export default function Home() {
         </div>
     );
 }
+

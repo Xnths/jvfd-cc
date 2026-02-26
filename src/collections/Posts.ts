@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import formatSlug from '../utils/formatSlug'
+import { sendNewsletterForPost } from '../hooks/sendNewsletterForPost'
 
 export const Posts: CollectionConfig = {
     slug: 'posts',
@@ -8,6 +9,9 @@ export const Posts: CollectionConfig = {
     },
     access: {
         read: () => true,
+    },
+    hooks: {
+        afterChange: [sendNewsletterForPost],
     },
     fields: [
         {
@@ -27,6 +31,21 @@ export const Posts: CollectionConfig = {
             },
             hooks: {
                 beforeValidate: [formatSlug('title')],
+            },
+        },
+        {
+            name: 'status',
+            type: 'select',
+            required: true,
+            defaultValue: 'draft',
+            label: 'Status',
+            options: [
+                { label: 'Rascunho', value: 'draft' },
+                { label: 'Publicado', value: 'published' },
+            ],
+            admin: {
+                position: 'sidebar',
+                description: 'Ao publicar, a newsletter será enviada automaticamente.',
             },
         },
         {
@@ -79,21 +98,6 @@ export const Posts: CollectionConfig = {
             name: 'image',
             type: 'upload',
             relationTo: 'media',
-            // Assuming 'media' exists based on typical payload setup, checking config shortly.
-            // If 'media' doesn't exist, I should check existing collections.
-            // Wait, list_dir showed 'Treatments.ts' and 'Users.ts'. No 'Media.ts'.
-            // I should stick to what's available or create Media collection if needed.
-            // The default config I saw has `plugins: []`.
-            // Let me check if 'media' collection exists or if I should just use URL for image for now to be safe, 
-            // or better yet, verify if there is a Media collection or similar.
-            // Re-reading list_dir of src/collections: 'Treatments.ts', 'Users.ts'.
-            // So 'media' does NOT exist safely.
-            // I will SKIP the 'image' field for now to avoid errors, or use a text field for Image URL.
-            // Or better, creating a Media collection is standard practice but might be out of scope if not requested.
-            // User requested "discussoes page".
-            // I'll stick to text fields or just omit image for now, as `Discussions` usually implies text.
-            // Actually, `Treatments.ts` has `preview` using a UI component, not an upload field.
-            // I will omit the upload field to be safe and avoid build errors.
         },
     ],
 }

@@ -23,6 +23,9 @@ import { Treatments } from './collections/Treatments'
 import { Posts } from './collections/Posts'
 import { Media } from './collections/Media'
 import { Contatos } from './collections/Contatos'
+import { Subscribers } from './collections/Subscribers'
+import { BlogUsers } from './collections/BlogUsers'
+import { Comments } from './collections/Comments'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -34,7 +37,7 @@ export default buildConfig({
             baseDir: path.resolve(dirname),
         },
     },
-    collections: [Users, Treatments, Posts, Media, Contatos],
+    collections: [Users, Treatments, Posts, Media, Contatos, Subscribers, BlogUsers, Comments],
     editor: lexicalEditor({
         features: ({ defaultFeatures }) => [
             ...defaultFeatures,

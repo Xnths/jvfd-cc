@@ -47,7 +47,40 @@ export default function PrivacyPolicyPage() {
                     Os dados serão retidos apenas pelo tempo necessário para a finalidade declarada e excluídos após o encerramento da comunicação inicial.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">3. Uso de Cookies e Estatísticas</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">3. Contas de Usuário do Blog</h2>
+                <p className="mb-4">
+                    Este site permite o cadastro voluntário de usuários para participação nos comentários dos artigos do blog.
+                    Ao criar uma conta, os seguintes dados são coletados:
+                </p>
+                <ul className="list-disc pl-6 mb-4 space-y-2">
+                    <li><strong>Nome de exibição:</strong> usado publicamente nos comentários.</li>
+                    <li><strong>E-mail:</strong> usado apenas para autenticação e, quando autorizado, para newsletter. Nunca é exibido publicamente.</li>
+                    <li><strong>Senha:</strong> armazenada com hash seguro. Não é acessível por ninguém.</li>
+                    <li><strong>Data e hora do consentimento LGPD:</strong> registrada automaticamente no cadastro (Art. 7º, I, LGPD).</li>
+                </ul>
+                <p className="mb-2">
+                    <strong>Finalidade:</strong> participação nos comentários do blog e, opcionalmente, recebimento de newsletter.
+                </p>
+                <p className="mb-2">
+                    <strong>Retenção:</strong> os dados são mantidos enquanto a conta estiver ativa. O usuário pode solicitar a exclusão a qualquer momento pela página <a href="/conta" className="text-blue-600 hover:underline">Minha Conta</a> ou por e-mail para <a href="mailto:joao@psicologojoaofernandes.com" className="text-blue-600 hover:underline">joao@psicologojoaofernandes.com</a>.
+                </p>
+                <p className="mb-4">
+                    <strong>Direitos LGPD (Art. 18):</strong> o usuário pode a qualquer momento acessar, exportar (portabilidade) e excluir seus dados diretamente pela página <a href="/conta" className="text-blue-600 hover:underline">Minha Conta</a>. Ao solicitar exclusão, os comentários são anonimizados (substituídos por &ldquo;[comentário removido]&rdquo;) para manter a integridade dos artigos.
+                </p>
+
+                <h2 className="text-2xl font-semibold mt-8 mb-4">4. Newsletter do Blog</h2>
+                <p className="mb-4">
+                    Este site oferece a possibilidade de inscrição voluntária na <strong>newsletter do blog</strong>.
+                    Ao se inscrever, o visitante fornece seu <strong>endereço de e-mail</strong> exclusivamente para receber notificações de novos artigos publicados.
+                </p>
+                <ul className="list-disc pl-6 mb-4 space-y-2">
+                    <li>O e-mail é coletado mediante <strong>consentimento explícito</strong> e registrado com a data e hora do consentimento.</li>
+                    <li>Os dados são utilizados apenas para envio de notificações de novos artigos — sem fins comerciais ou de marketing.</li>
+                    <li>O e-mail <strong>não é compartilhado com terceiros</strong>.</li>
+                    <li>O cancelamento da inscrição pode ser feito a qualquer momento pelo link <em>Cancelar inscrição</em> presente em todos os e-mails recebidos.</li>
+                </ul>
+
+                <h2 className="text-2xl font-semibold mt-8 mb-4">4. Uso de Cookies e Estatísticas</h2>
                 <p className="mb-4">
                     Utilizamos o <strong>Google Analytics</strong> para coletar informações anônimas e estatísticas sobre o uso do site, como o tempo de permanência nas páginas, a origem do tráfego e cliques em botões.
                 </p>
@@ -60,8 +93,7 @@ export default function PrivacyPolicyPage() {
                     <strong>João Vitor Fernandes Domingues</strong><br />
                     Psicólogo Clínico — CRP 06/157908<br />
                     Atendimento pautado no Código de Ética Profissional do Psicólogo.<br />
-                    E-mail: <a href="mailto:jvfd2014@hotmail.com" className="text-blue-600 hover:underline">jvfd2014@hotmail.com</a> /{" "}
-                    <a href="mailto:fernandesdominguesjoaovitor@gmail.com" className="text-blue-600 hover:underline">fernandesdominguesjoaovitor@gmail.com</a><br />
+                    E-mail: <a href="mailto:joao@psicologojoaofernandes.com" className="text-blue-600 hover:underline">joao@psicologojoaofernandes.com</a><br />
                     Telefone: <a href="tel:+5511955591996" className="text-blue-600 hover:underline">(11) 95559-1996</a><br />
                     Currículo Lattes:{" "}
                     <a href="https://lattes.cnpq.br/2507330776380191" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Acessar Currículo</a>

@@ -1,10 +1,14 @@
 import { getPayload } from "payload";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 import configPromise from "@payload-config";
 import { notFound } from "next/navigation";
 import { RichText } from "@/components/RichText";
 import { BlogArticleFooter } from "@/components/BlogArticleFooter";
+import { NewsletterForm } from "@/components/NewsletterForm";
+import { CommentList } from "@/components/CommentList";
+import { CommentForm } from "@/components/CommentForm";
 import { Metadata } from "next";
 import Image from "next/image";
 
@@ -120,6 +124,34 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
 
             <BlogArticleFooter relatedPosts={relatedPosts} />
+
+            <div className="mt-12 max-w-xl mx-auto">
+                <NewsletterForm />
+            </div>
+
+            {/* Comments section */}
+            <section className="mt-16 max-w-2xl mx-auto">
+                <h2 className="text-xl font-semibold text-slate-900 mb-6">Comentários</h2>
+                <CommentList postId={post.id as string} />
+                <div className="mt-8">
+                    <CommentFormWrapper postId={post.id as string} />
+                </div>
+            </section>
         </article>
     );
+}
+
+async function CommentFormWrapper({ postId }: { postId: string }) {
+    const headersList = await headers();
+    const payload = await getPayload({ config: configPromise });
+    let sessionUser: { id: string; name: string } | null = null;
+    try {
+        const { user } = await payload.auth({ headers: headersList });
+        if (user && (user as unknown as { collection: string }).collection === "blog-users") {
+            sessionUser = { id: user.id as string, name: (user as unknown as { name: string }).name };
+        }
+    } catch {
+        // unauthenticated
+    }
+    return <CommentForm postId={postId} user={sessionUser} />;
 }

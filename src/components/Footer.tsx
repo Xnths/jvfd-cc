@@ -90,9 +90,9 @@ export function Footer() {
                 <Linkedin className="w-5 h-5" />
               </a>
               <a
-                href="mailto:jvfd2014@hotmail.com"
+                href="mailto:joao@psicologojoaofernandes.com"
                 className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 focus:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-                aria-label="Enviar email para jvfd2014@hotmail.com"
+                aria-label="Enviar email para joao@psicologojoaofernandes.com"
               >
                 <Mail className="w-5 h-5" />
               </a>
