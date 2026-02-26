@@ -7,11 +7,11 @@ export async function GET(req: NextRequest) {
         const payload = await getPayload({ config: configPromise })
         const { user } = await payload.auth({ headers: req.headers })
 
-        if (!user || (user as { collection: string }).collection !== 'blog-users') {
+        if (!user || (user as unknown as { collection: string }).collection !== 'blog-users') {
             return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
         }
 
-        const userId = (user as { id: string }).id
+        const userId = (user as unknown as { id: string }).id
 
         // Fetch user record (without sensitive fields)
         const userData = await payload.findByID({

@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 const isAdmin = ({ req: { user } }: { req: { user: unknown } }) =>
-    !!(user && (user as { collection: string }).collection === 'users')
+    !!(user && (user as unknown as { collection: string }).collection === 'users')
 
 export const BlogUsers: CollectionConfig = {
     slug: 'blog-users',
@@ -20,14 +20,14 @@ export const BlogUsers: CollectionConfig = {
         create: () => true,
         read: ({ req: { user } }) => {
             if (!user) return false
-            if ((user as { collection: string }).collection === 'users') return true
+            if ((user as unknown as { collection: string }).collection === 'users') return true
             return {
                 id: { equals: (user as { id: string }).id },
             }
         },
         update: ({ req: { user } }) => {
             if (!user) return false
-            if ((user as { collection: string }).collection === 'users') return true
+            if ((user as unknown as { collection: string }).collection === 'users') return true
             return {
                 id: { equals: (user as { id: string }).id },
             }

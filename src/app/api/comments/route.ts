@@ -5,8 +5,8 @@ import configPromise from '@payload-config'
 async function getAuthUser(req: NextRequest) {
     const payload = await getPayload({ config: configPromise })
     const { user } = await payload.auth({ headers: req.headers })
-    if (!user || (user as { collection: string }).collection !== 'blog-users') return null
-    return user as { id: string; name: string; email: string }
+    if (!user || (user as unknown as { collection: string }).collection !== 'blog-users') return null
+    return user as unknown as { id: string; name: string; email: string }
 }
 
 // POST /api/comments — submit a comment (authenticated blog-users only)

@@ -15,17 +15,17 @@ export const Comments: CollectionConfig = {
     access: {
         // Any authenticated blog-user can create
         create: ({ req: { user } }) =>
-            !!(user && (user as { collection: string }).collection === 'blog-users'),
+            !!(user && (user as unknown as { collection: string }).collection === 'blog-users'),
         // Public can read approved; admins read all
         read: ({ req: { user } }) => {
-            if (user && (user as { collection: string }).collection === 'users') return true
+            if (user && (user as unknown as { collection: string }).collection === 'users') return true
             return { status: { equals: 'approved' } }
         },
         // Only admins can update (moderate) or delete
         update: ({ req: { user } }) =>
-            !!(user && (user as { collection: string }).collection === 'users'),
+            !!(user && (user as unknown as { collection: string }).collection === 'users'),
         delete: ({ req: { user } }) =>
-            !!(user && (user as { collection: string }).collection === 'users'),
+            !!(user && (user as unknown as { collection: string }).collection === 'users'),
     },
     fields: [
         {

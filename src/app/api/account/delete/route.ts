@@ -7,12 +7,12 @@ export async function DELETE(req: NextRequest) {
         const payload = await getPayload({ config: configPromise })
         const { user } = await payload.auth({ headers: req.headers })
 
-        if (!user || (user as { collection: string }).collection !== 'blog-users') {
+        if (!user || (user as unknown as { collection: string }).collection !== 'blog-users') {
             return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
         }
 
-        const userId = (user as { id: string }).id
-        const userEmail = (user as { email: string }).email
+        const userId = (user as unknown as { id: string }).id
+        const userEmail = (user as unknown as { email: string }).email
 
         // 1. Anonymize all user's comments
         const { docs: userComments } = await payload.find({

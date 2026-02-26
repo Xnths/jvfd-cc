@@ -12,16 +12,23 @@ export async function GET(req: NextRequest) {
         const payload = await getPayload({ config: configPromise })
         const { user } = await payload.auth({ headers: req.headers })
 
-        if (!user || (user as { collection: string }).collection !== 'blog-users') {
+        if (!user || (user as unknown as { collection: string }).collection !== 'blog-users') {
             return NextResponse.json({ user: null }, { status: 200 })
+        }
+
+        const u = user as unknown as {
+            id: string
+            name: string
+            email: string
+            subscribedToNewsletter: boolean
         }
 
         return NextResponse.json({
             user: {
-                id: user.id,
-                name: (user as { name: string }).name,
-                email: (user as { email: string }).email,
-                subscribedToNewsletter: (user as { subscribedToNewsletter: boolean }).subscribedToNewsletter,
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                subscribedToNewsletter: u.subscribedToNewsletter,
             },
         })
     } catch (err) {
