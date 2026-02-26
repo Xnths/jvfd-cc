@@ -1,44 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const PAYLOAD_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json()
+        const { email, password } = await req.json()
 
-        const payloadRes = await fetch(`${PAYLOAD_URL}/api/blog-users/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-        })
-
-        const data = await payloadRes.json()
-
-        if (!payloadRes.ok) {
-            return NextResponse.json(
-                { error: data?.errors?.[0]?.message ?? 'E-mail ou senha inválidos.' },
-                { status: payloadRes.status }
-            )
+        if (!email || !password) {
+            return NextResponse.json({ error: 'E-mail e senha obrigatórios.' }, { status: 400 })
         }
+
+        const payload = await getPayload({ config: configPromise })
+
+        // Use Payload's local API — no HTTP, works inside Docker
+        const result = await payload.login({
+            collection: 'blog-users',
+            data: { email, password },
+        })
 
         const res = NextResponse.json({
             success: true,
             user: {
-                id: data.user?.id,
-                name: data.user?.name,
-                email: data.user?.email,
-                subscribedToNewsletter: data.user?.subscribedToNewsletter,
+                id: result.user.id,
+                name: (result.user as unknown as { name: string }).name,
+                email: (result.user as unknown as { email: string }).email,
+                subscribedToNewsletter: (result.user as unknown as { subscribedToNewsletter: boolean }).subscribedToNewsletter,
             },
         })
 
-        // Forward the httpOnly cookie from Payload
-        const setCookie = payloadRes.headers.get('set-cookie')
-        if (setCookie) {
-            res.headers.set('set-cookie', setCookie)
+        // Set the httpOnly session cookie manually
+        if (result.token) {
+            res.cookies.set('payload-token', result.token, {
+                httpOnly: true,
+                path: '/',
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 60 * 60 * 24 * 7, // 7 days
+            })
         }
 
         return res
-    } catch (err) {
+    } catch (err: unknown) {
+        // Payload throws on invalid credentials
+        const message = err instanceof Error ? err.message : ''
+        if (message.toLowerCase().includes('invalid') || message.toLowerCase().includes('not found')) {
+            return NextResponse.json({ error: 'E-mail ou senha inválidos.' }, { status: 401 })
+        }
         console.error('[login] Error:', err)
         return NextResponse.json({ error: 'Erro interno. Tente novamente.' }, { status: 500 })
     }
