@@ -1,33 +1,42 @@
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-
-interface Comment {
-    id: string;
-    body: string;
-    createdAt: string;
-    authorName: string;
-}
+import { getPayload } from "payload";
+import configPromise from "@payload-config";
 
 interface CommentListProps {
     postId: string;
 }
 
-async function fetchComments(postId: string): Promise<Comment[]> {
-    try {
-        const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
-        const res = await fetch(`${baseUrl}/api/comments?postId=${postId}`, {
-            cache: "no-store",
-        });
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.comments ?? [];
-    } catch {
-        return [];
-    }
-}
-
 export async function CommentList({ postId }: CommentListProps) {
-    const comments = await fetchComments(postId);
+    let comments: { id: string; body: string; createdAt: string; authorName: string }[] = [];
+
+    try {
+        const payload = await getPayload({ config: configPromise });
+        const { docs } = await payload.find({
+            collection: "comments",
+            where: {
+                and: [
+                    { post: { equals: postId } },
+                    { status: { equals: "approved" } },
+                ],
+            },
+            sort: "createdAt",
+            limit: 100,
+            depth: 1,
+        });
+
+        comments = docs.map((c) => ({
+            id: c.id as string,
+            body: c.body as string,
+            createdAt: c.createdAt as string,
+            authorName:
+                typeof c.author === "object" && c.author
+                    ? ((c.author as { name?: string }).name ?? "Anônimo")
+                    : "Anônimo",
+        }));
+    } catch {
+        // Silently fail — show empty state
+    }
 
     if (comments.length === 0) {
         return (

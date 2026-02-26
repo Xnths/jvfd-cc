@@ -70,5 +70,16 @@ export const Comments: CollectionConfig = {
                 description: 'Apenas comentários aprovados aparecem no site.',
             },
         },
+        {
+            name: 'moderationActions',
+            type: 'ui',
+            label: 'Ações rápidas',
+            admin: {
+                position: 'sidebar',
+                components: {
+                    Field: '/src/components/admin/CommentModerationButtons#default',
+                },
+            },
+        },
     ],
 }
