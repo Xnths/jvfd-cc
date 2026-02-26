@@ -18,13 +18,24 @@ export async function POST(req: NextRequest) {
             data: { email, password },
         })
 
+        if (!result.user) {
+            return NextResponse.json({ error: 'E-mail ou senha inválidos.' }, { status: 401 })
+        }
+
+        const u = result.user as unknown as {
+            id: string
+            name: string
+            email: string
+            subscribedToNewsletter: boolean
+        }
+
         const res = NextResponse.json({
             success: true,
             user: {
-                id: result.user.id,
-                name: (result.user as unknown as { name: string }).name,
-                email: (result.user as unknown as { email: string }).email,
-                subscribedToNewsletter: (result.user as unknown as { subscribedToNewsletter: boolean }).subscribedToNewsletter,
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                subscribedToNewsletter: u.subscribedToNewsletter,
             },
         })
 
