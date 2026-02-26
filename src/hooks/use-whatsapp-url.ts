@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 const phone = "5511955591996";
 const message = encodeURIComponent(
-    "Olá, João! Vi seu site e gostaria de saber mais sobre a terapia."
+    "Olá! Gostaria de saber mais sobre os atendimentos."
 );
 
 const fallbackUrl = `https://wa.me/${phone}?text=${message}`;

@@ -1,7 +1,5 @@
 "use client";
 
-
-
 const faq = [
     {
         id: "item-2",
