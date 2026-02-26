@@ -19,13 +19,7 @@ export default function PrivacyPolicyPage() {
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">1. Coleta de Dados</h2>
                 <p className="mb-4">
-                    Este site oferece duas formas de contato: o botão de WhatsApp, que redireciona para o aplicativo de mensagens, e um <strong>formulário de contato rápido</strong> que permite ao visitante informar apenas o seu número de telefone para que o profissional entre em contato.
-                </p>
-                <p className="mb-4">
-                    Caso o visitante opte por enviar o número de telefone pelo formulário, este dado será <strong>criptografado em trânsito</strong> e armazenado de forma segura em nosso banco de dados, sendo acessível <strong>exclusivamente pelo profissional João Vitor Fernandes Domingues</strong>. O número de telefone serve apenas para facilitar a comunicação com pacientes que assim preferirem e <strong>não será compartilhado com terceiros</strong> em nenhuma hipótese.
-                </p>
-                <p className="mb-4">
-                    Não coletamos nome, e-mail ou qualquer outro dado pessoal identificável além do telefone, quando fornecido voluntariamente pelo visitante.
+                    Nós <strong>não utilizamos formulários de cadastro</strong> ou inscrição neste site. O único ponto de interação direta é o botão de WhatsApp, que redireciona o usuário para o aplicativo de mensagens para contato direto. Não armazenamos nenhuma informação pessoal sobre essa interação em nossos servidores.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">2. Uso de Cookies e Estatísticas</h2>

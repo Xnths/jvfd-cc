@@ -5,7 +5,6 @@ import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
 import Image from "next/image";
 import { FaWhatsapp } from "react-icons/fa";
-import { QuickContactForm } from "./QuickContactForm";
 
 export function Hero() {
   const whatsappUrl = useWhatsappUrl();
@@ -13,7 +12,6 @@ export function Hero() {
 
   const handleClick = () => {
     const elapsedTime = getElapsedTime() || 0;
-
     sendGAEvent('event', 'schedule_click', {
       source: 'hero_cta',
       time_to_click_ms: elapsedTime,
@@ -52,28 +50,16 @@ export function Hero() {
             Com a terapia, podemos trabalhar juntos para entender o que está te travando e encontrar caminhos mais leves.
           </p>
 
-          <div className="flex flex-col gap-6 w-full md:w-fit">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a
-                href={whatsappUrl}
-                onClick={handleClick}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-md text-lg font-bold transition-all text-center shadow-lg hover:shadow-green-500/20 inline-flex items-center justify-center gap-2"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaWhatsapp className="w-6 h-6" />
-                Conversar com o João
-              </a>
-            </div>
-
-            <div className="flex items-center gap-4 max-w-sm">
-              <div className="flex-1 h-px bg-slate-600"></div>
-              <span className="text-slate-400 text-sm">ou</span>
-              <div className="flex-1 h-px bg-slate-600"></div>
-            </div>
-
-            <QuickContactForm />
-          </div>
+          <a
+            href={whatsappUrl}
+            onClick={handleClick}
+            className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-md text-lg font-bold transition-all text-center shadow-lg hover:shadow-green-500/20 inline-flex items-center justify-center gap-2"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FaWhatsapp className="w-6 h-6" />
+            Conversar com o João
+          </a>
         </div>
       </div>
     </section>

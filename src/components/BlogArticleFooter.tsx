@@ -25,7 +25,6 @@ export function BlogArticleFooter({ relatedPosts }: BlogArticleFooterProps) {
 
     const handleClick = () => {
         const elapsedTime = getElapsedTime() || 0;
-
         sendGAEvent("event", "schedule_click", {
             source: "blog_article_footer",
             time_to_click_ms: elapsedTime,

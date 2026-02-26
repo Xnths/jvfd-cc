@@ -35,18 +35,7 @@ export default function TermsOfUsePage() {
                     Embora nos esforcemos para manter as informações atualizadas e corretas, não garantimos a precisão, integridade ou atualidade de todo o conteúdo. O uso das informações contidas neste site é de inteira responsabilidade do usuário.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">4. Formulário de Contato Rápido</h2>
-                <p className="mb-4">
-                    Este site disponibiliza um formulário de contato rápido no qual o visitante pode, de forma voluntária, informar seu número de telefone para que o profissional entre em contato via WhatsApp. Ao submeter o formulário, o visitante declara estar ciente de que:
-                </p>
-                <ul className="list-disc pl-6 space-y-2 mb-4">
-                    <li>O número de telefone será armazenado de forma segura e criptografado em trânsito.</li>
-                    <li>O acesso ao dado é restrito exclusivamente ao profissional João Vitor Fernandes Domingues.</li>
-                    <li>O dado não será compartilhado com terceiros, empresas ou plataformas de marketing.</li>
-                    <li>O número será utilizado apenas para o contato inicial relacionado ao serviço de psicoterapia.</li>
-                </ul>
-
-                <h2 className="text-2xl font-semibold mt-8 mb-4">5. Contato</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">4. Contato</h2>
                 <p className="mb-4">
                     Para questões relacionadas a estes termos, entre em contato através do e-mail: <a href="mailto:jvfd2014@hotmail.com" className="text-blue-600 hover:underline">jvfd2014@hotmail.com</a> ou <a href="mailto:fernandesdominguesjoaovitor@gmail.com" className="text-blue-600 hover:underline">fernandesdominguesjoaovitor@gmail.com</a>.
                 </p>
