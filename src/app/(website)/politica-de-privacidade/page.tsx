@@ -14,49 +14,83 @@ export default function PrivacyPolicyPage() {
 
             <div className="prose prose-slate max-w-none text-slate-700">
                 <p className="mb-4">
-                    A sua privacidade é importante para nós. O site do <Link href="/" className="text-blue-600 hover:underline">Psicólogo João Fernandes</Link> <strong>não coleta dados pessoais identificáveis</strong> (como nome, e-mail ou telefone) de seus visitantes.
+                    A sua privacidade é importante para nós. Esta política descreve como o site do{" "}
+                    <Link href="/" className="text-blue-600 hover:underline">Psicólogo João Fernandes</Link>{" "}
+                    coleta, usa e protege os seus dados pessoais.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">1. Coleta de Dados</h2>
                 <p className="mb-4">
-                    Nós <strong>não utilizamos formulários de cadastro</strong> ou inscrição neste site. O único ponto de interação direta é o botão de WhatsApp, que redireciona o usuário para o aplicativo de mensagens para contato direto. Não armazenamos nenhuma informação pessoal sobre essa interação em nossos servidores.
+                    Este site oferece duas formas de contato:
+                </p>
+                <ul className="list-disc pl-6 mb-4 space-y-2">
+                    <li>
+                        <strong>Botão do WhatsApp:</strong> Redireciona para o aplicativo de mensagens. Nenhum dado é armazenado em nossos servidores por meio desta interação.
+                    </li>
+                    <li>
+                        <strong>Formulário de contato:</strong> Mediante consentimento explícito, coletamos <strong>nome completo</strong> e <strong>número de telefone</strong> do visitante, exclusivamente para que o profissional João Vitor Fernandes Domingues entre em contato para esclarecimento de dúvidas sobre atendimento.
+                    </li>
+                </ul>
+                <p className="mb-4">
+                    Os dados submetidos pelo formulário são armazenados de forma segura e criptografada em trânsito, sendo acessíveis <strong>exclusivamente pelo profissional João Vitor Fernandes Domingues (CRP 06/157908)</strong>.
+                    O responsável técnico pelo sistema <strong>não possui acesso</strong> a esses dados.
+                    Os dados não serão compartilhados com terceiros ou utilizados para fins de marketing.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">2. Uso de Cookies e Estatísticas</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">2. Base Legal (LGPD — Lei 13.709/2018)</h2>
                 <p className="mb-4">
-                    Utilizamos o <strong>Google Analytics</strong> para coletar informações anônimas e estatísticas sobre o uso do site, como o tempo de permanência nas páginas, a origem do tráfego e cliques em botões (como o do WhatsApp).
+                    O tratamento dos dados pessoais coletados pelo formulário de contato é fundamentado no{" "}
+                    <strong>consentimento livre, informado e inequívoco</strong> do titular (Art. 7º, inciso I, da LGPD).
+                    O visitante pode retirar seu consentimento a qualquer momento, solicitando a exclusão de seus dados por meio do e-mail do profissional.
                 </p>
                 <p className="mb-4">
-                    Esses dados são utilizados exclusivamente para fins analíticos, permitindo-nos entender melhor como os visitantes interagem com o nosso site e melhorar a experiência do usuário.
-                </p>
-
-                <h2 className="text-2xl font-semibold mt-8 mb-4">3. Contato</h2>
-                <p className="mb-4">
-                    Caso tenha dúvidas sobre nossa política de privacidade, entre em contato com o administrador do site ou o próprio profissional
+                    Os dados serão retidos apenas pelo tempo necessário para a finalidade declarada e excluídos após o encerramento da comunicação inicial.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">4. Dados do Profissional</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">3. Uso de Cookies e Estatísticas</h2>
                 <p className="mb-4">
-                    <strong>João Vitor Fernandes</strong><br />
+                    Utilizamos o <strong>Google Analytics</strong> para coletar informações anônimas e estatísticas sobre o uso do site, como o tempo de permanência nas páginas, a origem do tráfego e cliques em botões.
+                </p>
+                <p className="mb-4">
+                    Esses dados são utilizados exclusivamente para fins analíticos e não permitem a identificação de visitantes individualmente.
+                </p>
+
+                <h2 className="text-2xl font-semibold mt-8 mb-4">4. Dados do Profissional Responsável</h2>
+                <p className="mb-4">
+                    <strong>João Vitor Fernandes Domingues</strong><br />
+                    Psicólogo Clínico — CRP 06/157908<br />
                     Atendimento pautado no Código de Ética Profissional do Psicólogo.<br />
-                    E-mail: <a href="mailto:jvfd2014@hotmail.com" className="text-blue-600 hover:underline">jvfd2014@hotmail.com</a> / <a href="mailto:fernandesdominguesjoaovitor@gmail.com" className="text-blue-600 hover:underline">fernandesdominguesjoaovitor@gmail.com</a><br />
+                    E-mail: <a href="mailto:jvfd2014@hotmail.com" className="text-blue-600 hover:underline">jvfd2014@hotmail.com</a> /{" "}
+                    <a href="mailto:fernandesdominguesjoaovitor@gmail.com" className="text-blue-600 hover:underline">fernandesdominguesjoaovitor@gmail.com</a><br />
                     Telefone: <a href="tel:+5511955591996" className="text-blue-600 hover:underline">(11) 95559-1996</a><br />
-                    CRP: 06/187056<br />
-                    Currículo Lattes: <a href="https://lattes.cnpq.br/2507330776380191" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Acessar Currículo</a>
+                    Currículo Lattes:{" "}
+                    <a href="https://lattes.cnpq.br/2507330776380191" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Acessar Currículo</a>
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">5. Administrador</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">5. Responsável Técnico pelo Sistema</h2>
                 <p className="mb-4">
-                    O administrador do site é <Link href="https://github.com/Xnths" className="text-blue-600 hover:underline">Jonathas Castilho</Link>, desenvolvedor de software e dono da empresa <Link href="https://blog.xnths.com" className="text-blue-600 hover:underline">J. Tecnologia LTDA.</Link> CNPJ 55397211000100.
+                    O desenvolvimento e a manutenção técnica deste site são de responsabilidade de{" "}
+                    <Link href="https://github.com/Xnths" className="text-blue-600 hover:underline">Jonathas Castilho</Link>,
+                    desenvolvedor de software, sócio da <Link href="https://blog.xnths.com" className="text-blue-600 hover:underline">J. Tecnologia LTDA.</Link> (CNPJ 55.397.211/0001-00).
+                    Contato: <a href="mailto:jonathas@xnths.com" className="text-blue-600 hover:underline">jonathas@xnths.com</a>.
+                </p>
+                <p className="mb-4">
+                    O responsável técnico <strong>não possui acesso</strong> aos dados pessoais submetidos pelo formulário de contato. Esses dados são de acesso exclusivo do profissional psicólogo identificado na seção 4.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">6. Consentimento</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">6. Seus Direitos</h2>
                 <p className="mb-4">
-                    Ao utilizar nosso site, você concorda com a nossa política de privacidade e com os termos de uso.
+                    Nos termos da LGPD, você tem direito a: confirmar a existência do tratamento de seus dados; acessar os dados coletados; solicitar sua correção ou exclusão; revogar o consentimento a qualquer momento.
+                    Para exercer esses direitos, entre em contato diretamente com o profissional pelo e-mail listado na seção 4.
+                </p>
+
+                <h2 className="text-2xl font-semibold mt-8 mb-4">7. Consentimento</h2>
+                <p className="mb-4">
+                    Ao utilizar o formulário de contato deste site, você concorda com esta Política de Privacidade e autoriza o tratamento dos seus dados conforme descrito.
                 </p>
 
                 <p className="mt-8 text-sm text-slate-500">
-                    Esta política é efetiva a partir de {new Date().getFullYear()}.
+                    Esta política é efetiva a partir de {new Date().getFullYear()}. Última atualização: fevereiro de 2026.
                 </p>
             </div>
         </main>
