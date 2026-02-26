@@ -5,7 +5,7 @@ import { submitLead } from "@/app/(website)/actions/submit-lead";
 import { sendGAEvent } from "@next/third-parties/google";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { FaInstagram } from "react-icons/fa";
-import { MoveRight } from "lucide-react";
+import { MoveRight, Phone } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -33,6 +33,7 @@ function applyPhoneMask(value: string): string {
 }
 
 export function QuickContactForm() {
+    const [open, setOpen] = useState(false);
     const [phone, setPhone] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -67,6 +68,7 @@ export function QuickContactForm() {
                 time_to_submit_ms: elapsedTime,
             });
 
+            setOpen(false);
             setShowSuccess(true);
             setPhone("");
         } else {
@@ -78,33 +80,58 @@ export function QuickContactForm() {
 
     return (
         <>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-2 max-w-sm">
-                <p className="text-slate-400 text-sm">
-                    Prefere que o João entre em contato?
-                </p>
-                <div className="flex gap-2">
-                    <Input
-                        ref={inputRef}
-                        type="tel"
-                        placeholder="(11) 91234-5678"
-                        value={phone}
-                        onChange={handlePhoneChange}
-                        className="bg-white/10 border-slate-600 text-white placeholder:text-slate-500 focus:border-green-500 focus:ring-green-500/20"
-                        aria-label="Seu número de telefone"
-                        disabled={isSubmitting}
-                    />
-                    <Button
-                        type="submit"
-                        disabled={isSubmitting || phone.replace(/\D/g, "").length < 10}
-                        className="bg-green-600 hover:bg-green-700 text-white px-6 whitespace-nowrap disabled:opacity-50"
-                    >
-                        {isSubmitting ? "Enviando..." : "Enviar"}
-                    </Button>
-                </div>
-                {error && (
-                    <p className="text-red-400 text-sm">{error}</p>
-                )}
-            </form>
+            {/* Trigger Button */}
+            <Button
+                onClick={() => setOpen(true)}
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-md text-lg font-bold transition-all text-center shadow-lg inline-flex items-center justify-center gap-2 h-auto w-full"
+            >
+                <Phone className="w-5 h-5" />
+                Deixar meu contato
+            </Button>
+
+            {/* Form Dialog */}
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl text-slate-900">
+                            Deixe seu número
+                        </DialogTitle>
+                        <DialogDescription className="text-slate-600">
+                            O número será enviado diretamente para o João, que lhe enviará uma mensagem pessoalmente pelo WhatsApp.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-2">
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="quick-phone" className="text-slate-700 text-sm font-medium">
+                                Seu telefone com DDD
+                            </label>
+                            <Input
+                                id="quick-phone"
+                                ref={inputRef}
+                                type="tel"
+                                placeholder="Ex.: (11) 91234-5678"
+                                value={phone}
+                                onChange={handlePhoneChange}
+                                className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-green-600 focus:ring-green-600/30"
+                                aria-label="Seu número de telefone"
+                                disabled={isSubmitting}
+                                autoFocus
+                            />
+                            {error && (
+                                <p className="text-red-500 text-sm font-medium" role="alert">{error}</p>
+                            )}
+                        </div>
+                        <Button
+                            type="submit"
+                            disabled={isSubmitting || phone.replace(/\D/g, "").length < 10}
+                            className="bg-green-600 hover:bg-green-700 text-white font-semibold w-full disabled:bg-gray-400 disabled:cursor-not-allowed disabled:text-white/80"
+                        >
+                            {isSubmitting ? "Enviando..." : "Enviar número"}
+                        </Button>
+                    </form>
+                </DialogContent>
+            </Dialog>
 
             {/* Success Dialog */}
             <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
