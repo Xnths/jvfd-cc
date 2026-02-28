@@ -4,14 +4,28 @@ import configPromise from '@payload-config'
 import { format } from 'date-fns'
 import type { Where } from 'payload'
 
-// Google Ads Offline Conversion Import — exact column names required
 const CSV_HEADER = 'Google Click ID,Conversion Name,Conversion Time,Conversion Value,Conversion Currency'
-const CONVERSION_NAME = 'Consulta Marcada'
-const CONVERSION_VALUE = '350'
-const CONVERSION_CURRENCY = 'BRL'
+const CURRENCY = 'BRL'
+
+// Action configs
+const ACTIONS = {
+    consulta: {
+        conversionName: 'Consulta Marcada',
+        value: '350',
+        statusFilter: { status: { equals: 'converted' } } as Where,
+        dateField: 'convertedAt' as const,
+        emptyError: 'Nenhuma "Consulta Marcada" encontrada. Atualize o status dos leads antes de exportar.',
+    },
+    contato: {
+        conversionName: 'Contato WhatsApp',
+        value: '0',
+        statusFilter: { status: { equals: 'qualified' } } as Where,
+        dateField: 'clickedAt' as const,
+        emptyError: 'Nenhum "Lead Qualificado" encontrado. Marque leads como qualificados (mandou mensagem) antes de exportar.',
+    },
+} as const
 
 function toGoogleAdsTime(date: Date): string {
-    // Format in UTC: yyyy-MM-dd HH:mm:ss+0000
     const y = date.getUTCFullYear()
     const mo = String(date.getUTCMonth() + 1).padStart(2, '0')
     const d = String(date.getUTCDate()).padStart(2, '0')
@@ -32,51 +46,49 @@ export async function GET(req: NextRequest) {
         }
 
         const { searchParams } = new URL(req.url)
+        const actionParam = (searchParams.get('action') ?? 'consulta') as keyof typeof ACTIONS
         const sinceParam = searchParams.get('since')
 
-        const andConditions: Where[] = [
-            { status: { equals: 'converted' } },
-            { convertedAt: { exists: true } },
-        ]
+        const action = ACTIONS[actionParam] ?? ACTIONS.consulta
+
+        const andConditions: Where[] = [action.statusFilter]
 
         if (sinceParam) {
             const since = new Date(sinceParam)
             if (!isNaN(since.getTime())) {
                 andConditions.push({
-                    convertedAt: { greater_than_equal: since.toISOString() },
+                    [action.dateField]: { greater_than_equal: since.toISOString() },
                 })
             }
         }
 
-        const whereClause: Where = { and: andConditions }
-
         const { docs } = await payload.find({
             collection: 'leads',
-            where: whereClause,
+            where: { and: andConditions },
             limit: 10000,
             pagination: false,
         })
 
         const rows = docs.map((lead) => {
-            const convertedAt = lead.convertedAt
-                ? toGoogleAdsTime(new Date(lead.convertedAt as string))
+            const dateValue = lead[action.dateField]
+            const conversionTime = dateValue
+                ? toGoogleAdsTime(new Date(dateValue as string))
                 : ''
-            return [
-                lead.gclid,
-                CONVERSION_NAME,
-                convertedAt,
-                CONVERSION_VALUE,
-                CONVERSION_CURRENCY,
-            ].join(',')
+            return [lead.gclid, action.conversionName, conversionTime, action.value, CURRENCY].join(',')
         })
 
-        const csv = '\uFEFF' + [CSV_HEADER, ...rows].join('\n') + '\n'
+        if (rows.length === 0) {
+            return NextResponse.json({ error: action.emptyError }, { status: 400 })
+        }
+
+        const csv = [CSV_HEADER, ...rows].join('\n') + '\n'
+        const filename = `conversoes-${actionParam}-${format(new Date(), 'yyyy-MM-dd')}.csv`
 
         return new NextResponse(csv, {
             status: 200,
             headers: {
-                'Content-Type': 'text/csv; charset=utf-8-sig',
-                'Content-Disposition': `attachment; filename="conversoes-${format(new Date(), 'yyyy-MM-dd')}.csv"`,
+                'Content-Type': 'text/csv; charset=utf-8',
+                'Content-Disposition': `attachment; filename="${filename}"`,
             },
         })
     } catch (err) {
