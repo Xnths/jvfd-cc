@@ -15,7 +15,8 @@ function isRateLimited(ip: string): boolean {
     return timestamps.length > MAX_REQUESTS
 }
 
-const GCLID_PATTERN = /^[A-Za-z0-9_-]+$/
+// GCLIDs are standard base64 — allow +, /, = in addition to base64url chars (-, _)
+const GCLID_PATTERN = /^[A-Za-z0-9+/=_-]+$/
 
 export async function POST(req: NextRequest) {
     try {

@@ -14,7 +14,7 @@ export function captureGclid(): void {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
     const gclid = params.get('gclid')
-    if (gclid && /^[A-Za-z0-9_-]+$/.test(gclid)) {
+    if (gclid && /^[A-Za-z0-9+/=_-]+$/.test(gclid)) {
         document.cookie = `${COOKIE_NAME}=${gclid};max-age=${COOKIE_MAX_AGE};path=/;SameSite=Lax`
     }
 }
