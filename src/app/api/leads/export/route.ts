@@ -70,12 +70,12 @@ export async function GET(req: NextRequest) {
             ].join(',')
         })
 
-        const csv = [CSV_HEADER, ...rows].join('\n')
+        const csv = '\uFEFF' + [CSV_HEADER, ...rows].join('\n') + '\n'
 
         return new NextResponse(csv, {
             status: 200,
             headers: {
-                'Content-Type': 'text/csv; charset=utf-8',
+                'Content-Type': 'text/csv; charset=utf-8-sig',
                 'Content-Disposition': `attachment; filename="conversoes-${format(new Date(), 'yyyy-MM-dd')}.csv"`,
             },
         })
