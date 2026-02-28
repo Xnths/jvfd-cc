@@ -22,7 +22,7 @@ export const Leads: CollectionConfig = {
         description: 'Cliques no WhatsApp rastreados via GCLID (Google Ads). Atualize o status conforme o lead avança.',
         group: 'Publicidade',
         components: {
-            afterListTable: ['/src/components/admin/LeadsExportButton#LeadsExportButton'],
+            afterListTable: ['@/components/admin/LeadsExportButton#LeadsExportButton'],
         },
     },
     labels: {

@@ -77,7 +77,7 @@ export const Comments: CollectionConfig = {
             admin: {
                 position: 'sidebar',
                 components: {
-                    Field: '/src/components/admin/CommentModerationButtons#default',
+                    Field: '@/components/admin/CommentModerationButtons#default',
                 },
             },
         },
