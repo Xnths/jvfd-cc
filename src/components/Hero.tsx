@@ -14,20 +14,21 @@ export function Hero() {
 
   const handleClick = () => {
     const elapsedTime = getElapsedTime() || 0;
+    const gclid = getGclidFromCookie();
+
     sendGAEvent('event', 'schedule_click', {
       source: 'hero_cta',
       time_to_click_ms: elapsedTime,
+      ...(gclid ? { gclid } : {}),
     });
 
-    // Fire GCLID lead — fire-and-forget via sendBeacon (survives page unload)
-    const gclid = getGclidFromCookie();
+    // Fire GCLID lead — only for paid traffic (organic has no cookie)
     if (gclid) {
       const data = JSON.stringify({ gclid });
       const sent = navigator.sendBeacon
         ? navigator.sendBeacon('/api/leads', new Blob([data], { type: 'application/json' }))
         : false;
       if (!sent) {
-        // Fallback for browsers without sendBeacon
         fetch('/api/leads', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

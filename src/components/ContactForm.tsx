@@ -26,13 +26,15 @@ export function ContactForm() {
 
     const handleOpen = () => {
         setOpen(true);
+        const gclid = getGclidFromCookie();
+
         sendGAEvent("event", "qr_code_open", {
             source: "hero_qr_cta",
             time_to_click_ms: getElapsedTime() || 0,
+            ...(gclid ? { gclid } : {}),
         });
 
-        // Fire GCLID lead — server deduplicates, so no double-count if WhatsApp was already clicked
-        const gclid = getGclidFromCookie();
+        // Fire GCLID lead — only for paid traffic, server deduplicates
         if (gclid) {
             const data = JSON.stringify({ gclid });
             const sent = navigator.sendBeacon
