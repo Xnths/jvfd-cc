@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { FloatingCatButton } from "@/components/floating-cat-button";
+import { GclidCapture } from "@/components/GclidCapture";
 import { siteConfig } from "@/lib/config";
 import { GoogleAnalytics } from '@next/third-parties/google'
 
@@ -170,6 +171,7 @@ export default function RootLayout({
                     {children}
                 </main>
 
+                <GclidCapture />
                 <FloatingCatButton />
                 {gaId && <GoogleAnalytics gaId={gaId} />}
             </body>

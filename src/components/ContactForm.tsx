@@ -17,6 +17,8 @@ import {
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 
+import { getGclidFromCookie } from "@/lib/gclid";
+
 export function ContactForm() {
     const [open, setOpen] = useState(false);
     const whatsappUrl = useWhatsappUrl();
@@ -28,6 +30,23 @@ export function ContactForm() {
             source: "hero_qr_cta",
             time_to_click_ms: getElapsedTime() || 0,
         });
+
+        // Fire GCLID lead — server deduplicates, so no double-count if WhatsApp was already clicked
+        const gclid = getGclidFromCookie();
+        if (gclid) {
+            const data = JSON.stringify({ gclid });
+            const sent = navigator.sendBeacon
+                ? navigator.sendBeacon('/api/leads', new Blob([data], { type: 'application/json' }))
+                : false;
+            if (!sent) {
+                fetch('/api/leads', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: data,
+                    keepalive: true,
+                }).catch(() => { });
+            }
+        }
     };
 
     return (

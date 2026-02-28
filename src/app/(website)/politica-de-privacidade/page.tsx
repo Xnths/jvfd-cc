@@ -87,6 +87,9 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-4">
                     Esses dados são utilizados exclusivamente para fins analíticos e não permitem a identificação de visitantes individualmente.
                 </p>
+                <p className="mb-4">
+                    Quando você chega ao site a partir de um anúncio do Google Ads, utilizamos o <strong>identificador de clique do Google (GCLID)</strong> para medir a eficácia dos anúncios. Este identificador pseudônimo é armazenado em um cookie por 30 dias e associado apenas ao seu clique — nunca a nome, e-mail ou telefone. Os dados são mantidos por até 90 dias e utilizados exclusivamente para fins de relatórios de conversão junto ao Google Ads. Você pode desativar o rastreamento de anúncios personalizados nas <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">configurações de anúncios do Google</a>.
+                </p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">4. Dados do Profissional Responsável</h2>
                 <p className="mb-4">

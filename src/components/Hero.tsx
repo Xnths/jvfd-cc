@@ -3,6 +3,7 @@
 import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
+import { getGclidFromCookie } from "@/lib/gclid";
 import Image from "next/image";
 import { FaWhatsapp } from "react-icons/fa";
 import { ContactForm } from "./ContactForm";
@@ -17,7 +18,26 @@ export function Hero() {
       source: 'hero_cta',
       time_to_click_ms: elapsedTime,
     });
+
+    // Fire GCLID lead — fire-and-forget via sendBeacon (survives page unload)
+    const gclid = getGclidFromCookie();
+    if (gclid) {
+      const data = JSON.stringify({ gclid });
+      const sent = navigator.sendBeacon
+        ? navigator.sendBeacon('/api/leads', new Blob([data], { type: 'application/json' }))
+        : false;
+      if (!sent) {
+        // Fallback for browsers without sendBeacon
+        fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: data,
+          keepalive: true,
+        }).catch(() => { });
+      }
+    }
   };
+
 
   return (
     <section className="relative h-screen min-h-[700px] flex items-center z-50" id="hero">
