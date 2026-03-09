@@ -7,23 +7,25 @@ import type { Where } from 'payload'
 const CSV_HEADER = 'Google Click ID,Conversion Name,Conversion Time,Conversion Value,Conversion Currency'
 const CURRENCY = 'BRL'
 
-// Action configs
+// Action configs — drive the GA conversion metadata
 const ACTIONS = {
     consulta: {
         conversionName: 'Consulta Marcada',
         value: '350',
-        statusFilter: { status: { equals: 'converted' } } as Where,
-        dateField: 'convertedAt' as const,
-        emptyError: 'Nenhuma "Consulta Marcada" encontrada. Atualize o status dos leads antes de exportar.',
+        defaultStatus: 'converted',
+        defaultDateField: 'convertedAt' as const,
+        emptyError: 'Nenhuma "Consulta Marcada" encontrada com os filtros aplicados.',
     },
     contato: {
         conversionName: 'Contato WhatsApp',
         value: '0',
-        statusFilter: { status: { equals: 'qualified' } } as Where,
-        dateField: 'clickedAt' as const,
-        emptyError: 'Nenhum "Lead Qualificado" encontrado. Marque leads como qualificados (mandou mensagem) antes de exportar.',
+        defaultStatus: 'qualified',
+        defaultDateField: 'clickedAt' as const,
+        emptyError: 'Nenhum "Lead Qualificado" encontrado com os filtros aplicados.',
     },
 } as const
+
+type DateField = 'convertedAt' | 'clickedAt'
 
 function toGoogleAdsTime(date: Date): string {
     const y = date.getUTCFullYear()
@@ -46,31 +48,56 @@ export async function GET(req: NextRequest) {
         }
 
         const { searchParams } = new URL(req.url)
-        const actionParam = (searchParams.get('action') ?? 'consulta') as keyof typeof ACTIONS
-        const sinceParam = searchParams.get('since')
 
+        const actionParam = (searchParams.get('action') ?? 'consulta') as keyof typeof ACTIONS
         const action = ACTIONS[actionParam] ?? ACTIONS.consulta
 
-        const andConditions: Where[] = [action.statusFilter]
+        // Optional overrides for status and date range from the filter panel
+        const statusParam = searchParams.get('status') // 'all' | 'clicked' | 'qualified' | 'converted' | null
+        const fromParam = searchParams.get('from')
+        const untilParam = searchParams.get('until')
 
-        if (sinceParam) {
-            const since = new Date(sinceParam)
-            if (!isNaN(since.getTime())) {
-                andConditions.push({
-                    [action.dateField]: { greater_than_equal: since.toISOString() },
-                })
+        const andConditions: Where[] = []
+
+        // Status filter — use override if set, otherwise use action's default
+        if (statusParam && statusParam !== 'all') {
+            andConditions.push({ status: { equals: statusParam } })
+        } else if (!statusParam) {
+            andConditions.push({ status: { equals: action.defaultStatus } })
+        }
+        // if statusParam === 'all' → no status filter, download everything
+
+        // Determine which date field to filter/show in CSV
+        // consulta → convertedAt, contato → clickedAt
+        const dateField: DateField = action.defaultDateField
+
+        if (fromParam) {
+            const from = new Date(fromParam)
+            if (!isNaN(from.getTime())) {
+                andConditions.push({ [dateField]: { greater_than_equal: from.toISOString() } })
             }
         }
 
+        if (untilParam) {
+            const until = new Date(untilParam)
+            if (!isNaN(until.getTime())) {
+                // end of the day
+                until.setUTCHours(23, 59, 59, 999)
+                andConditions.push({ [dateField]: { less_than_equal: until.toISOString() } })
+            }
+        }
+
+        const where: Where = andConditions.length > 0 ? { and: andConditions } : {}
+
         const { docs } = await payload.find({
             collection: 'leads',
-            where: { and: andConditions },
+            where,
             limit: 10000,
             pagination: false,
         })
 
         const rows = docs.map((lead) => {
-            const dateValue = lead[action.dateField]
+            const dateValue = lead[dateField]
             const conversionTime = dateValue
                 ? toGoogleAdsTime(new Date(dateValue as string))
                 : ''

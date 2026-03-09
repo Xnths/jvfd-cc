@@ -25,6 +25,8 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { PreviewButton as PreviewButton_c5b5b4414187b3afb0c7371cbd01dc13 } from '@/components/payload/PreviewButton'
 import { default as default_726399eda1e46d60d10fbba271c23512 } from '@/components/admin/CommentModerationButtons'
 import { LeadsExportButton as LeadsExportButton_8a1f3c2d9e4b5a7c6f0d1e2a3b4c5d6e } from '@/components/admin/LeadsExportButton'
+import { default as LeadsStatusButtons_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d } from '@/components/admin/LeadsStatusButtons'
+import { AdminGA4 as AdminGA4_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6 } from '@/components/admin/AdminGA4'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 export const importMap = {
@@ -55,5 +57,7 @@ export const importMap = {
   "@/components/payload/PreviewButton#PreviewButton": PreviewButton_c5b5b4414187b3afb0c7371cbd01dc13,
   "@/components/admin/CommentModerationButtons#default": default_726399eda1e46d60d10fbba271c23512,
   "@/components/admin/LeadsExportButton#LeadsExportButton": LeadsExportButton_8a1f3c2d9e4b5a7c6f0d1e2a3b4c5d6e,
+  "@/components/admin/LeadsStatusButtons#default": LeadsStatusButtons_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d,
+  "@/components/admin/AdminGA4#AdminGA4": AdminGA4_a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

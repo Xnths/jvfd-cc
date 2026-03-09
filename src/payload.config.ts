@@ -37,6 +37,9 @@ export default buildConfig({
         importMap: {
             baseDir: path.resolve(dirname),
         },
+        components: {
+            afterNavLinks: ['@/components/admin/AdminGA4#AdminGA4'],
+        },
     },
     collections: [Users, Treatments, Posts, Media, Contatos, Subscribers, BlogUsers, Comments, Leads],
     editor: lexicalEditor({

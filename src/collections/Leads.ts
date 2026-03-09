@@ -3,9 +3,11 @@ import type { CollectionConfig } from 'payload'
 const setConvertedAt: CollectionConfig['hooks'] = {
     beforeChange: [
         ({ data, originalDoc }) => {
+            // Auto-set convertedAt only when first switching to converted and no date exists
             if (
                 data.status === 'converted' &&
-                (!originalDoc?.convertedAt)
+                !originalDoc?.convertedAt &&
+                !data.convertedAt
             ) {
                 data.convertedAt = new Date().toISOString()
             }
@@ -18,7 +20,7 @@ export const Leads: CollectionConfig = {
     slug: 'leads',
     admin: {
         useAsTitle: 'gclid',
-        defaultColumns: ['clickedAt', 'status', 'gclid'],
+        defaultColumns: ['clickedAt', 'status', 'convertedAt', 'gclid'],
         description: 'Cliques no WhatsApp rastreados via GCLID (Google Ads). Atualize o status conforme o lead avança.',
         group: 'Publicidade',
         components: {
@@ -54,7 +56,6 @@ export const Leads: CollectionConfig = {
             required: true,
             label: 'Clicou em',
             admin: {
-                readOnly: true,
                 position: 'sidebar',
                 date: { displayFormat: "dd/MM/yyyy 'às' HH:mm" },
             },
@@ -70,16 +71,20 @@ export const Leads: CollectionConfig = {
                 { label: '💬 Lead Qualificado (mandou mensagem)', value: 'qualified' },
                 { label: '✅ Consulta Marcada', value: 'converted' },
             ],
-            admin: { position: 'sidebar' },
+            admin: {
+                position: 'sidebar',
+                components: {
+                    Field: '@/components/admin/LeadsStatusButtons#default',
+                },
+            },
         },
         {
             name: 'convertedAt',
             type: 'date',
             label: 'Converteu em',
             admin: {
-                readOnly: true,
                 position: 'sidebar',
-                description: 'Preenchido automaticamente quando status muda para "Consulta Marcada".',
+                description: 'Preenchido automaticamente quando status muda para "Consulta Marcada". Pode ser editado manualmente.',
                 date: { displayFormat: "dd/MM/yyyy 'às' HH:mm" },
             },
         },
