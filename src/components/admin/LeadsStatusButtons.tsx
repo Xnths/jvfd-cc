@@ -16,6 +16,12 @@ const STATUS_LABELS: Record<string, string> = {
     converted: '✅ Consulta Marcada',
 }
 
+// GA4 event name per status — only qualified and converted fire events
+const GA4_EVENT: Record<string, string | undefined> = {
+    qualified: 'contacted',
+    converted: 'scheduled',
+}
+
 function formatBRDateTime(d: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0')
     return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`
@@ -70,14 +76,20 @@ const LeadsStatusButtons: SelectFieldClientComponent = () => {
                 setValue(status)
                 setFeedback(`✅ Salvo: ${STATUS_LABELS[status] ?? status}`)
 
-                // Fire GA4 event
-                if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-                    window.gtag('event', 'conversion_manual', {
-                        event_category: 'leads',
-                        lead_status: status,
+                // Fire GA4 event (only for qualified/converted)
+                const gaEventName = GA4_EVENT[status]
+                if (gaEventName) {
+                    const params = {
                         lead_id: String(id),
+                        lead_status: status,
                         conversion_time: eventTime.toISOString(),
-                    })
+                    }
+                    if (typeof window.gtag === 'function') {
+                        window.gtag('event', gaEventName, params)
+                        console.log(`[GA4] event fired: "${gaEventName}"`, params)
+                    } else {
+                        console.warn('[GA4] window.gtag not available — event NOT sent:', gaEventName, params)
+                    }
                 }
             } else {
                 const data = await res.json().catch(() => ({}))
