@@ -7,6 +7,7 @@ import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { sendGAEvent } from "@next/third-parties/google";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
+import posthog from "posthog-js";
 
 
 export function Contact() {
@@ -41,6 +42,10 @@ export function Contact() {
     if (type === 'whatsapp') {
       const elapsedTime = getElapsedTime() || 0;
       sendGAEvent('event', 'schedule_click', {
+        source: 'contact_card',
+        time_to_click_ms: elapsedTime,
+      });
+      posthog.capture('schedule_click', {
         source: 'contact_card',
         time_to_click_ms: elapsedTime,
       });

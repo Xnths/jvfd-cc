@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import posthog from "posthog-js";
 
 type FormState = "idle" | "submitting" | "error";
 
@@ -33,6 +34,9 @@ export function LoginForm() {
             });
 
             if (res.ok) {
+                const data = await res.json();
+                posthog.identify(data.user.id, { email: data.user.email, name: data.user.name });
+                posthog.capture("user_logged_in");
                 router.push("/blog");
                 router.refresh();
             } else {

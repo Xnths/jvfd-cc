@@ -4,6 +4,7 @@ import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
 import { getGclidFromCookie } from "@/lib/gclid";
+import posthog from "posthog-js";
 import Image from "next/image";
 import { FaWhatsapp } from "react-icons/fa";
 import { ContactForm } from "./ContactForm";
@@ -17,6 +18,11 @@ export function Hero() {
     const gclid = getGclidFromCookie();
 
     sendGAEvent('event', 'schedule_click', {
+      source: 'hero_cta',
+      time_to_click_ms: elapsedTime,
+      ...(gclid ? { gclid } : {}),
+    });
+    posthog.capture('schedule_click', {
       source: 'hero_cta',
       time_to_click_ms: elapsedTime,
       ...(gclid ? { gclid } : {}),

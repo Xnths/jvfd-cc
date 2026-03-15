@@ -7,6 +7,7 @@ import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
 import { ContactForm } from "./ContactForm";
+import posthog from "posthog-js";
 
 interface RelatedPost {
     id: string;
@@ -27,6 +28,10 @@ export function BlogArticleFooter({ relatedPosts }: BlogArticleFooterProps) {
     const handleClick = () => {
         const elapsedTime = getElapsedTime() || 0;
         sendGAEvent("event", "schedule_click", {
+            source: "blog_article_footer",
+            time_to_click_ms: elapsedTime,
+        });
+        posthog.capture("schedule_click", {
             source: "blog_article_footer",
             time_to_click_ms: elapsedTime,
         });

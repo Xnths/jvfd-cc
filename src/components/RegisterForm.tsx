@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import posthog from "posthog-js";
 
 type FormState = "idle" | "submitting" | "error";
 
@@ -53,6 +54,7 @@ export function RegisterForm() {
             const data = await res.json();
 
             if (res.status === 201) {
+                posthog.capture("user_registered", { subscribeNewsletter: newsletter });
                 router.push("/login?registered=1");
             } else if (res.status === 409) {
                 setErrorMsg("Este e-mail já está cadastrado.");

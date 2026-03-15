@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { sendGAEvent } from "@next/third-parties/google";
 import Link from "next/link";
+import posthog from "posthog-js";
 
 type FormState = "idle" | "submitting" | "success" | "duplicate" | "error";
 
@@ -31,6 +32,7 @@ export function NewsletterForm() {
                 setEmail("");
                 setConsent(false);
                 sendGAEvent("event", "newsletter_subscribe", { source: "newsletter_form" });
+                posthog.capture("newsletter_subscribed", { source: "newsletter_form" });
             } else if (res.status === 409) {
                 setState("duplicate");
             } else {

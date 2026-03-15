@@ -4,6 +4,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
+import posthog from "posthog-js";
 
 export function FloatingCatButton() {
     const whatsappUrl = useWhatsappUrl();
@@ -13,6 +14,10 @@ export function FloatingCatButton() {
         const elapsedTime = getElapsedTime() || 0;
 
         sendGAEvent('event', 'schedule_click', {
+            source: 'floating_button',
+            time_to_click_ms: elapsedTime,
+        });
+        posthog.capture('schedule_click', {
             source: 'floating_button',
             time_to_click_ms: elapsedTime,
         });

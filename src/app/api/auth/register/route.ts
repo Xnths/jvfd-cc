@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 const schema = z.object({
     name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres.'),
@@ -53,6 +54,14 @@ export async function POST(req: NextRequest) {
                 // Already subscribed — ignore duplicate
             }
         }
+
+        const posthog = getPostHogClient()
+        posthog.capture({
+            distinctId: email,
+            event: 'user_registered',
+            properties: { name, subscribeNewsletter: subscribeNewsletter ?? false },
+        })
+        await posthog.shutdown()
 
         return NextResponse.json({ success: true }, { status: 201 })
     } catch (err: unknown) {

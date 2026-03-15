@@ -18,6 +18,7 @@ import {
 import { Button } from "./ui/button";
 
 import { getGclidFromCookie } from "@/lib/gclid";
+import posthog from "posthog-js";
 
 export function ContactForm() {
     const [open, setOpen] = useState(false);
@@ -29,6 +30,11 @@ export function ContactForm() {
         const gclid = getGclidFromCookie();
 
         sendGAEvent("event", "qr_code_open", {
+            source: "hero_qr_cta",
+            time_to_click_ms: getElapsedTime() || 0,
+            ...(gclid ? { gclid } : {}),
+        });
+        posthog.capture("qr_code_opened", {
             source: "hero_qr_cta",
             time_to_click_ms: getElapsedTime() || 0,
             ...(gclid ? { gclid } : {}),

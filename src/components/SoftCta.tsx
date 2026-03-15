@@ -1,4 +1,7 @@
+"use client";
+
 import { FaInstagram } from "react-icons/fa";
+import posthog from "posthog-js";
 
 export function SoftCta() {
     return (
@@ -12,6 +15,7 @@ export function SoftCta() {
                         href="https://www.instagram.com/ciencia_comportamental_"
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => posthog.capture("instagram_follow_clicked", { source: "soft_cta" })}
                         className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-semibold text-lg transition-colors group"
                     >
                         <FaInstagram className="w-6 h-6" />

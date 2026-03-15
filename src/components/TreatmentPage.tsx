@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { Footer } from "@/components/Footer";
 import { Contact } from "@/components/Contact";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import posthog from "posthog-js";
 
 interface TreatmentPageProps {
     title: string;
@@ -12,6 +14,10 @@ interface TreatmentPageProps {
 }
 
 export function TreatmentPage({ title, subtitle, children }: TreatmentPageProps) {
+    useEffect(() => {
+        posthog.capture("treatment_page_viewed", { treatment_title: title });
+    }, [title]);
+
     return (
         <main className="min-h-screen bg-white">
             <header className="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { MoveRight, Search } from "lucide-react";
 import Fuse from "fuse.js";
+import posthog from "posthog-js";
 
 interface Post {
     id: string;
@@ -19,6 +20,7 @@ interface BlogListProps {
 
 export function BlogList({ posts }: BlogListProps) {
     const [searchTerm, setSearchTerm] = useState("");
+    const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const fuse = useMemo(() => {
         return new Fuse(posts, {
@@ -51,7 +53,16 @@ export function BlogList({ posts }: BlogListProps) {
                     className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm transition-all"
                     placeholder="Pesquisar artigos..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setSearchTerm(value);
+                        if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+                        if (value.length >= 3) {
+                            searchDebounceRef.current = setTimeout(() => {
+                                posthog.capture("blog_searched", { search_term: value });
+                            }, 800);
+                        }
+                    }}
                 />
             </div>
 

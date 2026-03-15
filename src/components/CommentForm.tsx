@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import posthog from "posthog-js";
 
 interface CommentFormProps {
     postId: string;
@@ -55,6 +56,7 @@ export function CommentForm({ postId, user }: CommentFormProps) {
             const data = await res.json();
 
             if (res.status === 201) {
+                posthog.capture("comment_submitted", { post_id: postId });
                 setState("success");
                 setBody("");
             } else if (res.status === 401) {
