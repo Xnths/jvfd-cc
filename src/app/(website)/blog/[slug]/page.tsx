@@ -9,6 +9,7 @@ import { BlogArticleFooter } from "@/components/BlogArticleFooter";
 import { NewsletterForm } from "@/components/NewsletterForm";
 import { CommentList } from "@/components/CommentList";
 import { CommentForm } from "@/components/CommentForm";
+import { ArticleEngagementTracker } from "@/components/ArticleEngagementTracker";
 import { Metadata } from "next";
 import Image from "next/image";
 
@@ -85,6 +86,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
     return (
         <article className="container mx-auto px-4 py-20 min-h-screen max-w-4xl">
+            <ArticleEngagementTracker slug={slug} />
             <header className="mb-12 text-center">
                 <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-4">
                     <span>{new Date(post.publishedDate).toLocaleDateString("pt-BR", {

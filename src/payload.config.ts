@@ -11,6 +11,7 @@ import {
     ParagraphFeature,
     UnderlineFeature,
     UnorderedListFeature,
+    UploadFeature,
     lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import path from 'path'
@@ -54,6 +55,7 @@ export default buildConfig({
             ItalicFeature(),
             UnderlineFeature(),
             HTMLConverterFeature({}),
+            UploadFeature({ collections: { media: { fields: [{ name: 'alt', type: 'text' }] } } }),
             FixedToolbarFeature(),
             InlineToolbarFeature(),
         ],

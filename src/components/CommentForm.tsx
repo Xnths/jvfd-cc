@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
+import { sendGAEvent } from "@next/third-parties/google";
 
 interface CommentFormProps {
     postId: string;
@@ -57,6 +58,7 @@ export function CommentForm({ postId, user }: CommentFormProps) {
 
             if (res.status === 201) {
                 posthog.capture("comment_submitted", { post_id: postId });
+                sendGAEvent("event", "comment_submitted", { post_id: postId });
                 setState("success");
                 setBody("");
             } else if (res.status === 401) {

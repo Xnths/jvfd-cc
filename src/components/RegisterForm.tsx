@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import posthog from "posthog-js";
+import { sendGAEvent } from "@next/third-parties/google";
 
 type FormState = "idle" | "submitting" | "error";
 
@@ -55,6 +56,7 @@ export function RegisterForm() {
 
             if (res.status === 201) {
                 posthog.capture("user_registered", { subscribeNewsletter: newsletter });
+                sendGAEvent("event", "sign_up", { method: "email" });
                 router.push("/login?registered=1");
             } else if (res.status === 409) {
                 setErrorMsg("Este e-mail já está cadastrado.");
