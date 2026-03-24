@@ -59,7 +59,7 @@ export const RichText: React.FC<{ content: any }> = ({ content }) => {
                     </p>
                 )
             case 'heading': {
-                const Tag = node.tag as keyof JSX.IntrinsicElements
+                const Tag = node.tag as keyof React.JSX.IntrinsicElements
                 const cls = HEADING_CLASSES[node.tag] ?? 'font-bold text-slate-900 mt-8 mb-3'
                 return <Tag key={Math.random()} className={cls}>{node.children.map(renderChildren)}</Tag>
             }
