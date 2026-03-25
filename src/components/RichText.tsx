@@ -6,6 +6,7 @@ import Image from 'next/image'
 // - Tighter line-height for larger type (headings don't need the leading body text requires)
 // - Weight and size clearly distinguish each level without relying on colour alone
 const HEADING_CLASSES: Record<string, string> = {
+    h1: 'text-[2rem] font-bold leading-[1.2] tracking-tight text-slate-900 mt-14 mb-4 uppercase',
     h2: 'text-[1.75rem] font-bold leading-[1.25] tracking-tight text-slate-900 mt-12 mb-3 uppercase',
     h3: 'text-[1.375rem] font-semibold leading-[1.3] text-slate-900 mt-10 mb-2 capitalize',
     h4: 'text-[1.125rem] font-semibold leading-[1.35] text-slate-800 mt-8 mb-1.5 capitalize italic',

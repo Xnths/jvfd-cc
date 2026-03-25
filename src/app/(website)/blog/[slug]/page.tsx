@@ -97,7 +97,7 @@ export default async function PostPage({ params }: PostPageProps) {
                     <span>•</span>
                     <span>Por {post.author || "João Vitor Fernandes"}</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-8 leading-tight uppercase">
+                <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-8 leading-tight">
                     {post.title}
                 </h1>
                 {post.excerpt && (
