@@ -641,7 +641,8 @@ function GenericLayout({
 interface LayoutProps {
   title: string;
   subtitle?: string;
-  content: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  content: any;
   whatsappUrl: string;
   onCTAClick: () => void;
   config: ServiceConfig;
@@ -653,7 +654,8 @@ interface ServicePageProps {
   slug: string;
   title: string;
   subtitle?: string;
-  content: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  content: any;
 }
 
 export function ServicePage({ slug, title, subtitle, content }: ServicePageProps) {
