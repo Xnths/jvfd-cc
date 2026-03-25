@@ -16,35 +16,35 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-4">
                     A sua privacidade é importante para nós. Esta política descreve como o site do{" "}
                     <Link href="/" className="text-blue-600 hover:underline">Psicólogo João Fernandes</Link>{" "}
-                    coleta, usa e protege os seus dados pessoais.
+                    coleta, usa e protege os seus dados pessoais, em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei 13.709/2018).
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">1. Coleta de Dados</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">1. Formas de Contato</h2>
                 <p className="mb-4">
-                    Este site oferece duas formas de contato:
+                    Este site oferece contato exclusivamente via <strong>WhatsApp</strong>, por meio de botão flutuante e QR code disponíveis na página inicial.
+                    Ao clicar no botão ou escanear o QR code, você é redirecionado diretamente para o aplicativo WhatsApp.
+                    Nenhum dado pessoal é coletado ou armazenado em nossos servidores por meio dessa interação.
                 </p>
-                <ul className="list-disc pl-6 mb-4 space-y-2">
-                    <li>
-                        <strong>Botão do WhatsApp:</strong> Redireciona para o aplicativo de mensagens. Nenhum dado é armazenado em nossos servidores por meio desta interação.
-                    </li>
-                    <li>
-                        <strong>Formulário de contato:</strong> Mediante consentimento explícito, coletamos <strong>nome completo</strong> e <strong>número de telefone</strong> do visitante, exclusivamente para que o profissional João Vitor Fernandes Domingues entre em contato para esclarecimento de dúvidas sobre atendimento.
-                    </li>
-                </ul>
                 <p className="mb-4">
-                    Os dados submetidos pelo formulário são armazenados de forma segura e criptografada em trânsito, sendo acessíveis <strong>exclusivamente pelo profissional João Vitor Fernandes Domingues (CRP 06/157908)</strong>.
-                    O responsável técnico pelo sistema <strong>não possui acesso</strong> a esses dados.
-                    Os dados não serão compartilhados com terceiros ou utilizados para fins de marketing.
+                    Se você chegar ao site por meio de um anúncio do Google Ads, o <strong>identificador de clique do Google (GCLID)</strong> presente na URL é capturado e armazenado em um cookie no seu navegador por até 30 dias.
+                    Caso você clique no botão do WhatsApp durante essa sessão, o GCLID é enviado aos nossos servidores exclusivamente para fins de mensuração de conversão de anúncios.
+                    Esse identificador é pseudônimo — não é vinculado ao seu nome, e-mail ou telefone.
+                    Os dados são mantidos por até 90 dias e utilizados apenas para relatórios de conversão junto ao Google Ads.
+                    Você pode desativar o rastreamento de anúncios personalizados nas{" "}
+                    <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">configurações de anúncios do Google</a>.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">2. Base Legal (LGPD — Lei 13.709/2018)</h2>
                 <p className="mb-4">
-                    O tratamento dos dados pessoais coletados pelo formulário de contato é fundamentado no{" "}
-                    <strong>consentimento livre, informado e inequívoco</strong> do titular (Art. 7º, inciso I, da LGPD).
-                    O visitante pode retirar seu consentimento a qualquer momento, solicitando a exclusão de seus dados por meio do e-mail do profissional.
+                    Os tratamentos de dados pessoais realizados por este site estão fundamentados nas seguintes bases legais:
                 </p>
+                <ul className="list-disc pl-6 mb-4 space-y-2">
+                    <li><strong>Consentimento (Art. 7º, I):</strong> newsletter, cadastro de usuário do blog e registro de LGPD nos formulários.</li>
+                    <li><strong>Legítimo interesse (Art. 7º, IX):</strong> análises de uso do site por meio de ferramentas de analytics (GA4 e PostHog), utilizadas exclusivamente para melhoria do conteúdo e da experiência.</li>
+                    <li><strong>Execução de contrato (Art. 7º, V):</strong> cookie de autenticação dos usuários cadastrados no blog.</li>
+                </ul>
                 <p className="mb-4">
-                    Os dados serão retidos apenas pelo tempo necessário para a finalidade declarada e excluídos após o encerramento da comunicação inicial.
+                    O visitante pode retirar seu consentimento a qualquer momento, conforme descrito nas seções correspondentes abaixo.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">3. Contas de Usuário do Blog</h2>
@@ -77,21 +77,44 @@ export default function PrivacyPolicyPage() {
                     <li>O e-mail é coletado mediante <strong>consentimento explícito</strong> e registrado com a data e hora do consentimento.</li>
                     <li>Os dados são utilizados apenas para envio de notificações de novos artigos — sem fins comerciais ou de marketing.</li>
                     <li>O e-mail <strong>não é compartilhado com terceiros</strong>.</li>
-                    <li>O cancelamento da inscrição pode ser feito a qualquer momento pelo link <em>Cancelar inscrição</em> presente em todos os e-mails recebidos.</li>
+                    <li>O cancelamento da inscrição pode ser feito a qualquer momento pelo link <em>Cancelar inscrição</em> presente em todos os e-mails recebidos ou pela página <a href="/conta" className="text-blue-600 hover:underline">Minha Conta</a>.</li>
                 </ul>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">4. Uso de Cookies e Estatísticas</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">5. Cookies e Ferramentas de Análise</h2>
                 <p className="mb-4">
-                    Utilizamos o <strong>Google Analytics</strong> para coletar informações anônimas e estatísticas sobre o uso do site, como o tempo de permanência nas páginas, a origem do tráfego e cliques em botões.
-                </p>
-                <p className="mb-4">
-                    Esses dados são utilizados exclusivamente para fins analíticos e não permitem a identificação de visitantes individualmente.
-                </p>
-                <p className="mb-4">
-                    Quando você chega ao site a partir de um anúncio do Google Ads, utilizamos o <strong>identificador de clique do Google (GCLID)</strong> para medir a eficácia dos anúncios. Este identificador pseudônimo é armazenado em um cookie por 30 dias e associado apenas ao seu clique — nunca a nome, e-mail ou telefone. Os dados são mantidos por até 90 dias e utilizados exclusivamente para fins de relatórios de conversão junto ao Google Ads. Você pode desativar o rastreamento de anúncios personalizados nas <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">configurações de anúncios do Google</a>.
+                    Este site utiliza cookies e ferramentas de análise para compreender o uso do site e melhorar a experiência dos visitantes.
+                    Nenhuma dessas ferramentas permite identificar visitantes individualmente.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">4. Dados do Profissional Responsável</h2>
+                <h3 className="text-xl font-semibold mt-6 mb-3">Google Analytics 4 (GA4)</h3>
+                <p className="mb-4">
+                    Utilizamos o <strong>Google Analytics 4</strong> para coletar informações anônimas e estatísticas sobre o uso do site, como tempo de permanência nas páginas, origem do tráfego, profundidade de leitura dos artigos e cliques em botões.
+                    Esses dados são transmitidos e armazenados pelo Google e utilizados exclusivamente para fins analíticos.
+                    Para saber mais, consulte a <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Política de Privacidade do Google</a>.
+                </p>
+
+                <h3 className="text-xl font-semibold mt-6 mb-3">PostHog</h3>
+                <p className="mb-4">
+                    Utilizamos o <strong>PostHog</strong> para análise de eventos e monitoramento de erros técnicos no site.
+                    Os dados coletados são anônimos e utilizados exclusivamente para fins de melhoria técnica e de conteúdo.
+                    O PostHog é configurado com um proxy reverso hospedado neste próprio domínio — os dados não são enviados diretamente a servidores externos sem antes passar pela nossa infraestrutura.
+                    Para saber mais, consulte a <a href="https://posthog.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Política de Privacidade do PostHog</a>.
+                </p>
+
+                <h3 className="text-xl font-semibold mt-6 mb-3">Cookie de GCLID (Google Ads)</h3>
+                <p className="mb-4">
+                    Quando você chega ao site a partir de um anúncio do Google Ads, o identificador de clique (GCLID) é armazenado em um cookie por 30 dias.
+                    Esse cookie é pseudônimo e não está vinculado a dados pessoais identificáveis.
+                    Você pode desativar esse rastreamento nas <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">configurações de anúncios do Google</a>.
+                </p>
+
+                <h3 className="text-xl font-semibold mt-6 mb-3">Cookie de Autenticação</h3>
+                <p className="mb-4">
+                    Usuários cadastrados no blog recebem um cookie HTTP-only de autenticação (<code>payload-token</code>) após o login.
+                    Esse cookie é estritamente necessário para manter a sessão ativa e é excluído automaticamente ao efetuar logout ou ao excluir a conta.
+                </p>
+
+                <h2 className="text-2xl font-semibold mt-8 mb-4">6. Dados do Profissional Responsável</h2>
                 <p className="mb-4">
                     <strong>João Vitor Fernandes Domingues</strong><br />
                     Psicólogo Clínico — CRP 06/157908<br />
@@ -102,7 +125,7 @@ export default function PrivacyPolicyPage() {
                     <a href="https://lattes.cnpq.br/2507330776380191" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Acessar Currículo</a>
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">5. Responsável Técnico pelo Sistema</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">7. Responsável Técnico pelo Sistema</h2>
                 <p className="mb-4">
                     O desenvolvimento e a manutenção técnica deste site são de responsabilidade de{" "}
                     <Link href="https://github.com/Xnths" className="text-blue-600 hover:underline">Jonathas Castilho</Link>,
@@ -110,22 +133,25 @@ export default function PrivacyPolicyPage() {
                     Contato: <a href="mailto:jonathas@xnths.com" className="text-blue-600 hover:underline">jonathas@xnths.com</a>.
                 </p>
                 <p className="mb-4">
-                    O responsável técnico <strong>não possui acesso</strong> aos dados pessoais submetidos pelo formulário de contato. Esses dados são de acesso exclusivo do profissional psicólogo identificado na seção 4.
+                    O responsável técnico <strong>não possui acesso</strong> a dados pessoais de pacientes ou de visitantes que entrem em contato pelo WhatsApp. As ferramentas de analytics utilizadas processam apenas dados anônimos e agregados.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">6. Seus Direitos</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">8. Seus Direitos</h2>
                 <p className="mb-4">
-                    Nos termos da LGPD, você tem direito a: confirmar a existência do tratamento de seus dados; acessar os dados coletados; solicitar sua correção ou exclusão; revogar o consentimento a qualquer momento.
-                    Para exercer esses direitos, entre em contato diretamente com o profissional pelo e-mail listado na seção 4.
+                    Nos termos da LGPD (Art. 18), você tem direito a: confirmar a existência do tratamento de seus dados; acessar os dados coletados; solicitar sua correção, portabilidade ou exclusão; revogar o consentimento a qualquer momento.
                 </p>
+                <ul className="list-disc pl-6 mb-4 space-y-2">
+                    <li>Usuários cadastrados no blog podem exercer todos esses direitos diretamente pela página <a href="/conta" className="text-blue-600 hover:underline">Minha Conta</a>.</li>
+                    <li>Para demais solicitações, entre em contato pelo e-mail listado na seção 6.</li>
+                </ul>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">7. Consentimento</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">9. Consentimento</h2>
                 <p className="mb-4">
-                    Ao utilizar o formulário de contato deste site, você concorda com esta Política de Privacidade e autoriza o tratamento dos seus dados conforme descrito.
+                    Ao utilizar este site, você concorda com esta Política de Privacidade. Ao se cadastrar no blog ou assinar a newsletter, você consente expressamente com o tratamento dos dados descritos nas seções 3 e 4.
                 </p>
 
                 <p className="mt-8 text-sm text-slate-500">
-                    Esta política é efetiva a partir de {new Date().getFullYear()}. Última atualização: fevereiro de 2026.
+                    Esta política é efetiva a partir de {new Date().getFullYear()}. Última atualização: março de 2026.
                 </p>
             </div>
         </main>

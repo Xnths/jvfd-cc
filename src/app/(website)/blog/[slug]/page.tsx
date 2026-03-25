@@ -97,7 +97,7 @@ export default async function PostPage({ params }: PostPageProps) {
                     <span>•</span>
                     <span>Por {post.author || "João Vitor Fernandes"}</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-8 leading-tight">
+                <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-8 leading-tight uppercase">
                     {post.title}
                 </h1>
                 {post.excerpt && (
@@ -133,7 +133,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
             {/* Comments section */}
             <section className="mt-16 max-w-2xl mx-auto">
-                <h2 className="text-xl font-semibold text-slate-900 mb-6">Comentários</h2>
+                <h2 className="text-xl font-semibold text-slate-900 mb-6 uppercase">Comentários</h2>
                 <CommentList postId={post.id as string} />
                 <div className="mt-8">
                     <CommentFormWrapper postId={post.id as string} />
