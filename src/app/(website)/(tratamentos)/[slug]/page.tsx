@@ -1,7 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { TreatmentPage } from '@/components/TreatmentPage'
-import { RichText } from '@/components/RichText'
+import { ServicePage } from '@/components/ServicePage'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
@@ -86,14 +85,12 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         const treatment = result.docs[0]
 
         return (
-            <TreatmentPage
+            <ServicePage
+                slug={slug}
                 title={treatment.title}
                 subtitle={treatment.subtitle || ''}
-            >
-                <div className="space-y-8 text-lg text-slate-700 leading-relaxed">
-                    <RichText content={treatment.content} />
-                </div>
-            </TreatmentPage>
+                content={treatment.content}
+            />
         )
     } catch (error) {
         console.error('Error rendering page:', error)
