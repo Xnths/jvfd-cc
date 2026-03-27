@@ -15,7 +15,7 @@ import { Contact } from "@/components/Contact";
 
 const PHONE = "5511955591996";
 
-type Variant = "calming" | "structured" | "plantao" | "supervisao" | "exploratory";
+type Variant = "calming" | "structured" | "plantao" | "supervisao" | "exploratory" | "affirmative";
 
 interface ServiceConfig {
   ctaText: string;
@@ -104,6 +104,18 @@ const SERVICE_CONFIG: Record<string, ServiceConfig> = {
     ctaBtnClass: "bg-red-600 hover:bg-red-700 text-white focus-visible:ring-red-500",
     accentTextClass: "text-red-400",
     badge: "Supervisão Clínica",
+  },
+  lgbtqia: {
+    ctaText: "Agende uma conversa segura",
+    whatsappMessage:
+      "Olá! Gostaria de agendar uma sessão. Vi o site e me interessei pelo atendimento afirmativo LGBTQIA+.",
+    variant: "affirmative",
+    heroBg: "bg-gradient-to-br from-violet-50 via-pink-50 to-amber-50",
+    heroHeadingClass: "text-violet-900",
+    heroSubtitleClass: "text-violet-700",
+    ctaBtnClass: "bg-violet-700 hover:bg-violet-800 text-white focus-visible:ring-violet-500",
+    accentTextClass: "text-violet-600",
+    badge: "Atendimento Afirmativo LGBTQIA+",
   },
 };
 
@@ -593,6 +605,139 @@ function SupervisaoLayout({
   );
 }
 
+// ─── Layout: Affirmative (lgbtqia+) ─────────────────────────────────────────
+// Affirmative therapy research shows that explicit safe-space signaling
+// significantly lowers help-seeking barriers for LGBTQIA+ individuals
+// (Craig & Austin, 2016). Visibility of identity acceptance before any
+// clinical framing reduces threat response and increases engagement.
+
+function RainbowBar({ thin = false }: { thin?: boolean }) {
+  return (
+    <div className={`flex w-full ${thin ? "h-1" : "h-1.5"}`}>
+      <div className="flex-1 bg-red-500" />
+      <div className="flex-1 bg-orange-400" />
+      <div className="flex-1 bg-yellow-400" />
+      <div className="flex-1 bg-green-500" />
+      <div className="flex-1 bg-blue-500" />
+      <div className="flex-1 bg-violet-600" />
+    </div>
+  );
+}
+
+function AffirmativeLayout({
+  title,
+  subtitle,
+  content,
+  whatsappUrl,
+  onCTAClick,
+  config,
+}: LayoutProps) {
+  return (
+    <main className="min-h-screen bg-white">
+      <NavBar />
+
+      {/* Rainbow accent below the nav */}
+      <div className="fixed top-16 left-0 w-full z-40">
+        <RainbowBar />
+      </div>
+
+      {/* Hero — warm, identity-affirming */}
+      <section className={`pt-44 pb-28 px-4 ${config.heroBg}`}>
+        <div className="container mx-auto max-w-3xl text-center">
+          {config.badge && (
+            <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-widest mb-5 text-violet-600">
+              <span className="inline-flex gap-0.5 items-center">
+                <span className="w-2 h-2 rounded-full bg-red-500" />
+                <span className="w-2 h-2 rounded-full bg-orange-400" />
+                <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="w-2 h-2 rounded-full bg-violet-600" />
+              </span>
+              {config.badge}
+            </span>
+          )}
+          <h1
+            className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-8 ${config.heroHeadingClass}`}
+          >
+            {title}
+          </h1>
+          {subtitle && (
+            <p
+              className={`text-xl md:text-2xl leading-relaxed font-light mb-10 ${config.heroSubtitleClass}`}
+            >
+              {subtitle}
+            </p>
+          )}
+          <CTAButton
+            href={whatsappUrl}
+            btnClass={config.ctaBtnClass}
+            text={config.ctaText}
+            onClick={onCTAClick}
+          />
+          <p className="mt-5 text-sm text-slate-500">
+            Espaço seguro e sem julgamentos. Sua identidade é bem-vinda aqui.
+          </p>
+        </div>
+      </section>
+
+      {/* Identity-affirming trust strip */}
+      <div className="py-6 px-4 bg-white border-y border-slate-100">
+        <div className="container mx-auto max-w-3xl flex flex-wrap justify-center gap-x-8 gap-y-2">
+          {[
+            "Identidade de gênero respeitada",
+            "Orientação sexual acolhida",
+            "Sigilo absoluto",
+            "Abordagem afirmativa",
+          ].map((tag) => (
+            <span
+              key={tag}
+              className="text-sm text-slate-600 font-medium flex items-center gap-1.5"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Content — spacious, unhurried */}
+      <section className="py-24 px-4">
+        <div className="container mx-auto max-w-2xl text-lg text-slate-700 leading-[1.85]">
+          <RichText content={content} />
+        </div>
+      </section>
+
+      {/* Closing CTA — affirming, no urgency */}
+      <section className="py-20 px-4 bg-gradient-to-r from-violet-50 via-pink-50 to-amber-50">
+        <div className="container mx-auto max-w-2xl text-center">
+          <div className="flex justify-center mb-6">
+            <RainbowBar />
+          </div>
+          <p className="text-violet-600 text-sm uppercase tracking-widest font-semibold mb-4">
+            Você merece cuidado
+          </p>
+          <h2 className="text-2xl md:text-3xl font-bold text-violet-900 mb-3">
+            Aqui, você é visto como é. Sem filtros, sem julgamentos.
+          </h2>
+          <p className="text-slate-600 mb-8 text-lg">
+            Um espaço terapêutico que celebra sua autenticidade.
+          </p>
+          <CTAButton
+            href={whatsappUrl}
+            btnClass={config.ctaBtnClass}
+            text={config.ctaText}
+            onClick={onCTAClick}
+          />
+        </div>
+      </section>
+
+      <Contact />
+      <Footer />
+    </main>
+  );
+}
+
 // ─── Generic fallback ────────────────────────────────────────────────────────
 
 function GenericLayout({
@@ -718,6 +863,8 @@ export function ServicePage({ slug, title, subtitle, content }: ServicePageProps
       return <ExploratoryLayout {...layoutProps} />;
     case "structured":
       return <StructuredLayout {...layoutProps} />;
+    case "affirmative":
+      return <AffirmativeLayout {...layoutProps} />;
     default:
       return <CalmingLayout {...layoutProps} />;
   }

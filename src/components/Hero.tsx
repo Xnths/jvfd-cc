@@ -8,6 +8,7 @@ import posthog from "posthog-js";
 import Image from "next/image";
 import { FaWhatsapp } from "react-icons/fa";
 import { ContactForm } from "./ContactForm";
+import { AffirmativeBadge } from "./AffirmativeBadge";
 
 export function Hero() {
   const whatsappUrl = useWhatsappUrl();
@@ -67,6 +68,8 @@ export function Hero() {
             <br />
             CRP 06/157908
           </span>
+
+          <AffirmativeBadge />
 
           <h1 className="text-white mb-6 text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
             Você não precisa resolver
