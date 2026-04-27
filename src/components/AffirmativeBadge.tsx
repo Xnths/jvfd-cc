@@ -10,7 +10,7 @@ export function AffirmativeBadge() {
         <span className="w-2 h-2 rounded-full bg-violet-500" />
       </span>
       <span className="text-xs font-medium text-slate-200 tracking-wide">
-        Atendimento afirmativo LGBTQ+
+        Psicólogo LGBT+
       </span>
     </div>
   );

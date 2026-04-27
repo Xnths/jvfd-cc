@@ -21,7 +21,7 @@ export const metadata: Metadata = {
         template: `%s | Psicólogo João Fernandes`,
     },
 
-    description: "Psicólogo Particular com atendimento afirmativo LGBTQ+ e Especialista em Análise do Comportamento (PUCSP). Psicoterapia online para todo o Brasil ou presencial na Vila Madalena, SP. Agende sua sessão.",
+    description: "Psicólogo Particular com Psicólogo LGBT+ e Especialista em Análise do Comportamento (PUCSP). Psicoterapia online para todo o Brasil ou presencial na Vila Madalena, SP. Agende sua sessão.",
 
     keywords: [
         "psicólogo online",
