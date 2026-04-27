@@ -100,18 +100,6 @@ export function HeroPresencial() {
           </div>
         </div>
       </section>
-
-      {/* Sticky mobile WhatsApp bar */}
-      <a
-        href={whatsappUrl}
-        onClick={handleClick}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-0 left-0 w-full z-50 md:hidden flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white py-4 text-base font-bold transition-all shadow-lg"
-      >
-        <FaWhatsapp className="w-5 h-5" />
-        Entrar em contato pelo WhatsApp
-      </a>
     </>
   );
 }
