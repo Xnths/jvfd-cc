@@ -10,7 +10,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { ContactForm } from "./ContactForm";
 import { AffirmativeBadge } from "./AffirmativeBadge";
 
-export function Hero() {
+export function Hero({ showLgbt = false }: { showLgbt?: boolean }) {
   const whatsappUrl = useWhatsappUrl();
   const { getElapsedTime } = useTimeToAction();
 
@@ -69,7 +69,7 @@ export function Hero() {
             CRP 06/157908
           </span>
 
-          <AffirmativeBadge />
+          {showLgbt && <AffirmativeBadge />}
 
           <h1 className="text-white mb-6 text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
             Você não precisa resolver

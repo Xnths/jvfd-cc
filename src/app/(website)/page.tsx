@@ -13,10 +13,17 @@ import { Discussions } from "@/components/Discussions";
 import { SoftCta } from "@/components/SoftCta";
 import { NewsletterForm } from "@/components/NewsletterForm";
 
-export default function Home() {
+export default async function Home({
+    searchParams,
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+    const params = await searchParams;
+    const showLgbt = params.lgbt === "true";
+
     return (
         <div className="min-h-screen">
-            <Hero />
+            <Hero showLgbt={showLgbt} />
             <SoftCta />
             <Discussions />
             <section className="py-12 bg-white">
@@ -24,7 +31,7 @@ export default function Home() {
                     <NewsletterForm />
                 </div>
             </section>
-            <Services />
+            <Services showLgbt={showLgbt} />
             <Testimonials />
             <About />
             <Excellence />

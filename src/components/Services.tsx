@@ -78,7 +78,7 @@ const services = [
   },
 ];
 
-export function Services() {
+export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
   const whatsappUrl = useWhatsappUrl();
   const { getElapsedTime } = useTimeToAction();
 
@@ -105,21 +105,23 @@ export function Services() {
             Abaixo estão algumas situações em que o acompanhamento psicológico pode ser indicado.
           </p>
           {/* LGBTQIA+ friendly badge */}
-          <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-4 py-2 shadow-sm">
-            <span className="flex gap-0.5 items-center">
-              <span className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="w-2 h-2 rounded-full bg-orange-400" />
-              <span className="w-2 h-2 rounded-full bg-yellow-400" />
-              <span className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="w-2 h-2 rounded-full bg-violet-600" />
-            </span>
-            <span className="text-sm font-semibold text-violet-700">Espaço afirmativo LGBTQIA+</span>
-          </div>
+          {showLgbt && (
+            <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-4 py-2 shadow-sm">
+              <span className="flex gap-0.5 items-center">
+                <span className="w-2 h-2 rounded-full bg-red-500" />
+                <span className="w-2 h-2 rounded-full bg-orange-400" />
+                <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="w-2 h-2 rounded-full bg-violet-600" />
+              </span>
+              <span className="text-sm font-semibold text-violet-700">Espaço afirmativo LGBTQIA+</span>
+            </div>
+          )}
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {services.map((service, index) => {
+          {services.filter((s) => showLgbt || !("pride" in s && s.pride)).map((service, index) => {
             const Icon = service.icon;
             const isPride = "pride" in service && service.pride;
             return (
