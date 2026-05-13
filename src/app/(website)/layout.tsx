@@ -33,8 +33,6 @@ export const metadata: Metadata = {
         "psicólogo comportamental sp",
         "psicoterapia individual particular",
         "joão vitor fernandes psicólogo",
-        "psicólogo afirmativo online",
-        "terapia afirmativa online",
         "psicólogo LGBT online",
         "psicólogo gay online",
         "atendimento lgbtq psicólogo"
@@ -123,7 +121,6 @@ export default function RootLayout({
             { "@type": "Thing", "name": "Terapia Comportamental" },
             { "@type": "Thing", "name": "Gestão de Emoções" },
             { "@type": "Thing", "name": "Desenvolvimento Pessoal" },
-            { "@type": "Thing", "name": "terapia afirmativa" },
             { "@type": "Thing", "name": "psicologia LGBTQ+" },
             { "@type": "Thing", "name": "identidade de gênero" }
         ],

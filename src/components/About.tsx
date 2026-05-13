@@ -25,7 +25,7 @@ export function About() {
               Para além da técnica, acredito que a terapia é um encontro humano. Meu compromisso é oferecer uma escuta atenta e livre de julgamentos, construindo um vínculo de confiança que permita a você explorar suas questões com segurança e caminhar em direção ao que valoriza.
             </p>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              Ofereço terapia afirmativa para pessoas LGBTQ+, um atendimento clínico comprometido com o acolhimento sem julgamentos de questões como identidade de gênero, coming out e relações homoafetivas. Esse cuidado faz parte da prática clínica fundamentada nos princípios do Conselho Federal de Psicologia.
+              Como psicólogo gay, trago uma compreensão genuína das alegrias e dos desafios que fazem parte da vida LGBTQIA+. Meu atendimento é voltado ao que realmente importa: construir relacionamentos que nutram, alcançar aceitação plena e viver com mais leveza e autenticidade. Aqui, sua identidade é celebrada — e a terapia é um espaço para florescer.
             </p>
           </div>
           <div className="relative">

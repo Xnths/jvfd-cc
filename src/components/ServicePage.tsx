@@ -106,16 +106,16 @@ const SERVICE_CONFIG: Record<string, ServiceConfig> = {
     badge: "Supervisão Clínica",
   },
   lgbtqia: {
-    ctaText: "Agende uma conversa segura",
+    ctaText: "Agendar uma conversa",
     whatsappMessage:
-      "Olá! Gostaria de agendar uma sessão. Vi o site e me interessei pelo atendimento afirmativo LGBTQIA+.",
+      "Olá! Gostaria de agendar uma sessão com o João. Vi o site e me interessei pelo atendimento LGBTQIA+.",
     variant: "affirmative",
     heroBg: "bg-gradient-to-br from-violet-50 via-pink-50 to-amber-50",
     heroHeadingClass: "text-violet-900",
     heroSubtitleClass: "text-violet-700",
     ctaBtnClass: "bg-violet-700 hover:bg-violet-800 text-white focus-visible:ring-violet-500",
     accentTextClass: "text-violet-600",
-    badge: "Atendimento Afirmativo LGBTQIA+",
+    badge: "Psicólogo LGBTQIA+",
   },
 };
 
@@ -676,7 +676,7 @@ function AffirmativeLayout({
             onClick={onCTAClick}
           />
           <p className="mt-5 text-sm text-slate-500">
-            Espaço seguro e sem julgamentos. Sua identidade é bem-vinda aqui.
+            Um psicólogo gay que entende sua história. Aqui, você é livre para ser quem é.
           </p>
         </div>
       </section>
@@ -685,10 +685,10 @@ function AffirmativeLayout({
       <div className="py-6 px-4 bg-white border-y border-slate-100">
         <div className="container mx-auto max-w-3xl flex flex-wrap justify-center gap-x-8 gap-y-2">
           {[
-            "Identidade de gênero respeitada",
-            "Orientação sexual acolhida",
+            "Identidade celebrada",
+            "Relacionamentos mais plenos",
+            "Aceitação e leveza",
             "Sigilo absoluto",
-            "Abordagem afirmativa",
           ].map((tag) => (
             <span
               key={tag}
@@ -718,10 +718,10 @@ function AffirmativeLayout({
             Você merece cuidado
           </p>
           <h2 className="text-2xl md:text-3xl font-bold text-violet-900 mb-3">
-            Aqui, você é visto como é. Sem filtros, sem julgamentos.
+            Aqui, sua autenticidade é celebrada. Vamos construir juntos uma vida com mais alegria.
           </h2>
           <p className="text-slate-600 mb-8 text-lg">
-            Um espaço terapêutico que celebra sua autenticidade.
+            Com a empatia de quem compartilha da sua experiência.
           </p>
           <CTAButton
             href={whatsappUrl}

@@ -70,9 +70,9 @@ const services = [
   },
   {
     icon: Heart,
-    title: "Atendimento afirmativo LGBTQIA+",
+    title: "Psicólogo LGBTQIA+",
     description:
-      "Um espaço terapêutico seguro e sem julgamentos para pessoas LGBTQIA+. Aqui, sua identidade de gênero e orientação sexual são respeitadas e acolhidas como parte de quem você é.",
+      "João é psicólogo gay e traz empatia genuína para o atendimento da comunidade LGBTQIA+. Juntos, trabalhamos rumo à aceitação, a relacionamentos mais plenos e a uma vida com mais alegria e autenticidade.",
     href: "/lgbtqia",
     pride: true,
   },
@@ -115,7 +115,7 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
                 <span className="w-2 h-2 rounded-full bg-blue-500" />
                 <span className="w-2 h-2 rounded-full bg-violet-600" />
               </span>
-              <span className="text-sm font-semibold text-violet-700">Espaço afirmativo LGBTQIA+</span>
+              <span className="text-sm font-semibold text-violet-700">Psicólogo LGBTQIA+</span>
             </div>
           )}
         </div>
