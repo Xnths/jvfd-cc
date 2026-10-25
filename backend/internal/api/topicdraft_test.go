@@ -110,6 +110,11 @@ func TestDraftTopicPipeline(t *testing.T) {
 	if tstatus != "in_progress" {
 		t.Errorf("topic status %q", tstatus)
 	}
+	// the pauta stays in the screen's list after the draft is ready, with the draft's slug, so João can open it
+	list := e.do("GET", "/api/v1/admin/topics?status=queued,in_progress", "", e.token(authn.RoleAdminClinical))
+	if list.Code != 200 || !strings.Contains(list.Body.String(), topicID) || !strings.Contains(list.Body.String(), `"postSlug":"ansiedade-antes-das-provas"`) {
+		t.Fatalf("topics list after the draft: %d %s", list.Code, list.Body.String())
+	}
 	// papers used are kept for /admin/pesquisa and out of next week's digest
 	var left int
 	_ = e.srv.Pool.QueryRow(ctx, `SELECT count(*) FROM research_items WHERE status = 'new'`).Scan(&left)

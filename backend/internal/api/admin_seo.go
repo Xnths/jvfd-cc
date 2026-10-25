@@ -207,7 +207,7 @@ func (s *Server) adminTopics(w http.ResponseWriter, r *http.Request) {
 		FROM topic_queue t
 		LEFT JOIN LATERAL (SELECT * FROM topic_digests WHERE topic_id = t.id ORDER BY created_at DESC LIMIT 1) d ON true
 		LEFT JOIN posts p ON p.id = d.post_id
-		WHERE ($1 = '' OR t.status = $1) ORDER BY (t.status = 'queued') DESC, t.priority DESC, t.target_date NULLS LAST LIMIT 200`, r.URL.Query().Get("status"))
+		WHERE ($1 = '' OR t.status = ANY(string_to_array($1, ','))) ORDER BY (t.status = 'queued') DESC, t.priority DESC, t.target_date NULLS LAST LIMIT 200`, r.URL.Query().Get("status"))
 	if err != nil {
 		serverError(w, s.Log, r, err)
 		return

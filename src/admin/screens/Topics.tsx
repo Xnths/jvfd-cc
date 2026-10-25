@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,7 +20,8 @@ const editUrl = (slug: string) => `/edit/enter?return=${encodeURIComponent(`/blo
 const SOURCE: Record<string, string> = { awareness: 'Data de conscientização', gsc_rising: 'Busca em alta', research: 'Pesquisa', faq: 'Pergunta', manual: 'Você' }
 
 export function Topics() {
-    const topics = useResource<{ topics: Topic[] }>('/topics?status=queued')
+    // in_progress too: a pauta with a finished draft moves there, and its "Abrir rascunho" link must stay visible
+    const topics = useResource<{ topics: Topic[] }>('/topics?status=queued,in_progress')
     const cal = useResource<{ events: Event[] }>('/calendar')
     const [newTopic, setNewTopic] = useState('')
     const [draft, setDraft] = useState({ name: '', startMd: '', endMd: '', topics: '' })
@@ -32,6 +33,22 @@ export function Topics() {
         const id = setInterval(() => void reloadTopics(), 4000)
         return () => clearInterval(id)
     }, [anyRunning, reloadTopics])
+
+    // A run watched from start to finish on this screen sends João straight to the draft.
+    const watched = useRef(new Set<string>())
+    useEffect(() => {
+        for (const t of topics.data?.topics ?? []) {
+            if (running(t.digest)) watched.current.add(t.id)
+            else if (watched.current.has(t.id) && t.digest?.status === 'done' && t.digest.postSlug) {
+                watched.current.delete(t.id)
+                toast.success('Rascunho pronto. Abrindo…')
+                const url = editUrl(t.digest.postSlug)
+                setTimeout(() => { window.location.href = url }, 1200)
+            } else if (t.digest?.status === 'failed') {
+                watched.current.delete(t.id)
+            }
+        }
+    }, [topics.data])
 
     const generate = async (t: Topic) => {
         try {
@@ -71,18 +88,20 @@ export function Topics() {
                             {running(t.digest) ? (
                                 <Badge>{STEP[t.digest!.status]}</Badge>
                             ) : t.digest?.status === 'done' && t.digest.postSlug ? (
-                                <a className="text-sm font-medium underline" href={editUrl(t.digest.postSlug)}>Abrir rascunho</a>
+                                <Button size="sm" asChild><a href={editUrl(t.digest.postSlug)}>Abrir rascunho</a></Button>
                             ) : (
                                 <Button size="sm" onClick={() => generate(t)}>{t.digest?.status === 'failed' ? 'Tentar de novo' : 'Gerar rascunho'}</Button>
                             )}
-                            <a className="text-sm underline" href={`/edit/enter?return=${encodeURIComponent('/blog')}`} onClick={async (e) => {
-                                e.preventDefault()
-                                try {
-                                    const p = await api<{ slug: string }>('/posts', { method: 'POST', json: { title: t.topic } })
-                                    await api(`/topics/${t.id}`, { method: 'PATCH', json: { status: 'in_progress' } })
-                                    window.location.href = editUrl(p.slug)
-                                } catch (err) { toast.error(errorMessage(err)) }
-                            }}>Escrever</a>
+                            {(!t.digest || t.digest.status === 'failed') && (
+                                <a className="text-sm underline" href={`/edit/enter?return=${encodeURIComponent('/blog')}`} onClick={async (e) => {
+                                    e.preventDefault()
+                                    try {
+                                        const p = await api<{ slug: string }>('/posts', { method: 'POST', json: { title: t.topic } })
+                                        await api(`/topics/${t.id}`, { method: 'PATCH', json: { status: 'in_progress' } })
+                                        window.location.href = editUrl(p.slug)
+                                    } catch (err) { toast.error(errorMessage(err)) }
+                                }}>Escrever</a>
+                            )}
                             <Button size="sm" variant="ghost" onClick={() => act(() => api(`/topics/${t.id}`, { method: 'PATCH', json: { status: 'dismissed' } }), topics.reload)}>Descartar</Button>
                         </div>
                         {t.digest?.status === 'failed' && <p role="alert" className="mt-2 text-xs text-destructive">Não deu certo: {t.digest.error || 'erro desconhecido'}</p>}
