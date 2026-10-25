@@ -52,6 +52,25 @@ main() {
         "${compose[@]}" build api && "${compose[@]}" up -d api
     fi
 
+    # --- 3b. Airflow (optional; the site never depends on it) ---
+    if [ "${AIRFLOW_ENABLED:-0}" = 1 ]; then
+        echo "Airflow..."
+        (
+            set -e
+            : "${BACKUP_DB_PASSWORD:?BACKUP_DB_PASSWORD missing in .env}"
+            # Read-only role for the nightly pg_dump (idempotent; keeps the password in sync with .env).
+            docker exec -i -e PW="$BACKUP_DB_PASSWORD" clinic-postgres sh -c 'psql -q -U clinic -d clinic -v ON_ERROR_STOP=1 -v pw="$PW"' <<'SQL'
+SELECT 'CREATE ROLE clinic_backup LOGIN' WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'clinic_backup') \gexec
+ALTER ROLE clinic_backup PASSWORD :'pw';
+GRANT pg_read_all_data TO clinic_backup;
+GRANT CONNECT ON DATABASE clinic TO clinic_backup;
+SQL
+            "${compose[@]}" --profile airflow up -d --build airflow-api airflow-scheduler airflow-dag-processor
+            sleep 20
+            docker exec clinic-airflow-scheduler python /opt/airflow/tests/check_dags.py
+        ) || echo "WARNING: Airflow did not come up cleanly (the site is not affected)"
+    fi
+
     # --- 4. Next.js blue/green ---
     local active new
     if docker ps --format '{{.Names}}' | grep -q '^clinic-frontend-blue$'; then active=blue; new=green; else active=green; new=blue; fi

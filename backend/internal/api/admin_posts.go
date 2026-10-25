@@ -54,6 +54,7 @@ func (s *Server) adminContentRoutes(mux *http.ServeMux) {
 	mux.Handle("DELETE /api/v1/admin/media/{id}", a(s.adminDeleteMedia))
 
 	s.adminProfileRoutes(mux)
+	s.jobAdminRoutes(mux)
 }
 
 type adminPost struct {

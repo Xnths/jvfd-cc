@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Xnths/jvfd-cc/backend/internal/authn"
 )
@@ -627,5 +628,49 @@ func TestGlossaryAndRoutes(t *testing.T) {
 	}
 	if strings.Contains(e.do("GET", "/api/v1/public/routes", "", "").Body.String(), "reforco-positivo") {
 		t.Fatal("unpublished term still in routes")
+	}
+}
+
+func TestJobsRunAdminAndAirflow(t *testing.T) {
+	e := newTestEnv(t)
+	svc, admin := e.token(authn.RoleService), e.token(authn.RoleAdminTech)
+	// Airflow path: synchronous, idempotent per key
+	first := e.do("POST", "/api/v1/internal/jobs/newsletter.reconcile", "", svc, "Idempotency-Key", "run-1")
+	if first.Code != 200 || !strings.Contains(first.Body.String(), `"status":"ok"`) {
+		t.Fatalf("first run: %d %s", first.Code, first.Body.String())
+	}
+	again := e.do("POST", "/api/v1/internal/jobs/newsletter.reconcile", "", svc, "Idempotency-Key", "run-1")
+	if !strings.Contains(again.Body.String(), `"replayed":true`) {
+		t.Fatalf("retry did not replay: %s", again.Body.String())
+	}
+	if c := e.do("POST", "/api/v1/internal/jobs/nope", "", svc, "Idempotency-Key", "k").Code; c != 404 {
+		t.Errorf("unknown job: %d", c)
+	}
+	// non-Go tasks report their own runs
+	if c := e.do("POST", "/api/v1/internal/jobs-report", `{"job":"backup.run","key":"dag-1","status":"ok","summary":{"bytes":123}}`, svc).Code; c != 204 {
+		t.Errorf("report: %d", c)
+	}
+	// admin UI path: trigger now, then see it in the runs list
+	rec := e.do("POST", "/api/v1/admin/jobs/retention.cleanup/trigger", "", admin)
+	if rec.Code != 202 {
+		t.Fatalf("trigger: %d %s", rec.Code, rec.Body.String())
+	}
+	var ok bool
+	for i := 0; i < 50 && !ok; i++ {
+		time.Sleep(50 * time.Millisecond)
+		ok = strings.Contains(e.do("GET", "/api/v1/admin/jobs/runs?job=retention.cleanup", "", admin).Body.String(), `"status":"ok"`)
+	}
+	if !ok {
+		t.Fatal("manual run never finished")
+	}
+	runs := e.do("GET", "/api/v1/admin/jobs/runs", "", admin).Body.String()
+	if !strings.Contains(runs, "backup.run") || !strings.Contains(runs, "newsletter.reconcile") {
+		t.Errorf("runs list: %s", runs)
+	}
+	if c := e.do("GET", "/api/v1/admin/audit", "", admin).Code; c != 200 {
+		t.Errorf("audit: %d", c)
+	}
+	if c := e.do("POST", "/api/v1/admin/jobs/retention.cleanup/trigger", "", svc).Code; c != 401 {
+		t.Errorf("service token on admin trigger: %d", c)
 	}
 }

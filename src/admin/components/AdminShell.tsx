@@ -6,6 +6,7 @@ import { useState } from 'react'
 import {
     ExternalLink,
     HelpCircle,
+    History,
     FileText,
     Image as ImageIcon,
     LayoutDashboard,
@@ -15,6 +16,7 @@ import {
     MessageSquare,
     MousePointerClick,
     Phone,
+    Timer,
     X,
 } from 'lucide-react'
 import { Toaster } from '@/components/ui/sonner'
@@ -32,6 +34,8 @@ const NAV = [
     { href: '/admin/assinantes', label: 'Assinantes', icon: Mail },
     { href: '/admin/contatos', label: 'Contatos', icon: Phone, clinicalOnly: true },
     { href: '/admin/midia', label: 'Mídia', icon: ImageIcon },
+    { href: '/admin/jobs', label: 'Tarefas', icon: Timer },
+    { href: '/admin/auditoria', label: 'Histórico', icon: History },
 ]
 
 export function AdminShell({ me, children }: { me: Me; children: React.ReactNode }) {
