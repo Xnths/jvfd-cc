@@ -451,6 +451,7 @@ func TestStripJPEGMetadata(t *testing.T) {
 }
 
 func TestJobsIdempotent(t *testing.T) {
+	t.Setenv("RETENTION_LEADS_DAYS", "90") // lead deletion is opt-in
 	e := newTestEnv(t)
 	svc := e.token(authn.RoleService)
 	e.exec(`INSERT INTO leads (gclid, clicked_at) VALUES ('OLD', now() - interval '100 days'), ('NEW', now())`)
