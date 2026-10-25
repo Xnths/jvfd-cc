@@ -15,41 +15,6 @@ type Summarizer interface {
 	Summarize(ctx context.Context, it Item) (string, error)
 }
 
-type node = map[string]any
-
-func text(s string, bold bool) node {
-	f := 0
-	if bold {
-		f = 1
-	}
-	return node{"type": "text", "version": 1, "text": s, "format": f, "mode": "normal", "style": "", "detail": 0}
-}
-
-func paragraph(children ...node) node {
-	c := make([]any, len(children))
-	for i, n := range children {
-		c[i] = n
-	}
-	return node{"type": "paragraph", "version": 1, "format": "", "indent": 0, "direction": nil, "children": c}
-}
-
-func heading(tag, s string) node {
-	return node{"type": "heading", "tag": tag, "version": 1, "format": "", "indent": 0, "direction": nil, "children": []any{text(s, false)}}
-}
-
-func link(label, url string) node {
-	return node{"type": "link", "version": 1, "format": "", "indent": 0, "direction": nil, "url": url, "target": "_blank", "rel": "noopener noreferrer", "children": []any{text(label, false)}}
-}
-
-func doc(blocks ...node) []byte {
-	c := make([]any, len(blocks))
-	for i, b := range blocks {
-		c[i] = b
-	}
-	b, _ := json.Marshal(node{"root": node{"type": "root", "version": 1, "format": "", "indent": 0, "direction": nil, "children": c}})
-	return b
-}
-
 func shorten(s string, n int) string {
 	s = strings.Join(strings.Fields(s), " ")
 	if len(s) <= n {

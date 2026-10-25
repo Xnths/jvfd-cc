@@ -42,8 +42,9 @@ func init() {
 	}
 }
 
-// summarizerFromEnv returns the optional OpenAI summarizer (nil without OPENAI_API_KEY: the digest then quotes the abstract).
-func summarizerFromEnv(s *Server) research.Summarizer {
+// openAIFromEnv returns the OpenAI client, or nil without OPENAI_API_KEY (the digest then quotes the abstract and
+// "Gerar rascunho" is unavailable).
+func openAIFromEnv(s *Server) *research.OpenAI {
 	key := os.Getenv("OPENAI_API_KEY")
 	if key == "" {
 		return nil
@@ -52,5 +53,18 @@ func summarizerFromEnv(s *Server) research.Summarizer {
 	if v, err := strconv.ParseFloat(os.Getenv("LLM_MONTHLY_BUDGET_USD"), 64); err == nil && v > 0 {
 		budget = v
 	}
-	return research.NewOpenAISummarizer(s.Pool, key, os.Getenv("OPENAI_MODEL"), budget)
+	ai := research.NewOpenAISummarizer(s.Pool, key, os.Getenv("OPENAI_MODEL"), budget)
+	ai.DraftModel = os.Getenv("OPENAI_DRAFT_MODEL")
+	if base := os.Getenv("OPENAI_BASE_URL"); base != "" {
+		ai.Base = base
+	}
+	return ai
+}
+
+// summarizerFromEnv is openAIFromEnv as the optional digest summarizer (a nil interface, not a typed nil).
+func summarizerFromEnv(s *Server) research.Summarizer {
+	if ai := openAIFromEnv(s); ai != nil {
+		return ai
+	}
+	return nil
 }

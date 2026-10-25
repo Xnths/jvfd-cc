@@ -75,6 +75,7 @@ Recomendado também: um SSD USB/NVMe para `/var/lib/docker`.
 - `NCBI_API_KEY=` opcional (limite maior de consultas).
 - `RETENTION_LEADS_DAYS=90` **somente depois que o João confirmar**: apaga, todo dia, leads (cliques de anúncio) mais antigos que isso. Vazio = nunca apaga leads.
 - Resumos em português com IA: `OPENAI_API_KEY=` (opcional; `OPENAI_MODEL=` padrão `gpt-4o-mini`; `LLM_MONTHLY_BUDGET_USD=` padrão 5). O resumo semanal envia só título, periódico e resumo públicos do artigo. Passando do orçamento do mês, o rascunho volta a citar o resumo original. Gasto em `llm_usage`.
+- Botão **Gerar rascunho** em /admin/pautas: usa a mesma chave e o mesmo orçamento. Três passos (busca de fontes no PubMed/SciELO + uma busca na web, ideia do post, texto final no estilo do João) e cria um post em rascunho com as fontes. Custo típico: cerca de US$ 0,03 por rascunho (a busca na web é a maior parte). `OPENAI_DRAFT_MODEL=` opcional para o texto final; sem `NCBI_EMAIL` só a busca na web é usada.
 
 ## 7. Airflow
 

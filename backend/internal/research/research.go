@@ -111,13 +111,18 @@ func clean(s string) string {
 	return strings.Join(strings.Fields(html.UnescapeString(tags.ReplaceAllString(s, " "))), " ")
 }
 
-// PubMed returns papers published in the last `days` days that match the query.
+// PubMed returns papers published in the last `days` days that match the query, newest first.
 func (f *Fetcher) PubMed(ctx context.Context, query string, days int) ([]Item, error) {
+	return f.PubMedSorted(ctx, query, days, "date")
+}
+
+// PubMedSorted is PubMed with an explicit esearch sort ("date" or "relevance").
+func (f *Fetcher) PubMedSorted(ctx context.Context, query string, days int, sort string) ([]Item, error) {
 	common := url.Values{"tool": {"jvfd-cc"}, "email": {f.Email}}
 	if f.APIKey != "" {
 		common.Set("api_key", f.APIKey)
 	}
-	q := url.Values{"db": {"pubmed"}, "retmode": {"json"}, "retmax": {"20"}, "sort": {"date"}, "datetype": {"pdat"}, "reldate": {fmt.Sprint(days)}, "term": {query}}
+	q := url.Values{"db": {"pubmed"}, "retmode": {"json"}, "retmax": {"20"}, "sort": {sort}, "datetype": {"pdat"}, "reldate": {fmt.Sprint(days)}, "term": {query}}
 	for k, v := range common {
 		q[k] = v
 	}
@@ -197,13 +202,18 @@ func firstNonEmpty(a, b string) string {
 
 // ── Crossref (SciELO prefix 10.1590) ────────────────────────────────────────
 
-// Crossref returns recent journal articles that match the query, optionally restricted to a DOI prefix.
+// Crossref returns recent journal articles that match the query, optionally restricted to a DOI prefix, newest first.
 func (f *Fetcher) Crossref(ctx context.Context, query, prefix string, days int) ([]Item, error) {
+	return f.CrossrefSorted(ctx, query, prefix, days, "published")
+}
+
+// CrossrefSorted is Crossref with an explicit sort ("published" or "relevance").
+func (f *Fetcher) CrossrefSorted(ctx context.Context, query, prefix string, days int, sort string) ([]Item, error) {
 	filters := []string{"type:journal-article", "from-pub-date:" + time.Now().AddDate(0, 0, -days).Format("2006-01-02")}
 	if prefix != "" {
 		filters = append(filters, "prefix:"+prefix)
 	}
-	q := url.Values{"query": {query}, "filter": {strings.Join(filters, ",")}, "rows": {"20"}, "sort": {"published"}, "order": {"desc"}, "mailto": {f.Email}}
+	q := url.Values{"query": {query}, "filter": {strings.Join(filters, ",")}, "rows": {"20"}, "sort": {sort}, "order": {"desc"}, "mailto": {f.Email}}
 	b, err := f.get(ctx, f.CrossBase+"/works?"+q.Encode())
 	if err != nil {
 		return nil, err

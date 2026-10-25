@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Xnths/jvfd-cc/backend/internal/httpx"
+	"github.com/Xnths/jvfd-cc/backend/internal/research"
 )
 
 func (s *Server) seoAdminRoutes(mux *http.ServeMux) {
@@ -21,6 +23,7 @@ func (s *Server) seoAdminRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/v1/admin/topics", a(s.adminTopics))
 	mux.Handle("POST /api/v1/admin/topics", a(s.adminCreateTopic))
 	mux.Handle("PATCH /api/v1/admin/topics/{id}", a(s.adminPatchTopic))
+	mux.Handle("POST /api/v1/admin/topics/{id}/digest", a(s.adminTopicDigest))
 	mux.Handle("GET /api/v1/admin/calendar", a(s.adminCalendar))
 	mux.Handle("POST /api/v1/admin/calendar", a(s.adminUpsertCalendar))
 	mux.Handle("PUT /api/v1/admin/calendar/{id}", a(s.adminUpsertCalendar))
@@ -199,8 +202,12 @@ func (s *Server) adminDismissResearch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) adminTopics(w http.ResponseWriter, r *http.Request) {
-	rows, err := s.Pool.Query(r.Context(), `SELECT id::text, topic, rationale, source, target_date, priority, status, related_query FROM topic_queue
-		WHERE ($1 = '' OR status = $1) ORDER BY (status = 'queued') DESC, priority DESC, target_date NULLS LAST LIMIT 200`, r.URL.Query().Get("status"))
+	rows, err := s.Pool.Query(r.Context(), `SELECT t.id::text, t.topic, t.rationale, t.source, t.target_date, t.priority, t.status, t.related_query,
+			d.id::text, d.status, d.error, p.slug, d.outline, d.sources, d.cost_usd::float8, d.lint_flags
+		FROM topic_queue t
+		LEFT JOIN LATERAL (SELECT * FROM topic_digests WHERE topic_id = t.id ORDER BY created_at DESC LIMIT 1) d ON true
+		LEFT JOIN posts p ON p.id = d.post_id
+		WHERE ($1 = '' OR t.status = $1) ORDER BY (t.status = 'queued') DESC, t.priority DESC, t.target_date NULLS LAST LIMIT 200`, r.URL.Query().Get("status"))
 	if err != nil {
 		serverError(w, s.Log, r, err)
 		return
@@ -211,13 +218,66 @@ func (s *Server) adminTopics(w http.ResponseWriter, r *http.Request) {
 		var id, topic, why, src, st, q string
 		var date *time.Time
 		var prio int
-		if err := rows.Scan(&id, &topic, &why, &src, &date, &prio, &st, &q); err != nil {
+		var dID, dStatus, dErr, dSlug *string
+		var outline, sources json.RawMessage
+		var cost *float64
+		var lint *int
+		if err := rows.Scan(&id, &topic, &why, &src, &date, &prio, &st, &q, &dID, &dStatus, &dErr, &dSlug, &outline, &sources, &cost, &lint); err != nil {
 			serverError(w, s.Log, r, err)
 			return
 		}
-		out = append(out, map[string]any{"id": id, "topic": topic, "rationale": why, "source": src, "targetDate": date, "priority": prio, "status": st, "relatedQuery": q})
+		row := map[string]any{"id": id, "topic": topic, "rationale": why, "source": src, "targetDate": date, "priority": prio, "status": st, "relatedQuery": q}
+		if dID != nil {
+			row["digest"] = map[string]any{"id": *dID, "status": *dStatus, "error": derefStr(dErr), "postSlug": dSlug, "outline": outline, "sources": sources, "costUsd": cost, "lintFlags": lint}
+		}
+		out = append(out, row)
 	}
 	httpx.JSON(w, 200, map[string]any{"topics": out})
+}
+
+// adminTopicDigest starts "Gerar rascunho" for a pauta: search sources, outline an idea, write a draft post.
+// It returns at once; the run's progress shows on the topic (GET /topics) and the draft is never published.
+func (s *Server) adminTopicDigest(w http.ResponseWriter, r *http.Request) {
+	ai := openAIFromEnv(s)
+	if ai == nil {
+		httpx.Problem(w, http.StatusServiceUnavailable, "OPENAI_API_KEY não configurada")
+		return
+	}
+	ctx := r.Context()
+	topicID := r.PathValue("id")
+	var exists bool
+	if err := s.Pool.QueryRow(ctx, `SELECT true FROM topic_queue WHERE id::text = $1`, topicID).Scan(&exists); isNoRows(err) {
+		notFound(w)
+		return
+	} else if err != nil {
+		serverError(w, s.Log, r, err)
+		return
+	}
+	// A run that died with the process would block the pauta forever.
+	_, _ = s.Pool.Exec(ctx, `UPDATE topic_digests SET status = 'failed', error = 'interrompido', finished_at = now()
+		WHERE topic_id::text = $1 AND status IN ('searching','outlining','writing') AND created_at < now() - interval '10 minutes'`, topicID)
+	var digestID string
+	if err := s.Pool.QueryRow(ctx, `INSERT INTO topic_digests (topic_id) VALUES ($1::uuid) RETURNING id::text`, topicID).Scan(&digestID); isUnique(err) {
+		httpx.Problem(w, http.StatusConflict, "já existe um rascunho sendo gerado para esta pauta")
+		return
+	} else if err != nil {
+		serverError(w, s.Log, r, err)
+		return
+	}
+	s.audit(r, "topic.digest", "topic", topicID, map[string]any{"digest": digestID})
+
+	var f *research.Fetcher
+	if email := os.Getenv("NCBI_EMAIL"); email != "" {
+		f = research.NewFetcher(email, os.Getenv("NCBI_API_KEY"))
+	}
+	go func() {
+		bg, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+		if err := research.DraftTopic(bg, s.Pool, f, ai, digestID); err != nil {
+			s.Log.Warn("topic digest failed", "digest", digestID, "err", err)
+		}
+	}()
+	httpx.JSON(w, http.StatusAccepted, map[string]string{"id": digestID})
 }
 
 func (s *Server) adminCreateTopic(w http.ResponseWriter, r *http.Request) {
