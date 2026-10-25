@@ -104,7 +104,8 @@ const nextConfig = {
                     https://maps.gstatic.com
                     https://maps.googleapis.com
                     https://www.gravatar.com
-                    https://secure.gravatar.com;
+                    https://secure.gravatar.com
+                    https://lh3.googleusercontent.com;
                 font-src 'self' https://fonts.gstatic.com;
                 connect-src 'self'
                     https://www.google-analytics.com
@@ -133,11 +134,11 @@ const nextConfig = {
                 headers: [staticAssetCache],
             },
             {
-                source: '/admin/:path*',
+                source: '/:area(admin|payload-admin)/:path*',
                 headers: [...commonHeaders, adminCSP],
             },
             {
-                source: '/((?!admin).*)',
+                source: '/((?!admin|payload-admin).*)',
                 headers: [...commonHeaders, publicCSP],
             },
         ]

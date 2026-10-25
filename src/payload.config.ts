@@ -33,10 +33,12 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+    routes: { admin: '/payload-admin' },
     admin: {
         user: Users.slug,
         importMap: {
             baseDir: path.resolve(dirname),
+            importMapFile: path.resolve(dirname, 'app/(payload)/payload-admin/importMap.js'),
         },
         components: {
             afterNavLinks: ['@/components/admin/AdminGA4#AdminGA4'],
