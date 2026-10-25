@@ -66,6 +66,9 @@ USER nextjs
 
 EXPOSE 3000
 ENV PORT=3000
+# Listen on all interfaces: the container is on two networks, and the standalone server otherwise
+# binds only to the address its hostname resolves to (nginx then gets 'connection refused').
+ENV HOSTNAME=0.0.0.0
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output

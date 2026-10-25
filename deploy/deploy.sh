@@ -60,7 +60,7 @@ main() {
 
     docker rm -f "clinic-frontend-$new" >/dev/null 2>&1 || true
     docker run -d --name "clinic-frontend-$new" --network "$net_public" --restart always \
-        -e NODE_ENV=production -e NEXT_TELEMETRY_DISABLED=1 \
+        -e NODE_ENV=production -e NEXT_TELEMETRY_DISABLED=1 -e HOSTNAME=0.0.0.0 \
         -e DATABASE_URI="${DATABASE_URI:-}" -e PAYLOAD_SECRET="${PAYLOAD_SECRET:-}" \
         -e NEXT_PUBLIC_GA_ID="${NEXT_PUBLIC_GA_ID:-}" \
         -e NEXT_PUBLIC_POSTHOG_TOKEN="${NEXT_PUBLIC_POSTHOG_TOKEN:-}" -e NEXT_PUBLIC_POSTHOG_HOST="${NEXT_PUBLIC_POSTHOG_HOST:-}" \
@@ -98,6 +98,15 @@ main() {
         "${compose[@]}" up -d nginx
     fi
     echo "Traffic switched to $new"
+    sleep 3
+    if ! docker run --rm --network "$net_public" curlimages/curl -s -f -o /dev/null -H 'Host: psicologojoaofernandes.com' "http://clinic-nginx/"; then
+        echo "ERROR: site not reachable through nginx after the switch; restoring $active"
+        if docker inspect "clinic-frontend-$active" >/dev/null 2>&1; then
+            printf 'set $frontend http://clinic-frontend-%s:3000;\n' "$active" > deploy/nginx/active/frontend.conf
+            docker exec clinic-nginx nginx -s reload
+        fi
+        exit 1
+    fi
 
     # Each colour has its own Next.js cache: refresh the new one so edits made during the
     # build are not shown stale. (Route exists once the Go-backed content phase ships.)
