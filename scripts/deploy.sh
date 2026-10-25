@@ -48,6 +48,8 @@ echo "Active environment: $ACTIVE_COLOR. Deploying to: $NEW_COLOR."
 echo "Building $NEW_COLOR image..."
 docker build \
     --build-arg NEXT_PUBLIC_GA_ID="$NEXT_PUBLIC_GA_ID" \
+    --build-arg NEXT_PUBLIC_POSTHOG_TOKEN="$NEXT_PUBLIC_POSTHOG_TOKEN" \
+    --build-arg NEXT_PUBLIC_POSTHOG_HOST="$NEXT_PUBLIC_POSTHOG_HOST" \
     -t "clinic-frontend:$NEW_COLOR" \
     -f Dockerfile .
 
@@ -63,6 +65,9 @@ docker run -d \
     -e DATABASE_URI="$DATABASE_URI" \
     -e PAYLOAD_SECRET="$PAYLOAD_SECRET" \
     -e NEXT_PUBLIC_GA_ID="$NEXT_PUBLIC_GA_ID" \
+    -e NEXT_PUBLIC_POSTHOG_TOKEN="$NEXT_PUBLIC_POSTHOG_TOKEN" \
+    -e NEXT_PUBLIC_POSTHOG_HOST="$NEXT_PUBLIC_POSTHOG_HOST" \
+    -e RESEND_API_KEY="$RESEND_API_KEY" \
     -v jvfd-cc_media-data:/app/media \
     "clinic-frontend:$NEW_COLOR"
 
@@ -107,6 +112,7 @@ echo "Traffic switched to $NEW_COLOR."
 echo "Stopping $ACTIVE_COLOR container..."
 docker stop "clinic-frontend-$ACTIVE_COLOR" 2>/dev/null || true
 docker rm "clinic-frontend-$ACTIVE_COLOR" 2>/dev/null || true
-docker system prune -f
+docker image prune -f --filter "until=24h"
+docker builder prune -f --filter "until=24h"
 
 echo "Deployment completed successfully! Zero downtime achieved."
