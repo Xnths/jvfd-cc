@@ -9,7 +9,7 @@ export default function AppleIcon() {
     return new ImageResponse(
         (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: brand.colors.paper }}>
-                <BrandMark size={140} color={brand.colors.forest} accent={brand.colors.clay} />
+                <BrandMark simple size={140} color={brand.colors.forest} accent={brand.colors.clay} />
             </div>
         ),
         { ...size },

@@ -195,6 +195,24 @@ export const faq = [
         answer:
             "O atendimento é particular, mas forneço recibos para reembolso no seu plano de saúde.",
     },
+    {
+        id: "item-5",
+        question: "O que é a Análise do Comportamento?",
+        answer:
+            "É a ciência que estuda como o comportamento, o que fazemos, sentimos e pensamos, é moldado pela nossa história e pelo ambiente em que vivemos. Na terapia, isso se traduz em entender o que mantém um padrão que traz sofrimento e construir, com apoio, alternativas mais saudáveis. A abordagem se baseia em evidências científicas.",
+    },
+    {
+        id: "item-6",
+        question: "Como agendo minha primeira sessão?",
+        answer:
+            "Pelo WhatsApp, com uma mensagem curta. Combinamos dia e horário (de segunda a sexta, das 8h às 21h) e se será online ou presencial. Se tiver dúvidas antes de decidir, também pode perguntar por lá.",
+    },
+    {
+        id: "item-7",
+        question: "Você atende a comunidade LGBTQIA+?",
+        answer:
+            "Sim. João é psicólogo gay e atende pessoas LGBTQIA+ de forma afirmativa, com respeito à identidade, à orientação e às histórias de cada pessoa.",
+    },
 ];
 
 export const presencial = {

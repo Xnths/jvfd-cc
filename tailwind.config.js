@@ -9,18 +9,24 @@ module.exports = {
 	theme: {
 		extend: {
 			colors: {
+				white: '#fdfcf8',
+				// Natural-science palette: neutrals lean green, red is terracotta,
+				// green is forest (also the WhatsApp CTA), blue is moss.
+				slate: {
+					50: '#f6f5f0', 100: '#eeece4', 200: '#dedbd0', 300: '#c5c2b4', 400: '#8c978e',
+					500: '#66746b', 600: '#4c5b52', 700: '#3a4840', 800: '#26332c', 900: '#17231c', 950: '#0e1612',
+				},
 				red: {
-					50: '#fdf2f8',
-					100: '#fce7f3',
-					200: '#fbcfe8',
-					300: '#f9a8d4',
-					400: '#f472b6',
-					500: '#ec4899',
-					600: '#be185d', // Shifted from 700 for better contrast (Passes AA)
-					700: '#9d174d', // Shifted from 800
-					800: '#831843', // Shifted from 900
-					900: '#500724', // Shifted from 950
-					950: '#4a041d', // New darker shade
+					50: '#fbf1ec', 100: '#f6e0d6', 200: '#edc3b0', 300: '#e1a086', 400: '#d27f5f',
+					500: '#c4664a', 600: '#a9472d', 700: '#8a3922', 800: '#6d2e1d', 900: '#4f2216', 950: '#331409',
+				},
+				green: {
+					50: '#eef5f0', 100: '#d9e9de', 200: '#b4d3be', 300: '#86b69a', 400: '#4f9a73',
+					500: '#2f7a55', 600: '#1f6444', 700: '#1a5239', 800: '#154230', 900: '#0f3022', 950: '#08201a',
+				},
+				blue: {
+					50: '#eff5f1', 100: '#dfeae3', 200: '#c0d5c8', 300: '#9bbaa8', 400: '#739d88',
+					500: '#5b8570', 600: '#3f6d58', 700: '#335946', 800: '#284637', 900: '#1d3328', 950: '#13241b',
 				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -62,6 +68,9 @@ module.exports = {
 					'4': 'hsl(var(--chart-4))',
 					'5': 'hsl(var(--chart-5))'
 				}
+			},
+			fontFamily: {
+				serif: ['var(--font-fraunces)', 'Georgia', 'serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

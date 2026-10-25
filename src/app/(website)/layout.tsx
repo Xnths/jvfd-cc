@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
+import { SiteHeader } from "@/components/SiteHeader";
 import { FloatingCatButton } from "@/components/floating-cat-button";
 import { GclidCapture } from "@/components/GclidCapture";
 import { siteConfig } from "@/lib/config";
@@ -14,6 +15,12 @@ const inter = Inter({
     subsets: ["latin"],
     display: "swap",
     variable: "--font-inter",
+});
+
+const fraunces = Fraunces({
+    subsets: ["latin"],
+    display: "swap",
+    variable: "--font-fraunces",
 });
 
 export const metadata: Metadata = {
@@ -92,13 +99,15 @@ export default function RootLayout({
     const gaId = process.env.NEXT_PUBLIC_GA_ID
 
     return (
-        <html lang="pt-BR" className={inter.variable}>
+        <html lang="pt-BR" className={`${inter.variable} ${fraunces.variable}`}>
             <body className={`${inter.className} antialiased`}>
                 <JsonLd data={siteGraph()} />
 
                 <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-background text-foreground rounded-md shadow-md border border-border">
                     Pular para o conteúdo principal
                 </a>
+
+                <SiteHeader />
 
                 <main id="main-content">
                     {children}

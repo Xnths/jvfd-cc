@@ -3,35 +3,21 @@
 import { GraduationCap, BookOpen, Hospital, Brain, Activity, ExternalLink } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "./ui/card";
 import Link from "next/link";
+import { qualifications as baseQualifications, links } from "@/content/clinic";
 
 
-const qualifications = [
-    {
-        icon: GraduationCap,
-        title: "Bacharelado em Psicologia",
-        institution: "Pontifícia Universidade Católica de São Paulo (PUCSP)",
-    },
-    {
-        icon: Hospital,
-        title: "Aperfeiçoamento em Psicologia Hospitalar",
-        institution: "Psicocare",
-    },
-    {
-        icon: Brain,
-        title: "Pós-graduação em Neuropsicologia",
-        institution: "Hospital Israelita Albert Einstein",
-    },
-    {
-        icon: Activity,
-        title: "Pós-graduação em Neurociências, Comportamento e Psicopatologia",
-        institution: "Pontifícia Universidade Católica do Paraná (PUCPR)",
-    },
-    {
-        icon: BookOpen,
-        title: "Curso em Filosofia Oriental",
-        institution: "Universidade Harvard",
-    }
-];
+const QUALIFICATION_ICONS = {
+    graduacao: GraduationCap,
+    hospitalar: Hospital,
+    neuropsicologia: Brain,
+    neurociencias: Activity,
+    filosofia: BookOpen,
+} as const;
+
+const qualifications = baseQualifications.map((q) => ({
+    ...q,
+    icon: QUALIFICATION_ICONS[q.key],
+}));
 
 export function Excellence() {
 
@@ -40,7 +26,7 @@ export function Excellence() {
         <section className="py-20 bg-white" id="excellence">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
-                    <h2 className="text-slate-900 mb-4 text-2xl">Formações e qualificações</h2>
+                    <h2 className="text-slate-900 mb-4 text-3xl">Formações e qualificações</h2>
                     <p className="text-slate-600 max-w-2xl mx-auto text-lg">
                         Compromisso com o aprendizado contínuo e a qualificação técnica para oferecer o melhor atendimento.
                     </p>
@@ -74,7 +60,7 @@ export function Excellence() {
                                     <p className="text-sm text-slate-500 font-medium">Plataforma Lattes</p>
                                 </div>
                             </div>
-                            <Link href="https://lattes.cnpq.br/2507330776380191" target="_blank" rel="noopener noreferrer" aria-label="Acessar Currículo Lattes">
+                            <Link href={links.lattes} target="_blank" rel="noopener noreferrer" aria-label="Acessar Currículo Lattes">
                                 <ExternalLink className="w-5 h-5" />
                             </Link>
                         </CardHeader>

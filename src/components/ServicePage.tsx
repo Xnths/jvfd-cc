@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import posthog from "posthog-js";
 import { sendGAEvent } from "@next/third-parties/google";
@@ -129,39 +127,6 @@ function buildWhatsappUrl(message: string, isMobile: boolean): string {
 
 // ─── Shared chrome ──────────────────────────────────────────────────────────
 
-function NavBar({ dark = false }: { dark?: boolean }) {
-  return (
-    <header
-      className={`fixed top-0 left-0 w-full z-50 backdrop-blur-md border-b transition-colors ${
-        dark
-          ? "bg-slate-900/90 border-slate-700"
-          : "bg-white/85 border-slate-200"
-      }`}
-    >
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link
-          href="/#services"
-          className={`flex items-center gap-2 font-medium transition-colors ${
-            dark
-              ? "text-slate-300 hover:text-white"
-              : "text-slate-600 hover:text-slate-900"
-          }`}
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Voltar para Início
-        </Link>
-        <span
-          className={`font-semibold hidden sm:block ${
-            dark ? "text-slate-200" : "text-slate-800"
-          }`}
-        >
-          João Fernandes | Psicólogo
-        </span>
-      </div>
-    </header>
-  );
-}
-
 function CTAButton({
   href,
   btnClass,
@@ -208,10 +173,9 @@ function CalmingLayout({
 }: LayoutProps) {
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
 
       {/* Hero — spacious, airy, validating */}
-      <section className={`pt-36 pb-24 px-4 ${config.heroBg}`}>
+      <section className={`pt-20 pb-24 px-4 ${config.heroBg}`}>
         <div className="container mx-auto max-w-3xl text-center">
           {config.badge && (
             <span
@@ -293,10 +257,9 @@ function StructuredLayout({
 }: LayoutProps) {
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
 
       {/* Hero — stark, left-aligned, no-nonsense */}
-      <section className="pt-36 pb-20 px-4 border-b border-slate-200">
+      <section className="pt-20 pb-20 px-4 border-b border-slate-200">
         <div className="container mx-auto max-w-4xl">
           {config.badge && (
             <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">
@@ -332,7 +295,7 @@ function StructuredLayout({
             </div>
             {/* Sidebar — 1/3 */}
             <aside className="space-y-6">
-              <div className="border border-slate-200 rounded-2xl p-6 bg-slate-50 sticky top-24">
+              <div className="border border-slate-200 rounded-2xl p-6 bg-slate-50 sticky top-28">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">
                   Próximo passo
                 </p>
@@ -376,10 +339,9 @@ function PlantaoLayout({
 }: LayoutProps) {
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
 
       {/* Full-viewport hero — CTA visible without scrolling */}
-      <section className="min-h-[90svh] flex flex-col items-center justify-center px-4 text-center pt-16">
+      <section className="min-h-[80svh] flex flex-col items-center justify-center px-4 text-center">
         {config.badge && (
           <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">
             {config.badge}
@@ -449,10 +411,9 @@ function ExploratoryLayout({
 }: LayoutProps) {
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
 
       {/* Hero — gradient, reflective, meditative */}
-      <section className={`pt-40 pb-28 px-4 ${config.heroBg}`}>
+      <section className={`pt-24 pb-28 px-4 ${config.heroBg}`}>
         <div className="container mx-auto max-w-3xl text-center">
           {config.badge && (
             <span
@@ -525,10 +486,9 @@ function SupervisaoLayout({
 }: LayoutProps) {
   return (
     <div className="min-h-screen bg-white">
-      <NavBar dark />
 
       {/* Hero — dark, authoritative */}
-      <section className="pt-36 pb-24 px-4 bg-slate-900">
+      <section className="pt-20 pb-24 px-4 bg-slate-900">
         <div className="container mx-auto max-w-4xl">
           {config.badge && (
             <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-red-400 mb-6">
@@ -576,7 +536,7 @@ function SupervisaoLayout({
               <RichText content={content} />
             </div>
             <aside className="space-y-6">
-              <div className="border border-slate-200 rounded-2xl p-6 sticky top-24">
+              <div className="border border-slate-200 rounded-2xl p-6 sticky top-28">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">
                   Para psicólogos
                 </p>
@@ -634,15 +594,14 @@ function AffirmativeLayout({
 }: LayoutProps) {
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
 
       {/* Rainbow accent below the nav */}
-      <div className="fixed top-16 left-0 w-full z-40">
+      <div className="sticky top-16 left-0 w-full z-40">
         <RainbowBar />
       </div>
 
       {/* Hero — warm, identity-affirming */}
-      <section className={`pt-44 pb-28 px-4 ${config.heroBg}`}>
+      <section className={`pt-28 pb-28 px-4 ${config.heroBg}`}>
         <div className="container mx-auto max-w-3xl text-center">
           {config.badge && (
             <span className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-widest mb-5 text-violet-600">
@@ -749,8 +708,7 @@ function GenericLayout({
 }: Omit<LayoutProps, "config">) {
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
-      <section className="pt-32 pb-20 px-4 bg-slate-900 text-white">
+      <section className="pt-20 pb-20 px-4 bg-slate-900 text-white">
         <div className="container mx-auto max-w-4xl text-center md:text-left">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
             {title}

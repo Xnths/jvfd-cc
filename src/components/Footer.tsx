@@ -1,142 +1,113 @@
 "use client";
 
-import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
+import Link from "next/link";
 import { Instagram, Linkedin, Mail, GraduationCap, Building2 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { sendGAEvent } from "@next/third-parties/google";
+import { Logo } from "@/components/brand/Logo";
+import { contact, formatAddress, links, person, services } from "@/content/clinic";
+import { tutoring } from "@/content/tutoring";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
+import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
+
+const linkClass =
+  "rounded-sm transition-colors hover:text-white focus:text-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900";
+const iconClass =
+  "flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2 focus:ring-offset-slate-900";
 
 export function Footer() {
   const whatsappUrl = useWhatsappUrl();
   const { getElapsedTime } = useTimeToAction();
 
   const handleWhatsAppClick = () => {
-    const elapsedTime = getElapsedTime() || 0;
-
-    sendGAEvent('event', 'schedule_click', {
-      source: 'footer',
-      time_to_click_ms: elapsedTime,
+    sendGAEvent("event", "schedule_click", {
+      source: "footer",
+      time_to_click_ms: getElapsedTime() || 0,
     });
   };
 
   return (
-    <footer className="bg-slate-900 text-slate-300 py-12">
+    <footer className="bg-green-900 py-14 text-green-50/80">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto mb-8">
-          <div className="col-span-3">
-            <h4 className="text-white mb-4">Acesso rápido</h4>
+        <div className="mx-auto mb-10 grid max-w-6xl gap-10 md:grid-cols-[1.3fr_1fr_1fr]">
+          <div className="space-y-4">
+            <Logo size={44} className="text-white" />
+            <p className="max-w-sm text-sm leading-relaxed">
+              Psicoterapia baseada em Análise do Comportamento. Online para todo o Brasil e presencial na Vila Madalena, São Paulo.
+            </p>
+            <address className="text-sm not-italic leading-relaxed text-green-50/70">
+              {formatAddress()}
+              <br />
+              {contact.hours.daysLabel}, {contact.hours.opens} às {contact.hours.closes}
+            </address>
+          </div>
+
+          <div>
+            <h2 className="mb-4 font-sans text-sm font-semibold uppercase tracking-widest text-white">Atendimentos</h2>
             <ul className="space-y-2 text-sm">
+              {services
+                .filter((s) => !s.pride)
+                .map((s) => (
+                  <li key={s.href}>
+                    <Link href={s.href} className={linkClass}>
+                      {s.name}
+                    </Link>
+                  </li>
+                ))}
               <li>
-                <a href="/#services" className="hover:text-white focus:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-sm">
-                  Como posso te ajudar?
-                </a>
+                <Link href={tutoring.path} className={linkClass}>
+                  {tutoring.shortName}
+                </Link>
               </li>
               <li>
-                <a href="/#testimonials" className="hover:text-white focus:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-sm">
-                  Depoimentos
-                </a>
+                <Link href="/presencial" className={linkClass}>
+                  Atendimento presencial
+                </Link>
               </li>
               <li>
-                <a href="/#about" className="hover:text-white focus:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-sm">
-                  Sobre
-                </a>
-              </li>
-              <li>
-                <a href="/#excellence" className="hover:text-white focus:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-sm">
-                  Formações
-                </a>
-              </li>
-              <li>
-                <a href="/#faq" className="hover:text-white focus:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-sm">
-                  FAQ
-                </a>
-              </li>
-              <li>
-                <a href="/#contact" className="hover:text-white focus:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-sm">
-                  Contato
-                </a>
+                <Link href="/blog" className={linkClass}>
+                  Blog
+                </Link>
               </li>
             </ul>
           </div>
+
           <div>
-            <h4 className="text-white mb-4">Contato</h4>
-            <div className="grid grid-cols-3 gap-4 w-fit">
-              <a
-                href="https://www.instagram.com/ciencia_comportamental_"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 focus:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-                aria-label="Instagram de João Fernandes"
-              >
-                <Instagram className="w-5 h-5" />
+            <h2 className="mb-4 font-sans text-sm font-semibold uppercase tracking-widest text-white">Contato</h2>
+            <div className="grid w-fit grid-cols-3 gap-3">
+              <a href={links.instagram} target="_blank" rel="noopener noreferrer" className={iconClass} aria-label="Instagram de João Fernandes">
+                <Instagram className="h-5 w-5" />
               </a>
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleWhatsAppClick}
-                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 focus:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-                aria-label="Contato via WhatsApp"
-              >
-                <FaWhatsapp className="w-5 h-5" />
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" onClick={handleWhatsAppClick} className={iconClass} aria-label="Contato via WhatsApp">
+                <FaWhatsapp className="h-5 w-5" />
               </a>
-              <a
-                href="https://www.linkedin.com/in/psicologo-joao-fernandes-d/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 focus:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-                aria-label="Perfil no LinkedIn"
-              >
-                <Linkedin className="w-5 h-5" />
+              <a href={links.linkedin} target="_blank" rel="noopener noreferrer" className={iconClass} aria-label="Perfil no LinkedIn">
+                <Linkedin className="h-5 w-5" />
               </a>
-              <a
-                href="mailto:joao@psicologojoaofernandes.com"
-                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 focus:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-                aria-label="Enviar email para joao@psicologojoaofernandes.com"
-              >
-                <Mail className="w-5 h-5" />
+              <a href={`mailto:${contact.email}`} className={iconClass} aria-label={`Enviar e-mail para ${contact.email}`}>
+                <Mail className="h-5 w-5" />
               </a>
-              <a
-                href="https://lattes.cnpq.br/2507330776380191"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 focus:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-                aria-label="Currículo Lattes do CNPq"
-              >
-                <GraduationCap className="w-5 h-5" />
+              <a href={links.lattes} target="_blank" rel="noopener noreferrer" className={iconClass} aria-label="Currículo Lattes do CNPq">
+                <GraduationCap className="h-5 w-5" />
               </a>
-              <a
-                href="https://oneliv.com.br/profissional/joao-vitor-fernandes-domingues?utm_source=shared-link"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 focus:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900"
-                aria-label="Perfil no Consultório Livance"
-              >
-                <Building2 className="w-5 h-5" />
+              <a href={`${links.oneliv}?utm_source=shared-link`} target="_blank" rel="noopener noreferrer" className={iconClass} aria-label="Perfil no Consultório Livance">
+                <Building2 className="h-5 w-5" />
               </a>
             </div>
+            <p className="mt-4 text-sm text-green-50/70">{contact.phoneDisplay}</p>
           </div>
         </div>
 
-        <div className="border-t border-slate-800 pt-8 text-center text-sm">
-          <p>© {new Date().getFullYear()} João Vitor Fernandes Domingues. Todos os direitos reservados.</p>
-          <p className="mt-2 text-slate-400">
-            Psicólogo Analítico-Comportamental.
-          </p>
-          <p className="mt-2 text-slate-400">
-            CRP: 06/157908
-          </p>
-          <p className="mt-2 text-slate-400">
-            Rua Harmonia, 1323 - Vila Madalena, São Paulo - SP, 05435-001
-          </p>
-          <div className="mt-4 flex gap-4 text-sm">
-            <a href="/politica-de-privacidade" className="text-slate-400 hover:text-white focus:text-white transition-colors underline focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-sm">
+        <div className="border-t border-white/15 pt-8 text-center text-sm text-green-50/70">
+          <p>© {new Date().getFullYear()} {person.name}. Todos os direitos reservados.</p>
+          <p className="mt-1">Psicólogo, CRP {person.crp}</p>
+          <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1">
+            <Link href="/politica-de-privacidade" className={`${linkClass} underline`}>
               Política de Privacidade
-            </a>
-            <span className="text-slate-500" aria-hidden="true">|</span>
-            <a href="/termos-de-uso" className="text-slate-400 hover:text-white focus:text-white transition-colors underline focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900 rounded-sm">
+            </Link>
+            <Link href="/termos-de-uso" className={`${linkClass} underline`}>
               Termos de Uso
-            </a>
+            </Link>
           </div>
         </div>
       </div>

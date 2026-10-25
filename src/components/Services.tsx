@@ -9,6 +9,8 @@ import {
   NotebookPen,
   Heart,
   ArrowRight,
+  GraduationCap,
+  type LucideIcon,
 } from "lucide-react";
 import {
   Card,
@@ -21,62 +23,34 @@ import { Button } from "./ui/button";
 import { FaWhatsapp } from "react-icons/fa";
 import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import Link from "next/link";
+import { services as baseServices } from "@/content/clinic";
+import { tutoring } from "@/content/tutoring";
 import { sendGAEvent } from "@next/third-parties/google";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 
 
+const ICONS: Record<string, LucideIcon> = {
+  "/psicoterapia": Brain,
+  "/foco-organizacao": Users,
+  "/plantao": ShieldAlert,
+  "/terapia-de-casal": Armchair,
+  "/autoconhecimento": Lightbulb,
+  "/supervisao": NotebookPen,
+  "/lgbtqia": Heart,
+  [tutoring.path]: GraduationCap,
+};
+
 const services = [
+  ...baseServices,
   {
-    icon: Brain,
-    title: "Quando lidar sozinho já não está funcionando",
+    name: tutoring.shortName,
+    title: "Aulas de Química, Biologia e método de estudo",
     description:
-      "A psicoterapia oferece um espaço de escuta ativa e sem julgamentos. Juntos, vamos compreender padrões que trazem sofrimento e construir novas formas de lidar com suas emoções e desafios.",
-    href: "/psicoterapia",
+      "Aulas particulares para ENEM e vestibular, método de estudo baseado em Análise do Comportamento e apoio a estudantes de Psicologia. Um serviço educacional, separado da terapia.",
+    href: tutoring.path,
+    pride: false,
   },
-  {
-    icon: Users,
-    title: "Dificuldade de concentração e organização",
-    description:
-      "Se a rotina parece caótica ou o rendimento caiu, podemos desenvolver estratégias práticas e personalizadas para melhorar seu foco e  gestão de tempo, respeitando seu ritmo.",
-    href: "/foco-organizacao",
-  },
-  {
-    icon: ShieldAlert,
-    title: "Acolhimento imediato para momentos difíceis",
-    description:
-      "Em momentos de grande angústia — como perdas significativas, separações ou inquietações intensas — o mais importante é não passar por isso sozinho. Ofereço suporte para estabilizar suas emoções e encontrar segurança.",
-    href: "/plantao",
-  },
-  {
-    icon: Armchair,
-    title: "Conflitos nos relacionamentos",
-    description:
-      "Problemas com parceiros ou família são comuns, mas desgastantes. Vamos trabalhar para melhorar a comunicação, estabelecer limites saudáveis e entender a dinâmica dessas relações.",
-    href: "/terapia-de-casal",
-  },
-  {
-    icon: Lightbulb,
-    title: "Autoconhecimento e Entendimento",
-    description:
-      "Muitas vezes, não sabemos explicar o que sentimos. A avaliação psicológica ajuda a dar nome e sentido para suas angústias, sendo o primeiro passo para a mudança.",
-    href: "/autoconhecimento",
-  },
-  {
-    icon: NotebookPen,
-    title: "Supervisão para Psicólogos",
-    description:
-      "Para colegas de profissão, ofereço supervisão clínica em Análise do Comportamento, focada em discussão de casos, ética e aprimoramento técnico com parceira.",
-    href: "/supervisao",
-  },
-  {
-    icon: Heart,
-    title: "Psicólogo LGBTQIA+",
-    description:
-      "João é psicólogo gay e traz empatia genuína para o atendimento da comunidade LGBTQIA+. Juntos, trabalhamos rumo à aceitação, a relacionamentos mais plenos e a uma vida com mais alegria e autenticidade.",
-    href: "/lgbtqia",
-    pride: true,
-  },
-];
+].map((service) => ({ ...service, icon: ICONS[service.href] ?? Brain }));
 
 export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
   const whatsappUrl = useWhatsappUrl();
@@ -95,14 +69,14 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
     <section className="py-20 bg-slate-50" id="services">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-slate-900 mb-4 text-2xl">
+          <h2 className="text-slate-900 mb-4 text-3xl">
             Como posso te ajudar?
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto text-lg">
-            Nem sempre é fácil identificar quando procurar ajuda psicológica.
-            Muitas vezes, dificuldades emocionais, comportamentais ou relacionais
-            se acumulam ao longo do tempo e começam a impactar diferentes áreas da vida.
-            Abaixo estão algumas situações em que o acompanhamento psicológico pode ser indicado.
+            Nem sempre é fácil saber quando procurar ajuda. Dificuldades emocionais,
+            comportamentais ou de relacionamento costumam se acumular aos poucos e
+            começam a pesar em várias áreas da vida. Estas são algumas situações em
+            que o acompanhamento psicológico pode ajudar.
           </p>
           {/* LGBTQIA+ friendly badge */}
           {showLgbt && (

@@ -1,22 +1,50 @@
-// Placeholder mark (branching "J"); replaced once a logo concept is chosen.
-// Plain SVG so it also renders inside next/og ImageResponse.
+// Connectome mark: a brain drawn as a network of nodes. The accent node is the
+// point of the network where therapy acts. Plain SVG so it also renders inside
+// next/og ImageResponse (pass explicit colors there).
+
+const NODES: Record<string, [number, number]> = {
+    a: [9, 31], b: [15, 19], c: [27, 11], d: [41, 11], e: [52, 19], f: [56, 31], g: [49, 42],
+    h: [37, 38], i: [24, 40], j: [22, 26], k: [36, 24], l: [47, 29], m: [33, 52], n: [31, 59],
+};
+
+const EDGES = [
+    "ab", "bc", "cd", "de", "ef", "fg", "gh", "hi", "ia", "bj", "cj", "ck", "dk", "jk", "kl", "el",
+    "fl", "ja", "ji", "kh", "lg", "hm", "mn", "im", "lh",
+];
+
+// Favicon sizes: only the outline and the accent node, so it stays a clear shape.
+const SIMPLE_EDGES = ["ab", "bc", "cd", "de", "ef", "fg", "gh", "hi", "ia", "hm", "mn", "im"];
+
 export function BrandMark({
     size = 32,
     color = "currentColor",
-    accent = "currentColor",
+    accent = "var(--brand-accent, #a9472d)",
+    simple = false,
 }: {
     size?: number;
     color?: string;
     accent?: string;
+    simple?: boolean;
 }) {
+    const edges = simple ? SIMPLE_EDGES : EDGES;
+    const strokeWidth = simple ? 4.4 : 2.6;
     return (
-        <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M36 8v34c0 8-5 14-13 14-5 0-9-2-12-6" stroke={color} strokeWidth="5" strokeLinecap="round" />
-            <path d="M36 24c6 0 12-4 16-12" stroke={color} strokeWidth="4" strokeLinecap="round" />
-            <path d="M36 34c5 0 10-2 14-8" stroke={color} strokeWidth="4" strokeLinecap="round" />
-            <circle cx="52" cy="11" r="4" fill={accent} />
-            <circle cx="50" cy="25" r="3" fill={accent} />
-            <circle cx="36" cy="8" r="3.5" fill={accent} />
+        <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            {edges.map((e) => (
+                <path
+                    key={e}
+                    d={`M${NODES[e[0]][0]} ${NODES[e[0]][1]}L${NODES[e[1]][0]} ${NODES[e[1]][1]}`}
+                    stroke={color}
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                />
+            ))}
+            {Object.entries(NODES).map(([key, [x, y]]) => {
+                if (simple && "jklmn".includes(key) && key !== "k") return null;
+                if (key === "k") return <circle key={key} cx={x} cy={y} r={simple ? 7 : 5.2} fill={accent} />;
+                const r = simple ? 4.6 : "abcdefg".includes(key) ? 3.6 : 3;
+                return <circle key={key} cx={x} cy={y} r={r} fill={color} />;
+            })}
         </svg>
     );
 }

@@ -44,3 +44,6 @@ next-env.d.ts
 
 logs_*.txt
 .env.local
+
+# treatment copy backups (may contain CMS content)
+/backups
