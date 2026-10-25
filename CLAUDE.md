@@ -16,8 +16,12 @@ Landing page and blog for Jo√£o Vitor Fernandes, psychologist (Vila Madalena, S√
 - `scripts/deploy.sh` does a blue/green deploy: pulls, builds the `clinic-frontend:<color>` image, health-checks it, switches nginx (`nginx/conf.d/<color>.conf` copied to `default.conf`), then stops the old color. Needs `.env` on the Pi (`DATABASE_URI`, `PAYLOAD_SECRET`, `NEXT_PUBLIC_GA_ID`).
 - The Pi's working tree has local changes to `docker-compose/docker-compose.prod.yml` and `nginx/conf.d/default.conf`. Leave them; `git pull` works as long as upstream doesn't touch those files.
 - Containers: `clinic-frontend-blue|green`, `clinic-nginx`, `clinic-mongo`. The `blog-*` containers on the same Pi are a different project; don't touch them.
-- The root disk is small (about 5 GB free, 29 GB total). `docker system prune -f` runs at the end of the deploy; check `df -h /` before big builds.
-- Known issue (2026-10-24): the Pi's `/etc/resolv.conf` points at Cloudflare WARP's local resolver (127.0.2.x). WARP reports "Connected" but DNS lookups hung, so `git pull` failed with "Could not resolve host: github.com". If a deploy fails at the pull step, check DNS on the Pi first (`getent hosts github.com`).
+- The root disk is small (29 GB). It was 82% full before the 2026-10-24 deploy and 54% after (`docker system prune -f` runs at the end). Check `df -h /` before big builds.
+- No passwordless `sudo` on the Pi. Everything above works as the `xnths` user (member of the `docker` group).
+- **Pi DNS problem (seen 2026-10-24).** The Pi runs Cloudflare WARP and `/etc/resolv.conf` points at its local resolver (127.0.2.x). That resolver got stuck and returned no answers, so `git pull` ("Could not resolve host: github.com") and Docker builds failed. Check with `getent hosts github.com`. Fix without sudo: `warp-cli disconnect; sleep 4; warp-cli connect` (wait about 15 s). Run it detached (`nohup sh -c "..." &`) so an SSH drop can't leave WARP disconnected. The router (192.168.68.1) resolves DNS fine; public resolvers (1.1.1.1, 8.8.8.8) are blocked from the Pi.
+- Even when DNS works, lookups inside Docker build containers drop out now and then (`EAI_AGAIN`); `pnpm install` retries on its own and finishes. Fonts are self-hosted (`src/assets/fonts`, `next/font/local`) so the build never fetches from Google. Don't switch back to `next/font/google`. If a build fails on a network step, just re-run `scripts/deploy.sh`: a failed build never touches the running site.
+- Stop-gap if only `git` can't resolve: `git config http.curloptResolve github.com:443:140.82.112.3` in the Pi's repo (remove it afterwards with `--unset`).
+- Verify a deploy: `curl -sI https://psicologojoaofernandes.com/` plus `/llms.txt`, `/sitemap.xml` and `/aulas-particulares`; `docker ps` should show one `clinic-frontend-<color>`.
 
 ## Content updates (CMS)
 
