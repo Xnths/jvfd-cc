@@ -1,0 +1,89 @@
+# Go platform stack. Next.js is not a service here: deploy.sh runs it as clinic-frontend-{blue,green}
+# (blue/green), and joins it to both networks.
+name: clinic
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: clinic-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: clinic
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: clinic
+      AIRFLOW_DB_PASSWORD: ${AIRFLOW_DB_PASSWORD:?set AIRFLOW_DB_PASSWORD}
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clinic -d clinic"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 768m
+
+  auth:
+    build: ../backend
+    image: clinic-backend:local
+    container_name: clinic-auth
+    restart: always
+    entrypoint: ["/usr/local/bin/auth"]
+    env_file: [../.env]
+    environment:
+      DATABASE_URL: postgres://clinic:${POSTGRES_PASSWORD}@postgres:5432/clinic?sslmode=disable
+      AUTH_ADDR: ":8081"
+      JWT_PRIVATE_KEY_FILE: /run/secrets/jwt.pem
+      TRUST_PROXY: "true"
+    volumes:
+      - ../secrets/jwt.pem:/run/secrets/jwt.pem:ro
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [internal]
+    mem_limit: 128m
+
+  # api: added in the content-API phase.
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: clinic-nginx
+    restart: always
+    ports:
+      - "82:80"
+    volumes:
+      - ./nginx/conf.d/clinic.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - ./nginx/active:/etc/nginx/active:ro
+      - media-data:/srv/media:ro
+    networks:
+      - internal
+      - cloudflare-net
+    mem_limit: 64m
+
+  # One-off tools: docker compose --profile tools run --rm migrate up
+  migrate:
+    profiles: [tools]
+    build: ../backend
+    image: clinic-backend:local
+    entrypoint: ["/usr/local/bin/migrate"]
+    environment:
+      DATABASE_URL: postgres://clinic:${POSTGRES_PASSWORD}@postgres:5432/clinic?sslmode=disable
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [internal]
+
+networks:
+  internal:
+    name: clinic-internal
+  cloudflare-net:
+    external: true
+    name: cloudflare-net
+
+volumes:
+  pg-data:
+  # Same volume the current frontend writes uploads to (see deploy.sh: jvfd-cc_media-data).
+  media-data:
+    external: true
+    name: jvfd-cc_media-data
