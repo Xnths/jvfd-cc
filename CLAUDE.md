@@ -1,8 +1,18 @@
 # jvfd-cc
 
-Landing page and blog for João Vitor Fernandes, psychologist (Vila Madalena, São Paulo). Next.js (App Router) + Payload CMS + MongoDB. Site: https://psicologojoaofernandes.com
+Landing page and blog for João Vitor Fernandes, psychologist (Vila Madalena, São Paulo). Next.js (App Router) + Go services (`backend/`: auth server with Google-only login, content/admin API) + PostgreSQL. Payload/Mongo survive only for the service pages (treatments) until they move to Go; everything else (posts, comments, leads, subscribers, contatos, media) lives in Postgres. Site: https://psicologojoaofernandes.com
 
-## Deployment
+## Go platform (current state)
+
+- **Admin UI:** `/admin` (Next.js, `src/app/(admin)`, screens in `src/admin/`): Painel, Posts (Lexical editor in `src/editor/`), Leads, Comentários, Assinantes, Contatos (clinical only), Mídia. Browser talks to the Go API at `/api/v1/admin/*` through nginx; login is Google OAuth only (`/auth/google/login`), allowlist in `.env` `ADMIN_EMAILS`/`ADMIN_ROLES` (João=clinical, Jonathas=tech).
+- **Old Payload admin** is at `/payload-admin` (fallback; read-only for everything already moved to Postgres when `CONTENT_SOURCE=api`). Service pages (`treatments`) are still edited there until they are migrated (pages/services/settings editors are not built yet).
+- **Release:** `bash deploy/deploy.sh` on the Pi (see below). `scripts/deploy.sh` is the old Payload-only script; don't use it.
+- **Data import from Mongo:** export with `docker exec clinic-mongo mongoexport --db payload-joao --collection <c> --jsonArray > <dir>/<c>.json`, then `docker compose -f deploy/compose.yml --env-file .env --profile tools run --rm -v <dir>:/export:ro migrate payload-import /export [--apply] [--refresh-content]` and `verify-import`. Leads/subscribers/comments/contatos are insert-only; posts/media only update with `--refresh-content`.
+- **nginx config gotcha:** `deploy/nginx/conf.d/clinic.conf` is a single-file bind mount; after a `git pull` changes it, run `docker restart clinic-nginx` (a reload keeps the old inode).
+- Tests: `cd backend && TEST_DATABASE_URL=postgres://… go test -p 1 ./...` (the tests DROP SCHEMA public: use a throwaway database).
+- Comments need Cloudflare Turnstile keys (`TURNSTILE_SITE_KEY` at build, `TURNSTILE_SECRET` runtime); without them the form shows "temporariamente fechados".
+
+## Deployment (legacy notes below; the new flow is `deploy/deploy.sh`)
 
 **There is no automatic deploy.** Pushing to `main` does not release anything: the GitHub workflow `.github/workflows/deploy.yml` goes through Cloudflare Access and does not work. Production is released by hand on the Raspberry Pi.
 
