@@ -674,3 +674,21 @@ func TestJobsRunAdminAndAirflow(t *testing.T) {
 		t.Errorf("service token on admin trigger: %d", c)
 	}
 }
+
+func TestRetentionKeepsLeadsUntilConfirmed(t *testing.T) {
+	e := newTestEnv(t)
+	e.exec(`INSERT INTO leads (gclid, clicked_at) VALUES ('old-click', now() - interval '200 days')`)
+	svc := e.token(authn.RoleService)
+	rec := e.do("POST", "/api/v1/internal/jobs/retention.cleanup", "", svc, "Idempotency-Key", "r1")
+	if rec.Code != 200 || !strings.Contains(rec.Body.String(), `"leads_older_than_90_days_kept":1`) {
+		t.Fatalf("retention without confirmation: %d %s", rec.Code, rec.Body.String())
+	}
+	var n int
+	if err := e.srv.Pool.QueryRow(t.Context(), `SELECT count(*) FROM leads`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("lead deleted without confirmation (n=%d, err=%v)", n, err)
+	}
+	t.Setenv("RETENTION_LEADS_DAYS", "90")
+	if rec := e.do("POST", "/api/v1/internal/jobs/retention.cleanup", "", svc, "Idempotency-Key", "r2"); !strings.Contains(rec.Body.String(), `"leads_deleted":1`) {
+		t.Fatalf("confirmed retention: %s", rec.Body.String())
+	}
+}

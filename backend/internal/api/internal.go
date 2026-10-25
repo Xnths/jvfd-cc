@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -154,13 +157,24 @@ func (s *Server) getJobRun(w http.ResponseWriter, r *http.Request) {
 // jobRetentionCleanup applies the data-retention promises of the privacy policy.
 func jobRetentionCleanup(ctx context.Context, s *Server) (map[string]any, error) {
 	res := map[string]any{}
-	for name, q := range map[string]string{
-		"leads_deleted":     `DELETE FROM leads WHERE clicked_at < now() - interval '90 days'`,
+	queries := map[string]string{
 		"comments_deleted":  `DELETE FROM comments WHERE status IN ('rejected','spam') AND created_at < now() - interval '30 days'`,
 		"sessions_deleted":  `DELETE FROM sessions WHERE expires_at < now() - interval '7 days' OR revoked_at < now() - interval '7 days'`,
 		"questions_deleted": `DELETE FROM faq_questions WHERE status IN ('rejected','spam') AND created_at < now() - interval '30 days'`,
 		"audit_deleted":     `DELETE FROM audit_log WHERE at < now() - interval '400 days'`,
-	} {
+	}
+	// Deleting leads is irreversible, so it only runs once the clinic has confirmed the period (the privacy
+	// policy says 90 days): set RETENTION_LEADS_DAYS in .env. Until then the job reports what it would remove.
+	if days, _ := strconv.Atoi(os.Getenv("RETENTION_LEADS_DAYS")); days >= 30 {
+		queries["leads_deleted"] = fmt.Sprintf(`DELETE FROM leads WHERE clicked_at < now() - interval '%d days'`, days)
+	} else {
+		var n int64
+		if err := s.Pool.QueryRow(ctx, `SELECT count(*) FROM leads WHERE clicked_at < now() - interval '90 days'`).Scan(&n); err != nil {
+			return res, err
+		}
+		res["leads_older_than_90_days_kept"] = n
+	}
+	for name, q := range queries {
 		tag, err := s.Pool.Exec(ctx, q)
 		if err != nil {
 			return res, err

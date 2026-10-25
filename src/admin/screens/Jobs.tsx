@@ -13,7 +13,7 @@ type Job = { name: string; lastStatus: string | null; lastStartedAt: string | nu
 type Run = { id: string; job: string; key: string; status: 'running' | 'ok' | 'failed'; startedAt: string; finishedAt: string | null; summary: unknown; error: string }
 
 const DESCRIPTION: Record<string, string> = {
-    'retention.cleanup': 'Apaga o que a política de privacidade promete apagar (leads com mais de 90 dias, comentários recusados, sessões vencidas).',
+    'retention.cleanup': 'Apaga comentários recusados, sessões vencidas e perguntas recusadas. Os leads antigos só são apagados depois que o João confirma o prazo (RETENTION_LEADS_DAYS no servidor).',
     'newsletter.reconcile': 'Recoloca na fila campanhas de e-mail que ficaram travadas.',
     'gsc.sync': 'Busca os dados do Google Search Console.',
     'seo.opportunities': 'Procura oportunidades de SEO nos dados do Search Console.',
