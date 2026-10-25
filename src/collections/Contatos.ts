@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isStaff } from './access'
+import { isStaff, publicUnlessFrozen, staffUnlessFrozen } from './access'
 
 export const Contatos: CollectionConfig = {
     slug: 'contatos',
@@ -15,13 +15,13 @@ export const Contatos: CollectionConfig = {
     },
     access: {
         // Público pode criar (formulário do site sem autenticação)
-        create: () => true,
+        create: publicUnlessFrozen,
         // Apenas usuário autenticado (João) pode ler e gerenciar
         // Jonathas (admin técnico) usa uma conta separada mas NÃO possui acesso
         // à collection Contatos por design — apenas o psicólogo acessa dados de pacientes.
         read: isStaff,
-        update: isStaff,
-        delete: isStaff,
+        update: staffUnlessFrozen,
+        delete: staffUnlessFrozen,
     },
     timestamps: true,
     fields: [

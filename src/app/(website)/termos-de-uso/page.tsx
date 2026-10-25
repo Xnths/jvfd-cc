@@ -40,17 +40,17 @@ export default function TermsOfUsePage() {
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">4. Comentários do Blog</h2>
                 <p className="mb-4">
-                    Este site permite o cadastro voluntário de usuários para participação nos comentários dos artigos do blog. Ao criar uma conta e publicar comentários, o usuário concorda com as seguintes condições:
+                    Os artigos do blog aceitam comentários sem necessidade de cadastro. Ao enviar um comentário, o visitante concorda com as seguintes condições:
                 </p>
                 <ul className="list-disc pl-6 mb-4 space-y-2">
                     <li>Os comentários devem ser respeitosos e pertinentes ao conteúdo dos artigos.</li>
                     <li>É proibido publicar conteúdo ofensivo, discriminatório, ilegal ou que viole direitos de terceiros.</li>
                     <li>Os comentários passam por moderação antes de serem publicados.</li>
-                    <li>O nome de exibição escolhido no cadastro será exibido publicamente junto ao comentário.</li>
+                    <li>O nome informado no comentário será exibido publicamente junto a ele, se aprovado.</li>
                     <li>O responsável pelo site reserva-se o direito de recusar ou remover comentários que violem estas condições.</li>
                 </ul>
                 <p className="mb-4">
-                    Para informações sobre coleta e tratamento dos dados de cadastro, consulte nossa{" "}
+                    Para informações sobre coleta e tratamento dos dados enviados, consulte nossa{" "}
                     <Link href="/politica-de-privacidade" className="text-blue-600 hover:underline">Política de Privacidade</Link>.
                 </p>
 
@@ -58,8 +58,7 @@ export default function TermsOfUsePage() {
                 <p className="mb-4">
                     A inscrição na newsletter é voluntária e visa exclusivamente o envio de notificações sobre novos artigos publicados no blog.
                     Não há uso comercial ou compartilhamento dos dados com terceiros.
-                    O cancelamento pode ser feito a qualquer momento pelo link presente nos e-mails recebidos ou pela página{" "}
-                    <a href="/conta" className="text-blue-600 hover:underline">Minha Conta</a>.
+                    O cancelamento pode ser feito a qualquer momento pelo link presente nos e-mails recebidos.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">6. Cookies e Análise de Uso</h2>

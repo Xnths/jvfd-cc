@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { publicUnlessFrozen, staffUnlessFrozen } from './access'
 
 const setConvertedAt: CollectionConfig['hooks'] = {
     beforeChange: [
@@ -33,13 +34,11 @@ export const Leads: CollectionConfig = {
     },
     hooks: setConvertedAt,
     access: {
-        create: () => true,
+        create: publicUnlessFrozen,
         read: ({ req: { user } }) =>
             !!(user && (user as unknown as { collection: string }).collection === 'users'),
-        update: ({ req: { user } }) =>
-            !!(user && (user as unknown as { collection: string }).collection === 'users'),
-        delete: ({ req: { user } }) =>
-            !!(user && (user as unknown as { collection: string }).collection === 'users'),
+        update: staffUnlessFrozen,
+        delete: staffUnlessFrozen,
     },
     fields: [
         {

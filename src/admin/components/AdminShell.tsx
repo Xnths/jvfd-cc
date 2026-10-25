@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
     ExternalLink,
+    FileText,
     Image as ImageIcon,
     LayoutDashboard,
     LogOut,
@@ -23,6 +24,7 @@ type Me = { id: string; email: string; role: string }
 
 const NAV = [
     { href: '/admin', label: 'Painel', icon: LayoutDashboard, exact: true },
+    { href: '/admin/posts', label: 'Posts', icon: FileText },
     { href: '/admin/leads', label: 'Leads', icon: MousePointerClick },
     { href: '/admin/comentarios', label: 'Comentários', icon: MessageSquare },
     { href: '/admin/assinantes', label: 'Assinantes', icon: Mail },

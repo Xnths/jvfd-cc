@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 import { getPayload, type Where } from "payload";
 import configPromise from "@payload-config";
 import { CACHE_TAGS } from "./cache-tags";
+import { ApiNotFound, apiGet, contentFromApi } from "./api";
 
 export { CACHE_TAGS };
 
@@ -67,6 +68,9 @@ async function payloadClient() {
 export const getPublishedPosts = cache(
     unstable_cache(
         async (): Promise<PostDoc[]> => {
+            if (contentFromApi()) {
+                return (await apiGet<{ posts: PostDoc[] }>("/api/v1/public/posts?content=1")).posts;
+            }
             const payload = await payloadClient();
             const result = await payload.find({
                 collection: "posts",
@@ -85,6 +89,14 @@ export const getPublishedPosts = cache(
 export const getPostBySlug = cache(
     unstable_cache(
         async (slug: string): Promise<PostDoc | null> => {
+            if (contentFromApi()) {
+                try {
+                    return await apiGet<PostDoc>(`/api/v1/public/posts/${encodeURIComponent(slug)}`);
+                } catch (e) {
+                    if (e instanceof ApiNotFound) return null;
+                    throw e;
+                }
+            }
             const payload = await payloadClient();
             const result = await payload.find({
                 collection: "posts",
@@ -135,6 +147,9 @@ export const getTreatmentBySlug = cache(
 export const getApprovedComments = cache(
     unstable_cache(
         async (postId: string): Promise<CommentView[]> => {
+            if (contentFromApi()) {
+                return (await apiGet<{ comments: CommentView[] }>(`/api/v1/public/posts/${encodeURIComponent(postId)}/comments`)).comments;
+            }
             const payload = await payloadClient();
             const { docs } = await payload.find({
                 collection: "comments",

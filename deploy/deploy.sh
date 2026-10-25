@@ -56,7 +56,12 @@ main() {
     if docker ps --format '{{.Names}}' | grep -q '^clinic-frontend-blue$'; then active=blue; new=green; else active=green; new=blue; fi
     echo "Active: $active -> deploying: $new"
 
-    docker build --build-arg NEXT_PUBLIC_GA_ID="${NEXT_PUBLIC_GA_ID:-}" -t "clinic-frontend:$new" -f Dockerfile .
+    docker build \
+        --build-arg NEXT_PUBLIC_GA_ID="${NEXT_PUBLIC_GA_ID:-}" \
+        --build-arg NEXT_PUBLIC_POSTHOG_TOKEN="${NEXT_PUBLIC_POSTHOG_TOKEN:-}" \
+        --build-arg NEXT_PUBLIC_POSTHOG_HOST="${NEXT_PUBLIC_POSTHOG_HOST:-}" \
+        --build-arg NEXT_PUBLIC_TURNSTILE_SITE_KEY="${TURNSTILE_SITE_KEY:-}" \
+        -t "clinic-frontend:$new" -f Dockerfile .
 
     docker rm -f "clinic-frontend-$new" >/dev/null 2>&1 || true
     docker run -d --name "clinic-frontend-$new" --network "$net_public" --restart always \

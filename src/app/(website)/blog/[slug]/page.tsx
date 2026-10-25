@@ -24,7 +24,7 @@ interface PostPageProps {
 
 export async function generateStaticParams() {
     // The Docker build has no database access; pages render on demand instead.
-    if (!process.env.DATABASE_URI) return [];
+    if (!process.env.DATABASE_URI && !process.env.API_INTERNAL_URL) return [];
     try {
         const posts = await getPublishedPosts();
         return posts.map((post) => ({ slug: post.slug }));

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { staffUnlessFrozen } from './access'
 import { revalidateCommentAfterChange, revalidateCommentAfterDelete } from '../hooks/revalidate'
 
 export const Comments: CollectionConfig = {
@@ -19,18 +20,15 @@ export const Comments: CollectionConfig = {
     },
     access: {
         // Any authenticated blog-user can create
-        create: ({ req: { user } }) =>
-            !!(user && (user as unknown as { collection: string }).collection === 'blog-users'),
+        create: () => false,
         // Public can read approved; admins read all
         read: ({ req: { user } }) => {
             if (user && (user as unknown as { collection: string }).collection === 'users') return true
             return { status: { equals: 'approved' } }
         },
         // Only admins can update (moderate) or delete
-        update: ({ req: { user } }) =>
-            !!(user && (user as unknown as { collection: string }).collection === 'users'),
-        delete: ({ req: { user } }) =>
-            !!(user && (user as unknown as { collection: string }).collection === 'users'),
+        update: staffUnlessFrozen,
+        delete: staffUnlessFrozen,
     },
     fields: [
         {

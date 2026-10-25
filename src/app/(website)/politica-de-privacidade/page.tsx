@@ -42,33 +42,29 @@ export default function PrivacyPolicyPage() {
                     Os tratamentos de dados pessoais realizados por este site estão fundamentados nas seguintes bases legais:
                 </p>
                 <ul className="list-disc pl-6 mb-4 space-y-2">
-                    <li><strong>Consentimento (Art. 7º, I):</strong> newsletter, cadastro de usuário do blog e registro de LGPD nos formulários.</li>
+                    <li><strong>Consentimento (Art. 7º, I):</strong> inscrição na newsletter e envio de comentários no blog.</li>
                     <li><strong>Legítimo interesse (Art. 7º, IX):</strong> análises de uso do site por meio de ferramentas de analytics (GA4 e PostHog), utilizadas exclusivamente para melhoria do conteúdo e da experiência.</li>
-                    <li><strong>Execução de contrato (Art. 7º, V):</strong> cookie de autenticação dos usuários cadastrados no blog.</li>
+                    <li><strong>Legítimo interesse (Art. 7º, IX), segurança:</strong> verificação anti-robô (Cloudflare Turnstile) e registro de uma versão codificada (hash) do endereço IP nos comentários, apenas para conter abuso.</li>
                 </ul>
                 <p className="mb-4">
                     O visitante pode retirar seu consentimento a qualquer momento, conforme descrito nas seções correspondentes abaixo.
                 </p>
 
-                <h2 className="text-2xl font-semibold mt-8 mb-4">3. Contas de Usuário do Blog</h2>
+                <h2 className="text-2xl font-semibold mt-8 mb-4">3. Comentários do Blog</h2>
                 <p className="mb-4">
-                    Este site permite o cadastro voluntário de usuários para participação nos comentários dos artigos do blog.
-                    Ao criar uma conta, os seguintes dados são coletados:
+                    Os artigos do blog aceitam comentários sem necessidade de cadastro ou senha. Ao enviar um comentário, são coletados:
                 </p>
                 <ul className="list-disc pl-6 mb-4 space-y-2">
-                    <li><strong>Nome de exibição:</strong> usado publicamente nos comentários.</li>
-                    <li><strong>E-mail:</strong> usado apenas para autenticação e, quando autorizado, para newsletter. Nunca é exibido publicamente.</li>
-                    <li><strong>Senha:</strong> armazenada com hash seguro. Não é acessível por ninguém.</li>
-                    <li><strong>Data e hora do consentimento LGPD:</strong> registrada automaticamente no cadastro (Art. 7º, I, LGPD).</li>
+                    <li><strong>Nome (ou apelido):</strong> exibido publicamente junto ao comentário, se ele for aprovado.</li>
+                    <li><strong>Texto do comentário:</strong> exibido publicamente se aprovado. Não compartilhe informações pessoais ou de saúde.</li>
+                    <li><strong>Hash do endereço IP:</strong> versão codificada e irreversível, usada apenas para detectar abuso. O endereço IP em si não é armazenado.</li>
                 </ul>
                 <p className="mb-2">
-                    <strong>Finalidade:</strong> participação nos comentários do blog e, opcionalmente, recebimento de newsletter.
-                </p>
-                <p className="mb-2">
-                    <strong>Retenção:</strong> os dados são mantidos enquanto a conta estiver ativa. O usuário pode solicitar a exclusão a qualquer momento pela página <a href="/conta" className="text-blue-600 hover:underline">Minha Conta</a> ou por e-mail para <a href="mailto:joao@psicologojoaofernandes.com" className="text-blue-600 hover:underline">joao@psicologojoaofernandes.com</a>.
+                    <strong>Finalidade:</strong> permitir a discussão dos artigos. Todos os comentários passam por moderação antes de serem publicados.
                 </p>
                 <p className="mb-4">
-                    <strong>Direitos LGPD (Art. 18):</strong> o usuário pode a qualquer momento acessar, exportar (portabilidade) e excluir seus dados diretamente pela página <a href="/conta" className="text-blue-600 hover:underline">Minha Conta</a>. Ao solicitar exclusão, os comentários são anonimizados (substituídos por &ldquo;[comentário removido]&rdquo;) para manter a integridade dos artigos.
+                    <strong>Retenção e exclusão:</strong> comentários aprovados permanecem publicados até que você peça a remoção. Comentários rejeitados são apagados periodicamente. Para solicitar a remoção de um comentário, escreva para{" "}
+                    <a href="mailto:joao@psicologojoaofernandes.com" className="text-blue-600 hover:underline">joao@psicologojoaofernandes.com</a>.
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">4. Newsletter do Blog</h2>
@@ -80,7 +76,7 @@ export default function PrivacyPolicyPage() {
                     <li>O e-mail é coletado mediante <strong>consentimento explícito</strong> e registrado com a data e hora do consentimento.</li>
                     <li>Os dados são utilizados apenas para envio de notificações de novos artigos — sem fins comerciais ou de marketing.</li>
                     <li>O e-mail <strong>não é compartilhado com terceiros</strong>.</li>
-                    <li>O cancelamento da inscrição pode ser feito a qualquer momento pelo link <em>Cancelar inscrição</em> presente em todos os e-mails recebidos ou pela página <a href="/conta" className="text-blue-600 hover:underline">Minha Conta</a>.</li>
+                    <li>O cancelamento da inscrição pode ser feito a qualquer momento pelo link <em>Cancelar inscrição</em> presente em todos os e-mails recebidos, ou pedindo a exclusão por e-mail.</li>
                 </ul>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">5. Cookies e Ferramentas de Análise</h2>
@@ -111,10 +107,9 @@ export default function PrivacyPolicyPage() {
                     Você pode desativar esse rastreamento nas <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">configurações de anúncios do Google</a>.
                 </p>
 
-                <h3 className="text-xl font-semibold mt-6 mb-3">Cookie de Autenticação</h3>
+                <h3 className="text-xl font-semibold mt-6 mb-3">Cookies de acesso administrativo</h3>
                 <p className="mb-4">
-                    Usuários cadastrados no blog recebem um cookie HTTP-only de autenticação (<code>payload-token</code>) após o login.
-                    Esse cookie é estritamente necessário para manter a sessão ativa e é excluído automaticamente ao efetuar logout ou ao excluir a conta.
+                    Visitantes não precisam entrar em nenhuma conta e não recebem cookie de autenticação. Apenas as duas pessoas autorizadas a administrar o site entram, exclusivamente com a conta Google, e só elas recebem cookies de sessão (estritamente necessários).
                 </p>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">6. Dados do Profissional Responsável</h2>
@@ -144,8 +139,7 @@ export default function PrivacyPolicyPage() {
                     Nos termos da LGPD (Art. 18), você tem direito a: confirmar a existência do tratamento de seus dados; acessar os dados coletados; solicitar sua correção, portabilidade ou exclusão; revogar o consentimento a qualquer momento.
                 </p>
                 <ul className="list-disc pl-6 mb-4 space-y-2">
-                    <li>Usuários cadastrados no blog podem exercer todos esses direitos diretamente pela página <a href="/conta" className="text-blue-600 hover:underline">Minha Conta</a>.</li>
-                    <li>Para demais solicitações, entre em contato pelo e-mail listado na seção 6.</li>
+                    <li>Para exercer esses direitos, entre em contato pelo e-mail listado na seção 6.</li>
                 </ul>
 
                 <h2 className="text-2xl font-semibold mt-8 mb-4">9. Consentimento</h2>

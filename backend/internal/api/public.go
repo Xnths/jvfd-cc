@@ -283,7 +283,12 @@ func derefStr(s *string) string {
 }
 
 func (s *Server) listPosts(w http.ResponseWriter, r *http.Request) {
-	rows, err := s.Pool.Query(r.Context(), `SELECT `+postSelect+postFrom+`
+	withContent := r.URL.Query().Get("content") == "1"
+	cols := postSelect
+	if withContent {
+		cols += ", po.published_content"
+	}
+	rows, err := s.Pool.Query(r.Context(), `SELECT `+cols+postFrom+`
 		WHERE po.status = 'published' AND po.published_at <= now() ORDER BY po.published_at DESC LIMIT 1000`)
 	if err != nil {
 		serverError(w, s.Log, r, err)
@@ -292,10 +297,19 @@ func (s *Server) listPosts(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 	out := []PostOut{}
 	for rows.Next() {
-		p, err := scanPost(rows, false, nil)
+		var content json.RawMessage
+		p, err := scanPost(rows, withContent, &content)
 		if err != nil {
 			serverError(w, s.Log, r, err)
 			return
+		}
+		if withContent {
+			doc, _ := richtext.Parse(content)
+			if err := s.populateMedia(r.Context(), doc); err != nil {
+				serverError(w, s.Log, r, err)
+				return
+			}
+			p.Content = doc
 		}
 		out = append(out, p)
 	}

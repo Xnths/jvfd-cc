@@ -13,6 +13,14 @@ const nextConfig = {
     outputFileTracingIncludes: {
         '/**/opengraph-image*': ['./src/assets/fonts/**/*', './public/jv.jpeg'],
     },
+    // Blog accounts were retired when the site moved to Google-only admin sign-in.
+    async redirects() {
+        return [
+            { source: '/login', destination: '/blog', permanent: true },
+            { source: '/registro', destination: '/blog', permanent: true },
+            { source: '/conta', destination: '/blog', permanent: true },
+        ]
+    },
     async rewrites() {
         return [
             {
