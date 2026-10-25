@@ -79,7 +79,9 @@ const nextConfig = {
                 font-src 'self' https://fonts.gstatic.com;
                 connect-src 'self'
                     https://www.google-analytics.com
+                    https://*.google-analytics.com
                     https://analytics.google.com
+                    https://*.analytics.google.com
                     https://region1.analytics.google.com
                     https://maps.googleapis.com
                     https://api.whatsapp.com
