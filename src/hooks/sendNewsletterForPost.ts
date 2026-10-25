@@ -2,7 +2,11 @@ import type { CollectionAfterChangeHook } from 'payload'
 import { Resend } from 'resend'
 import { NewPostNotification } from '../emails/NewPostNotification'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Created on first use: the build has no secrets, and `new Resend()` throws without a key.
+let resendClient: Resend | null = null
+function getResend() {
+    return (resendClient ??= new Resend(process.env.RESEND_API_KEY))
+}
 const BASE_URL = 'https://psicologojoaofernandes.com'
 const FROM_EMAIL = 'João Fernandes <newsletter@psicologojoaofernandes.com>'
 
@@ -59,7 +63,7 @@ export const sendNewsletterForPost: CollectionAfterChangeHook = async ({
                     }
                 })
 
-                const { error } = await resend.batch.send(emails)
+                const { error } = await getResend().batch.send(emails)
                 if (error) {
                     payload.logger.error({ err: error }, '[newsletter] Resend batch error')
                 }
