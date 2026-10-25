@@ -3,9 +3,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import type { TextEntry, TextMap } from "@/lib/texts";
+import type { ServiceCard } from "@/lib/queries";
 
 type Ctx = {
     texts: TextMap;
+    /** Services from Postgres (footer, grid); null while the site still reads them from code. */
+    serviceCards: ServiceCard[] | null;
     admin: boolean;
     editing: boolean;
     setEditing: (v: boolean) => void;
@@ -16,6 +19,7 @@ type Ctx = {
 
 const EditContext = createContext<Ctx>({
     texts: {},
+    serviceCards: null,
     admin: false,
     editing: false,
     setEditing: () => {},
@@ -37,7 +41,7 @@ function hasAdminHint() {
     }
 }
 
-export function EditProvider({ initial, children }: { initial: TextMap; children: React.ReactNode }) {
+export function EditProvider({ initial, serviceCards = null, children }: { initial: TextMap; serviceCards?: ServiceCard[] | null; children: React.ReactNode }) {
     const [texts, setTexts] = useState<TextMap>(initial);
     const [admin, setAdmin] = useState(false);
     const [editing, setEditingState] = useState(false);
@@ -97,8 +101,8 @@ export function EditProvider({ initial, children }: { initial: TextMap; children
     }, [editing]);
 
     const value = useMemo(
-        () => ({ texts, admin, editing, setEditing, activeKey, setActiveKey, setText }),
-        [texts, admin, editing, setEditing, activeKey, setText],
+        () => ({ texts, serviceCards, admin, editing, setEditing, activeKey, setActiveKey, setText }),
+        [texts, serviceCards, admin, editing, setEditing, activeKey, setText],
     );
 
     return (

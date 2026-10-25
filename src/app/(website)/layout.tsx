@@ -11,6 +11,7 @@ import { siteGraph } from "@/lib/jsonld";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { EditProvider } from "@/edit/EditContext";
 import { getTexts } from "@/lib/texts";
+import { getServiceCards } from "@/lib/queries";
 import { GoogleAnalytics } from '@next/third-parties/google'
 
 // Self-hosted (fontsource variable files): the production build runs on a
@@ -103,18 +104,18 @@ export default async function RootLayout({
     children: React.ReactNode;
 }) {
     const gaId = process.env.NEXT_PUBLIC_GA_ID
-    const texts = await getTexts()
+    const [texts, serviceCards] = await Promise.all([getTexts(), getServiceCards().catch(() => null)])
 
     return (
         <html lang="pt-BR" className={`${inter.variable} ${fraunces.variable}`}>
             <body className={`${inter.className} antialiased`}>
-                <JsonLd data={siteGraph()} />
+                <JsonLd data={siteGraph(serviceCards?.filter((s) => s.showOnHome !== "never").map((s) => ({ name: s.name, description: s.description, href: s.href })))} />
 
                 <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-background text-foreground rounded-md shadow-md border border-border">
                     Pular para o conteúdo principal
                 </a>
 
-                <EditProvider initial={texts}>
+                <EditProvider initial={texts} serviceCards={serviceCards}>
                 <SiteHeader />
 
                 <main id="main-content">

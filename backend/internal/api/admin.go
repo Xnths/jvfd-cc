@@ -11,7 +11,9 @@ import (
 
 	"github.com/Xnths/jvfd-cc/backend/internal/authn"
 	"github.com/Xnths/jvfd-cc/backend/internal/blocks"
+	"github.com/Xnths/jvfd-cc/backend/internal/copylint"
 	"github.com/Xnths/jvfd-cc/backend/internal/httpx"
+	"github.com/Xnths/jvfd-cc/backend/internal/richtext"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -400,6 +402,23 @@ func (s *Server) adminPublishPage(w http.ResponseWriter, r *http.Request) {
 	if err := blocks.Validate(kind, draftBlocks); err != nil && kind != "service" && kind != "education" {
 		badRequest(w, err.Error())
 		return
+	}
+	// Service pages are patient-facing advertising: run the CFP copy lint over the text that is about to go live.
+	if kind == "service" || kind == "education" {
+		var in struct {
+			AcknowledgeLint bool `json:"acknowledgeLint"`
+		}
+		if r.ContentLength > 0 {
+			_ = json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&in)
+		}
+		var body json.RawMessage
+		var title, subtitle string
+		_ = tx.QueryRow(ctx, `SELECT coalesce(s.body, '{}'::jsonb), p.title, p.subtitle FROM pages p LEFT JOIN services s ON s.page_id = p.id WHERE p.id::text = $1`, id).Scan(&body, &title, &subtitle)
+		doc, _ := richtext.Parse(body)
+		if flags := copylint.Check(strings.Join([]string{title, subtitle, richtext.PlainText(doc)}, "\n")); len(flags) > 0 && !in.AcknowledgeLint {
+			httpx.JSON(w, http.StatusUnprocessableEntity, map[string]any{"title": "copy needs review", "flags": flags})
+			return
+		}
 	}
 	var m struct {
 		Title, Subtitle, MetaTitle, MetaDescription *string

@@ -75,7 +75,7 @@ export function personNode(): Node {
     };
 }
 
-export function clinicNode(): Node {
+export function clinicNode(list: { name: string; description: string; href: string }[] = services): Node {
     return {
         "@type": "Psychologist",
         "@id": IDS.clinic,
@@ -110,7 +110,7 @@ export function clinicNode(): Node {
         employee: { "@id": IDS.person },
         knowsLanguage: "pt-BR",
         availableService: [
-            ...services.map((s) => ({
+            ...list.map((s) => ({
                 "@type": "MedicalTherapy",
                 name: s.name,
                 description: s.description,
@@ -271,6 +271,6 @@ export function tutoringNode(): Node {
 }
 
 /** Entities every page carries (rendered once, in the root layout). */
-export function siteGraph() {
-    return graph(websiteNode(), personNode(), clinicNode());
+export function siteGraph(list?: { name: string; description: string; href: string }[]) {
+    return graph(websiteNode(), personNode(), clinicNode(list));
 }

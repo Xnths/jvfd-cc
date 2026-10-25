@@ -37,7 +37,34 @@ export type PostDoc = {
     status?: "draft" | "published" | null;
 };
 
+/** Service settings that live in Postgres (layout, theme, card copy…). Only present when CONTENT_SOURCE=api. */
+export type ServiceInfo = {
+    id: string;
+    slug: string;
+    name: string;
+    cardTitle: string;
+    cardDescription: string;
+    icon: string;
+    category: "therapy" | "education";
+    layout: string;
+    theme: string;
+    badge: string;
+    ctaText: string;
+    whatsappMessage: string;
+    showOnHome: "always" | "campaign" | "never";
+    campaignKey: string | null;
+    showInFooter: boolean;
+    showContactSection: boolean;
+    sortOrder: number;
+    analyticsKey: string;
+};
+
+/** A service as shown in the home grid and the footer. */
+export type ServiceCard = { href: string; name: string; title: string; description: string; icon?: string; pride?: boolean; showOnHome: "always" | "campaign" | "never"; inFooter: boolean };
+
 export type TreatmentDoc = {
+    service?: ServiceInfo;
+    pageId?: string;
     id: string;
     slug: string;
     title: string;
@@ -111,9 +138,35 @@ export const getPostBySlug = cache(
     ),
 );
 
+type PageApi = {
+    id: string;
+    slug: string;
+    kind: string;
+    title: string;
+    subtitle: string;
+    metaTitle: string;
+    metaDescription: string;
+    updatedAt: string;
+    service?: ServiceInfo & { body: unknown; createdAt: string };
+};
+
+function treatmentFromPage(p: PageApi): TreatmentDoc | null {
+    if (!p.service) return null;
+    const { body, createdAt, ...info } = p.service;
+    return {
+        id: p.id, pageId: p.id, slug: p.slug, title: p.title, subtitle: p.subtitle || null, content: body,
+        metaTitle: p.metaTitle || null, metaDescription: p.metaDescription || null, updatedAt: p.updatedAt, createdAt, service: info,
+    };
+}
+
 export const getTreatments = cache(
     unstable_cache(
         async (): Promise<TreatmentDoc[]> => {
+            if (contentFromApi()) {
+                const list = (await apiGet<{ services: ServiceInfo[] }>("/api/v1/public/services")).services;
+                const pages = await Promise.all(list.map((sv) => apiGet<PageApi>(`/api/v1/public/pages/${encodeURIComponent(sv.slug)}`).catch(() => null)));
+                return pages.flatMap((p) => (p ? [treatmentFromPage(p)].filter((t): t is TreatmentDoc => !!t) : []));
+            }
             const payload = await payloadClient();
             const result = await payload.find({
                 collection: "treatments",
@@ -123,13 +176,21 @@ export const getTreatments = cache(
             return result.docs as unknown as TreatmentDoc[];
         },
         ["treatments"],
-        { tags: [CACHE_TAGS.treatments], revalidate: REVALIDATE_SECONDS },
+        { tags: [CACHE_TAGS.treatments, "services", "pages"], revalidate: REVALIDATE_SECONDS },
     ),
 );
 
 export const getTreatmentBySlug = cache(
     unstable_cache(
         async (slug: string): Promise<TreatmentDoc | null> => {
+            if (contentFromApi()) {
+                try {
+                    return treatmentFromPage(await apiGet<PageApi>(`/api/v1/public/pages/${encodeURIComponent(slug)}`));
+                } catch (e) {
+                    if (e instanceof ApiNotFound) return null;
+                    throw e;
+                }
+            }
             const payload = await payloadClient();
             const result = await payload.find({
                 collection: "treatments",
@@ -140,7 +201,23 @@ export const getTreatmentBySlug = cache(
             return (result.docs[0] as unknown as TreatmentDoc) ?? null;
         },
         ["treatment-by-slug"],
-        { tags: [CACHE_TAGS.treatments], revalidate: REVALIDATE_SECONDS },
+        { tags: [CACHE_TAGS.treatments, "services", "pages"], revalidate: REVALIDATE_SECONDS },
+    ),
+);
+
+/** Cards for the home grid and the footer. Falls back to the copy in code when the API is off. */
+export const getServiceCards = cache(
+    unstable_cache(
+        async (): Promise<ServiceCard[] | null> => {
+            if (!contentFromApi()) return null;
+            const list = (await apiGet<{ services: ServiceInfo[] }>("/api/v1/public/services")).services;
+            return list.map((sv) => ({
+                href: `/${sv.slug}`, name: sv.name, title: sv.cardTitle, description: sv.cardDescription, icon: sv.icon,
+                pride: sv.campaignKey === "lgbt", showOnHome: sv.showOnHome, inFooter: sv.showInFooter,
+            }));
+        },
+        ["service-cards"],
+        { tags: ["services"], revalidate: REVALIDATE_SECONDS },
     ),
 );
 

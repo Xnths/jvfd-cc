@@ -576,3 +576,25 @@ func TestSiteTexts(t *testing.T) {
 		t.Errorf("deleted override still public")
 	}
 }
+
+func TestServicePublishLint(t *testing.T) {
+	e := newTestEnv(t)
+	tok := e.token(authn.RoleAdminClinical)
+	rec := e.do("POST", "/api/v1/admin/services", `{"slug":"promessa","name":"Promessa"}`, tok)
+	var ids struct{ ID, PageID string }
+	_ = json.Unmarshal(rec.Body.Bytes(), &ids)
+	bad := `{"root":{"type":"root","children":[{"type":"paragraph","children":[{"type":"text","text":"Resultados garantidos em poucas sessões, o melhor psicólogo."}]}]}}`
+	if c := e.do("PUT", "/api/v1/admin/services/"+ids.ID+"/body", bad, tok).Code; c != 204 {
+		t.Fatalf("body: %d", c)
+	}
+	pub := "/api/v1/admin/pages/" + ids.PageID + "/publish"
+	if c := e.do("POST", pub, "", tok).Code; c != 422 {
+		t.Fatalf("lint did not block publish: %d", c)
+	}
+	if c := e.do("GET", "/api/v1/public/pages/promessa", "", "").Code; c != 404 {
+		t.Fatalf("blocked page became public: %d", c)
+	}
+	if c := e.do("POST", pub, `{"acknowledgeLint":true}`, tok).Code; c != 200 {
+		t.Fatalf("acknowledged publish: %d", c)
+	}
+}

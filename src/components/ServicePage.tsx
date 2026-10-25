@@ -2,6 +2,10 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { Editable } from "@/edit/Editable";
+import dynamic from "next/dynamic";
+import { useEdit } from "@/edit/EditContext";
+import type { ServiceInfo } from "@/lib/queries";
+import { SERVICE_THEMES, type ServiceTheme } from "@/lib/service-themes";
 import { FaWhatsapp } from "react-icons/fa";
 import posthog from "posthog-js";
 import { sendGAEvent } from "@next/third-parties/google";
@@ -11,9 +15,10 @@ import { Footer } from "@/components/Footer";
 import { Contact } from "@/components/Contact";
 
 // Copy on a service page is keyed `service.<slug>.<name>`, so each service edits its own text inline.
-const SlugCtx = createContext("");
+type ServiceCtxValue = { slug: string; serviceId?: string; pageId?: string; showContact: boolean };
+const ServiceCtx = createContext<ServiceCtxValue>({ slug: "", showContact: true });
 function SE({ k, as, className, multiline, children }: { k: string; as?: React.ElementType; className?: string; multiline?: boolean; children: string }) {
-  const slug = useContext(SlugCtx);
+  const { slug } = useContext(ServiceCtx);
   return (
     <Editable k={`service.${slug}.${k}`} as={as} className={className} multiline={multiline}>
       {children}
@@ -131,6 +136,19 @@ const SERVICE_CONFIG: Record<string, ServiceConfig> = {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
+function ServiceContact() {
+  return useContext(ServiceCtx).showContact ? <Contact /> : null;
+}
+
+// The rich-text body; while an admin is editing it becomes the editor, in the same place on the page.
+const ServiceBodyEditor = dynamic(() => import("@/edit/ServiceBodyEditor").then((m) => m.ServiceBodyEditor), { ssr: false });
+function ServiceBody({ content }: { content: unknown }) {
+  const { editing } = useEdit();
+  const { serviceId, pageId } = useContext(ServiceCtx);
+  if (editing && serviceId && pageId) return <ServiceBodyEditor serviceId={serviceId} pageId={pageId} />;
+  return <RichText content={content} />;
+}
+
 function buildWhatsappUrl(message: string, isMobile: boolean): string {
   const encoded = encodeURIComponent(message);
   if (isMobile) return `https://wa.me/${PHONE}?text=${encoded}`;
@@ -226,7 +244,7 @@ function CalmingLayout({
       {/* Rich content */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-2xl text-lg text-slate-700 leading-relaxed">
-          <RichText content={content} />
+          <ServiceBody content={content} />
         </div>
       </section>
 
@@ -248,7 +266,7 @@ function CalmingLayout({
         </div>
       </section>
 
-      <Contact />
+      <ServiceContact />
       <Footer />
     </div>
   );
@@ -303,7 +321,7 @@ function StructuredLayout({
           <div className="grid md:grid-cols-3 gap-10">
             {/* Main content — 2/3 */}
             <div className="md:col-span-2 text-base text-slate-700 leading-relaxed space-y-0">
-              <RichText content={content} />
+              <ServiceBody content={content} />
             </div>
             {/* Sidebar — 1/3 */}
             <aside className="space-y-6">
@@ -329,7 +347,7 @@ function StructuredLayout({
         </div>
       </section>
 
-      <Contact />
+      <ServiceContact />
       <Footer />
     </div>
   );
@@ -388,7 +406,7 @@ function PlantaoLayout({
       {content && (
         <section className="py-16 px-4 border-t border-slate-100">
           <div className="container mx-auto max-w-xl text-slate-700 leading-relaxed">
-            <RichText content={content} />
+            <ServiceBody content={content} />
           </div>
           {/* Repeat CTA at end for scrollers */}
           <div className="mt-12 flex justify-center">
@@ -452,7 +470,7 @@ function ExploratoryLayout({
       {/* Spacious content — invites deep reading */}
       <section className="py-24 px-4">
         <div className="container mx-auto max-w-2xl text-xl text-stone-700 leading-[1.9]">
-          <RichText content={content} />
+          <ServiceBody content={content} />
         </div>
       </section>
 
@@ -477,7 +495,7 @@ function ExploratoryLayout({
         </div>
       </section>
 
-      <Contact />
+      <ServiceContact />
       <Footer />
     </div>
   );
@@ -545,7 +563,7 @@ function SupervisaoLayout({
         <div className="container mx-auto max-w-4xl">
           <div className="grid md:grid-cols-3 gap-10">
             <div className="md:col-span-2 text-base text-slate-700 leading-relaxed">
-              <RichText content={content} />
+              <ServiceBody content={content} />
             </div>
             <aside className="space-y-6">
               <div className="border border-slate-200 rounded-2xl p-6 sticky top-28">
@@ -570,7 +588,7 @@ function SupervisaoLayout({
         </div>
       </section>
 
-      <Contact />
+      <ServiceContact />
       <Footer />
     </div>
   );
@@ -674,7 +692,7 @@ function AffirmativeLayout({
       {/* Content — spacious, unhurried */}
       <section className="py-24 px-4">
         <div className="container mx-auto max-w-2xl text-lg text-slate-700 leading-[1.85]">
-          <RichText content={content} />
+          <ServiceBody content={content} />
         </div>
       </section>
 
@@ -702,7 +720,7 @@ function AffirmativeLayout({
         </div>
       </section>
 
-      <Contact />
+      <ServiceContact />
       <Footer />
     </div>
   );
@@ -733,7 +751,7 @@ function GenericLayout({
       </section>
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-3xl text-lg text-slate-700 leading-relaxed">
-          <RichText content={content} />
+          <ServiceBody content={content} />
         </div>
       </section>
       <div className="py-12 flex justify-center">
@@ -744,7 +762,7 @@ function GenericLayout({
           onClick={onCTAClick}
         />
       </div>
-      <Contact />
+      <ServiceContact />
       <Footer />
     </div>
   );
@@ -770,19 +788,31 @@ interface ServicePageProps {
   subtitle?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: any;
+  /** Settings from Postgres (CONTENT_SOURCE=api); without it the hardcoded SERVICE_CONFIG applies. */
+  service?: ServiceInfo;
+  pageId?: string;
+}
+
+function configFromService(sv: ServiceInfo): ServiceConfig | undefined {
+  if (sv.layout === "generic" || sv.layout === "blocks") return undefined;
+  const t = SERVICE_THEMES[(sv.theme as ServiceTheme) in SERVICE_THEMES ? (sv.theme as ServiceTheme) : "teal"];
+  return {
+    ctaText: sv.ctaText, whatsappMessage: sv.whatsappMessage, variant: sv.layout as Variant, badge: sv.badge || undefined,
+    heroBg: t.heroBg, heroHeadingClass: t.heroHeadingClass, heroSubtitleClass: t.heroSubtitleClass, ctaBtnClass: t.ctaBtnClass, accentTextClass: t.accentTextClass,
+  };
 }
 
 export function ServicePage(props: ServicePageProps) {
   return (
-    <SlugCtx.Provider value={props.slug}>
+    <ServiceCtx.Provider value={{ slug: props.slug, serviceId: props.service?.id, pageId: props.pageId, showContact: props.service ? props.service.showContactSection : props.slug !== "plantao" }}>
       <ServicePageInner {...props} />
-    </SlugCtx.Provider>
+    </ServiceCtx.Provider>
   );
 }
 
-function ServicePageInner({ slug, title, subtitle, content }: ServicePageProps) {
-  const config = SERVICE_CONFIG[slug];
-  const defaultMessage = config?.whatsappMessage ?? "Olá! Gostaria de agendar uma conversa.";
+function ServicePageInner({ slug, title, subtitle, content, service }: ServicePageProps) {
+  const config = service ? configFromService(service) : SERVICE_CONFIG[slug];
+  const defaultMessage = service?.whatsappMessage || config?.whatsappMessage || "Olá! Gostaria de agendar uma conversa.";
 
   const [whatsappUrl, setWhatsappUrl] = useState(() =>
     buildWhatsappUrl(defaultMessage, true)
@@ -801,11 +831,11 @@ function ServicePageInner({ slug, title, subtitle, content }: ServicePageProps) 
   const handleCTAClick = () => {
     const elapsed = getElapsedTime() ?? 0;
     sendGAEvent("event", "schedule_click", {
-      source: `service_page_${slug}`,
+      source: service?.analyticsKey ?? `service_page_${slug}`,
       time_to_click_ms: elapsed,
     });
     posthog.capture("schedule_click", {
-      source: `service_page_${slug}`,
+      source: service?.analyticsKey ?? `service_page_${slug}`,
       time_to_click_ms: elapsed,
     });
   };

@@ -27,6 +27,8 @@ import { services as baseServices } from "@/content/clinic";
 import { tutoring } from "@/content/tutoring";
 import { sendGAEvent } from "@next/third-parties/google";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
+import { useEdit } from "@/edit/EditContext";
+import { iconFor } from "@/lib/service-icons";
 import { Editable } from "@/edit/Editable";
 
 
@@ -41,21 +43,26 @@ const ICONS: Record<string, LucideIcon> = {
   [tutoring.path]: GraduationCap,
 };
 
-const services = [
-  ...baseServices,
-  {
-    name: tutoring.shortName,
-    title: "Aulas de Química, Biologia e método de estudo",
-    description:
-      "Aulas particulares para ENEM e vestibular, método de estudo baseado em Análise do Comportamento e apoio a estudantes de Psicologia. Um serviço educacional, separado da terapia.",
-    href: tutoring.path,
-    pride: false,
-  },
-].map((service) => ({ ...service, icon: ICONS[service.href] ?? Brain }));
+// Tutoring is a page in code, not a Postgres service, so its card is always appended.
+const tutoringCard = {
+  name: tutoring.shortName,
+  title: "Aulas de Química, Biologia e método de estudo",
+  description:
+    "Aulas particulares para ENEM e vestibular, método de estudo baseado em Análise do Comportamento e apoio a estudantes de Psicologia. Um serviço educacional, separado da terapia.",
+  href: tutoring.path,
+  pride: false,
+};
+
+const staticServices = [...baseServices, tutoringCard].map((s) => ({ ...s, showOnHome: ("pride" in s && s.pride ? "campaign" : "always") as "always" | "campaign" | "never" }));
 
 export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
   const whatsappUrl = useWhatsappUrl();
   const { getElapsedTime } = useTimeToAction();
+  const { serviceCards } = useEdit();
+  const services = (serviceCards ? [...serviceCards, { ...tutoringCard, showOnHome: "always" as const }] : staticServices).map((service) => ({
+    ...service,
+    icon: ("icon" in service && service.icon ? iconFor(service.icon as string) : ICONS[service.href]) ?? Brain,
+  }));
 
   const handleWhatsAppClick = () => {
     const elapsedTime = getElapsedTime() || 0;
@@ -93,7 +100,7 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {services.filter((s) => showLgbt || !("pride" in s && s.pride)).map((service, index) => {
+          {services.filter((s) => s.showOnHome === "always" || (s.showOnHome === "campaign" && showLgbt)).map((service, index) => {
             const Icon = service.icon;
             const isPride = "pride" in service && service.pride;
             return (

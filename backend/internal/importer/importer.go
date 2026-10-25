@@ -129,6 +129,9 @@ func Run(ctx context.Context, pool *pgxpool.Pool, dir string, o Options) (*Repor
 	if err != nil {
 		return rep, fmt.Errorf("posts: %w", err)
 	}
+	if err := importTreatments(ctx, tx, dir, mediaMap, o.RefreshContent, rep); err != nil {
+		return rep, fmt.Errorf("treatments: %w", err)
+	}
 	if err := importComments(ctx, tx, dir, postMap, rep); err != nil {
 		return rep, fmt.Errorf("comments: %w", err)
 	}
@@ -458,6 +461,9 @@ func Verify(ctx context.Context, pool *pgxpool.Pool, dir string) ([]string, erro
 		return out
 	}
 	if err := check("posts", `SELECT slug::text FROM posts`, collect("posts", func(d doc) string { return str(d, "slug") })); err != nil {
+		return nil, err
+	}
+	if err := check("services", `SELECT slug::text FROM pages WHERE kind IN ('service','education')`, collect("treatments", func(d doc) string { return str(d, "slug") })); err != nil {
 		return nil, err
 	}
 	if err := check("media", `SELECT filename FROM media`, collect("media", func(d doc) string { return str(d, "filename") })); err != nil {

@@ -1,5 +1,7 @@
 import { ServicePage } from '@/components/ServicePage'
 import { notFound } from 'next/navigation'
+import { draftMode } from 'next/headers'
+import { DraftService } from '@/edit/DraftService'
 import type { Metadata } from 'next'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { getTreatmentBySlug, getTreatments } from '@/lib/queries'
@@ -16,7 +18,7 @@ type Params = {
 export async function generateStaticParams() {
     // If DATABASE_URI is not set, we are likely building in an environment without DB access
     // Skip static generation to allow build to succeed. Pages will be generated on demand.
-    if (!process.env.DATABASE_URI) {
+    if (!process.env.DATABASE_URI && !process.env.API_INTERNAL_URL) {
         return []
     }
 
@@ -60,6 +62,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     }
 
     if (!treatment) {
+        // A service that is not published yet opens at its own URL for the admin who is writing it.
+        if (process.env.CONTENT_SOURCE === 'api' && (await draftMode()).isEnabled) return <DraftService slug={slug} />
         notFound()
     }
 
@@ -80,6 +84,8 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 title={treatment.title}
                 subtitle={treatment.subtitle || ''}
                 content={treatment.content}
+                service={treatment.service}
+                pageId={treatment.pageId}
             />
         </>
     )

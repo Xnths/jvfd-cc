@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { api, errorMessage } from "@/admin/lib/adminFetch";
@@ -9,12 +10,32 @@ import { useEdit } from "./EditContext";
 type Me = { id: string; email: string; name?: string; role: string };
 export const ADMIN_BAR_HEIGHT = 44;
 
+const NewServiceDialog = dynamic(() => import("./ServiceDialogs").then((m) => m.NewServiceDialog), { ssr: false });
+const ServiceSettingsDialog = dynamic(() => import("./ServiceDialogs").then((m) => m.ServiceSettingsDialog), { ssr: false });
+
+// One-segment paths owned by code, never services.
+const CODE_PAGES = new Set(["blog", "presencial", "aulas-particulares", "politica-de-privacidade", "termos-de-uso", "admin", "edit", "auth"]);
+
 /** Fixed bar above the real site for signed-in admins. */
 export function AdminBar() {
     const { editing, setEditing } = useEdit();
     const pathname = usePathname();
     const [me, setMe] = useState<Me | null>(null);
     const [creating, setCreating] = useState(false);
+    const [newServiceOpen, setNewServiceOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [serviceSlug, setServiceSlug] = useState<string | null>(null);
+
+    // On a service page (published or draft) the bar offers its settings.
+    useEffect(() => {
+        const m = /^\/([a-z0-9-]+)$/.exec(pathname ?? "");
+        setServiceSlug(null);
+        if (!me || !m || CODE_PAGES.has(m[1])) return;
+        fetch(`/api/v1/admin/pages/slug:${m[1]}`, { credentials: "same-origin" })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => d?.service && setServiceSlug(m[1]))
+            .catch(() => undefined);
+    }, [pathname, me]);
 
     // A new post starts as a draft and opens on its real URL, ready to be written in place.
     async function newPost() {
@@ -75,6 +96,14 @@ export function AdminBar() {
             <button type="button" onClick={newPost} disabled={creating} className="rounded px-3 py-1 font-medium bg-white/10 hover:bg-white/20 disabled:opacity-50">
                 + Novo post
             </button>
+            <button type="button" onClick={() => setNewServiceOpen(true)} className="rounded px-3 py-1 font-medium bg-white/10 hover:bg-white/20">
+                + Novo serviço
+            </button>
+            {serviceSlug && (
+                <button type="button" onClick={() => setSettingsOpen(true)} className="rounded px-3 py-1 font-medium bg-white/10 hover:bg-white/20">
+                    Configurar serviço
+                </button>
+            )}
             <span className="mx-auto" />
             <Link href="/admin" className="rounded px-2 py-1 hover:bg-white/10">
                 Painel
@@ -82,6 +111,8 @@ export function AdminBar() {
             <span className="hidden text-white/60 md:inline" title={pathname}>
                 {me.email} ({me.role === "clinical" ? "clínico" : "técnico"})
             </span>
+            {newServiceOpen && <NewServiceDialog open onOpenChange={setNewServiceOpen} />}
+            {settingsOpen && serviceSlug && <ServiceSettingsDialog open onOpenChange={setSettingsOpen} slug={serviceSlug} />}
         </div>
     );
 }

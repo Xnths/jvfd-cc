@@ -1,9 +1,8 @@
 import { draftMode } from "next/headers";
-import { NextResponse, type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
-    const base = process.env.PUBLIC_BASE_URL ?? req.nextUrl.origin;
-    const ret = req.nextUrl.searchParams.get("return") ?? "/";
+    const ret = req.nextUrl.searchParams.get("return");
     (await draftMode()).disable();
-    return NextResponse.redirect(new URL(ret.startsWith("/") && !ret.startsWith("//") ? ret : "/", base), 307);
+    return new Response(null, { status: 307, headers: { Location: ret && ret.startsWith("/") && !ret.startsWith("//") ? ret : "/" } });
 }

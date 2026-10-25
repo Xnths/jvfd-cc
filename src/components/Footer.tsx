@@ -10,6 +10,7 @@ import { tutoring } from "@/content/tutoring";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import { Editable } from "@/edit/Editable";
+import { useEdit } from "@/edit/EditContext";
 
 const linkClass =
   "rounded-sm transition-colors hover:text-white focus:text-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900";
@@ -18,6 +19,7 @@ const iconClass =
 
 export function Footer() {
   const whatsappUrl = useWhatsappUrl();
+  const { serviceCards } = useEdit();
   const { getElapsedTime } = useTimeToAction();
 
   const handleWhatsAppClick = () => {
@@ -46,9 +48,7 @@ export function Footer() {
           <div>
             <h2 className="mb-4 font-sans text-sm font-semibold uppercase tracking-widest text-white"><Editable k="site.footer.services_title">Atendimentos</Editable></h2>
             <ul className="space-y-2 text-sm">
-              {services
-                .filter((s) => !s.pride)
-                .map((s) => (
+              {(serviceCards ? serviceCards.filter((s) => s.inFooter) : services.filter((s) => !s.pride)).map((s) => (
                   <li key={s.href}>
                     <Link href={s.href} className={linkClass}>
                       <Editable k={`site.footer.service.${s.href.slice(1)}`}>{s.name}</Editable>
