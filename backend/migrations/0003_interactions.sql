@@ -66,6 +66,7 @@ CREATE TABLE newsletter_campaigns (
     post_id    uuid NOT NULL UNIQUE REFERENCES posts(id) ON DELETE CASCADE,
     status     text NOT NULL DEFAULT 'queued' CHECK (status IN ('queued','sending','sent','failed')),
     queued_at  timestamptz NOT NULL DEFAULT now(),
+    claimed_at timestamptz,
     sent_at    timestamptz,
     stats      jsonb NOT NULL DEFAULT '{}',
     last_error text NOT NULL DEFAULT ''

@@ -121,3 +121,58 @@ func get(key, def string) string {
 	}
 	return def
 }
+
+// API is the configuration of the content/admin API (cmd/api).
+type API struct {
+	Addr             string
+	DatabaseURL      string
+	PublicBaseURL    string
+	JWKSURL          string
+	Issuer           string
+	Audience         string
+	TrustProxy       bool
+	IPHashSecret     string
+	MediaDir         string
+	RevalidateURL    string // internal nginx server that proxies to the live Next.js colour
+	RevalidateSecret string
+	UnsubscribeKey   string
+	TurnstileSecret  string
+	ResendAPIKey     string
+	IndexNowKey      string
+	SecureCookies    bool
+}
+
+// LoadAPI reads and validates the API configuration.
+func LoadAPI() (API, error) {
+	base := strings.TrimRight(get("PUBLIC_BASE_URL", "http://localhost:3000"), "/")
+	c := API{
+		Addr:             get("API_ADDR", ":8080"),
+		DatabaseURL:      os.Getenv("DATABASE_URL"),
+		PublicBaseURL:    base,
+		JWKSURL:          get("JWKS_URL", get("AUTH_INTERNAL_URL", "http://clinic-auth:8081")+"/.well-known/jwks.json"),
+		Issuer:           get("JWT_ISSUER", base),
+		Audience:         get("JWT_AUDIENCE", "clinic"),
+		TrustProxy:       os.Getenv("TRUST_PROXY") == "true",
+		IPHashSecret:     os.Getenv("IP_HASH_SECRET"),
+		MediaDir:         get("MEDIA_DIR", "/srv/media"),
+		RevalidateURL:    get("REVALIDATE_URL", "http://clinic-nginx:8081/internal/revalidate"),
+		RevalidateSecret: os.Getenv("REVALIDATE_SECRET"),
+		UnsubscribeKey:   os.Getenv("UNSUBSCRIBE_SECRET"),
+		TurnstileSecret:  os.Getenv("TURNSTILE_SECRET"),
+		ResendAPIKey:     os.Getenv("RESEND_API_KEY"),
+		IndexNowKey:      os.Getenv("INDEXNOW_KEY"),
+	}
+	c.SecureCookies = strings.HasPrefix(base, "https://")
+	var missing []string
+	for k, v := range map[string]string{
+		"DATABASE_URL": c.DatabaseURL, "IP_HASH_SECRET": c.IPHashSecret, "UNSUBSCRIBE_SECRET": c.UnsubscribeKey,
+	} {
+		if v == "" {
+			missing = append(missing, k)
+		}
+	}
+	if len(missing) > 0 {
+		return c, fmt.Errorf("missing required environment: %s", strings.Join(missing, ", "))
+	}
+	return c, nil
+}

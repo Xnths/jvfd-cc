@@ -190,13 +190,6 @@ CREATE TABLE posts (
 );
 CREATE INDEX posts_published_idx ON posts (published_at DESC) WHERE status = 'published';
 
-CREATE TABLE media_refs (
-    media_id    uuid NOT NULL REFERENCES media(id) ON DELETE CASCADE,
-    entity_type text NOT NULL,
-    entity_id   text NOT NULL,
-    PRIMARY KEY (media_id, entity_type, entity_id)
-);
-
 -- ── Glossary ─────────────────────────────────────────────────────────────────
 CREATE TABLE glossary_terms (
     id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -216,7 +209,6 @@ CREATE TABLE glossary_terms (
 
 -- +goose Down
 DROP TABLE glossary_terms;
-DROP TABLE media_refs;
 DROP TABLE posts;
 DROP TABLE profile_entries;
 DROP TABLE profile_sections;

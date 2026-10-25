@@ -29,7 +29,7 @@ func TestPGStoreFlow(t *testing.T) {
 	}
 	goose.SetBaseFS(migrations.FS)
 	_ = goose.SetDialect("postgres")
-	if err := goose.DownTo(db, ".", 0); err != nil {
+	if _, err := db.Exec(`DROP SCHEMA public CASCADE; CREATE SCHEMA public`); err != nil {
 		t.Fatal(err)
 	}
 	if err := goose.Up(db, "."); err != nil {

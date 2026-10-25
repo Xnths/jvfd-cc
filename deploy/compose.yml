@@ -44,7 +44,24 @@ services:
     networks: [internal]
     mem_limit: 128m
 
-  # api: added in the content-API phase.
+  api:
+    build: ../backend
+    image: clinic-backend:local
+    container_name: clinic-api
+    restart: always
+    entrypoint: ["/usr/local/bin/api"]
+    env_file: [../.env]
+    environment:
+      DATABASE_URL: postgres://clinic:${POSTGRES_PASSWORD}@postgres:5432/clinic?sslmode=disable
+      API_ADDR: ":8080"
+      MEDIA_DIR: /srv/media
+      TRUST_PROXY: "true"
+    volumes:
+      - media-data:/srv/media
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [internal]
+    mem_limit: 192m
 
   nginx:
     image: nginx:stable-alpine
