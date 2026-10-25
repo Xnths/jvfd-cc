@@ -7,11 +7,11 @@ Landing page and blog for Jo√£o Vitor Fernandes, psychologist (Vila Madalena, S√
 **There is no automatic deploy.** Pushing to `main` does not release anything: the GitHub workflow `.github/workflows/deploy.yml` goes through Cloudflare Access and does not work. Production is released by hand on the Raspberry Pi.
 
 - Host: Raspberry Pi (`raspberrypi`, aarch64), user `xnths`, key-based SSH from the dev machine.
-- Address: the Pi is on the home LAN. It was `192.168.68.110` on 2026-10-24 (not `192.168.1.110`); check `~/.ssh/known_hosts` or the router if it moves. It is only reachable from the same network.
+- Address: **`192.168.68.110`** (confirmed by the owner; `192.168.1.110` is wrong). Connect with `ssh xnths@192.168.68.110`. Only reachable from the home LAN (or via Tailscale).
 - Project directory on the Pi: `/var/www/jvfd-cc`
 - Steps:
   1. Push to `main` first (the Pi runs `git pull origin main`).
-  2. `ssh xnths@<pi-ip>`, then `cd /var/www/jvfd-cc && bash scripts/deploy.sh`
+  2. `ssh xnths@192.168.68.110`, then `cd /var/www/jvfd-cc && bash scripts/deploy.sh`
   3. For a long build, run it detached and read the log: `nohup bash scripts/deploy.sh > /tmp/deploy.log 2>&1 &`
 - `scripts/deploy.sh` does a blue/green deploy: pulls, builds the `clinic-frontend:<color>` image, health-checks it, switches nginx (`nginx/conf.d/<color>.conf` copied to `default.conf`), then stops the old color. Needs `.env` on the Pi (`DATABASE_URI`, `PAYLOAD_SECRET`, `NEXT_PUBLIC_GA_ID`).
 - The Pi's working tree has local changes to `docker-compose/docker-compose.prod.yml` and `nginx/conf.d/default.conf`. Leave them; `git pull` works as long as upstream doesn't touch those files.
