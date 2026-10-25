@@ -13,6 +13,8 @@ Landing page and blog for João Vitor Fernandes, psychologist (Vila Madalena, S�
 - **nginx config gotcha:** `deploy/nginx/conf.d/clinic.conf` is a single-file bind mount; after a `git pull` changes it, run `docker restart clinic-nginx` (a reload keeps the old inode).
 - **Redirects behind nginx:** the Next container sees itself as `0.0.0.0:3000`, so route handlers must redirect with a relative `Location` (see `src/app/edit/enter/route.ts`).
 - Tests: `cd backend && TEST_DATABASE_URL=postgres://… go test -p 1 ./...` (the tests DROP SCHEMA public: use a throwaway database).
+- **Airflow** (`airflow/`, compose profile `airflow`, `AIRFLOW_ENABLED=1` in the Pi `.env`): DAGs `maintenance_daily`, `backup_daily`, `seo_gsc_daily`, `trend_radar_weekly`, `research_weekly` only call the Go internal jobs (`backend/internal/api/jobs_seo.go`, `internal.go`) with a service token (`airflow/dags/clinic_hook.py`); the same jobs run from /admin → Tarefas. Jobs skip (stay green) when GSC/NCBI are not configured. UI at 127.0.0.1:8088 on the Pi only. New DAG files need `docker restart clinic-airflow-dag-processor`. **`retention.cleanup` never deletes leads unless `RETENTION_LEADS_DAYS` is set** (it once removed 151 old leads; restored from backup).
+- Public pages beyond the home: `/sobre/<slug>` (profiles), `/glossario`, `/perguntas` (+ inbox in /admin/perguntas), `/ferramentas/{phq-9,gad-7}` (answers never leave the browser). All editable in place; admin SEO screens: /admin/seo, /admin/pesquisa, /admin/pautas, /admin/jobs, /admin/auditoria.
 - Comments need Cloudflare Turnstile keys (`TURNSTILE_SITE_KEY` at build, `TURNSTILE_SECRET` runtime); without them the form shows "temporariamente fechados".
 
 ## Deployment

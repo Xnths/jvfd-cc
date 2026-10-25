@@ -48,31 +48,36 @@ chmod 600 secrets/jwt.pem
 2. Opcional (descadastro automático por bounce): **Webhooks → Add endpoint** `https://psicologojoaofernandes.com/api/v1/webhooks/resend`
    e copie o *Signing secret* para `RESEND_WEBHOOK_SECRET=`.
 
-## 4. Search Console (SEO automático, fase posterior)
+## 4. Search Console (SEO automático)
+
+O Airflow já roda os jobs; sem a chave abaixo eles apenas avisam "não configurado" (nada quebra).
 
 1. Google Cloud (mesmo projeto) → **APIs → Biblioteca → "Google Search Console API" → Ativar**.
 2. **IAM → Contas de serviço → Criar** ("gsc-reader") → aba **Chaves → Adicionar chave → JSON**. Salve no Pi em
-   `/var/www/jvfd-cc/secrets/gsc-sa.json` e rode `chmod 600`.
+   `/var/www/jvfd-cc/secrets/gsc/gsc-sa.json` (a pasta `secrets/gsc` já existe) e rode `chmod 600`.
 3. <https://search.google.com/search-console> → sua propriedade → **Configurações → Usuários e permissões → Adicionar usuário**:
    o e-mail da conta de serviço (`...@...iam.gserviceaccount.com`), permissão **Restrito**.
-4. `.env`: `GSC_SITE_URL=sc-domain:psicologojoaofernandes.com` (se a propriedade for "Domínio") ou
-   `https://psicologojoaofernandes.com/` (se for "Prefixo de URL"), e `GSC_CREDENTIALS_FILE=/run/secrets/gsc-sa.json`.
+4. `.env` no Pi: `GSC_SITE_URL=sc-domain:psicologojoaofernandes.com` (propriedade "Domínio") ou
+   `https://psicologojoaofernandes.com/` ("Prefixo de URL"). Depois `bash deploy/deploy.sh` (ou `docker compose ... up -d api`).
+5. Teste em **/admin → Tarefas → gsc.sync → Rodar agora**: a primeira execução busca até 16 meses de histórico.
 
 ## 5. Backup fora do Pi
 
-Backup no mesmo cartão SD não protege de nada. Instale o rclone (`sudo apt install rclone`), rode `rclone config`
-e crie um remote (Cloudflare R2, Backblaze B2 ou Google Drive). Anote o nome em `RCLONE_REMOTE=`.
-Recomendado também: um SSD USB/NVMe para `/var/lib/docker` (o cartão SD sofre com escrita de banco de dados).
+O backup diário (banco + mídia) já é gravado no volume `clinic-backups` do Pi (7 diários + 4 semanais), mas no mesmo cartão SD.
+Para copiar para fora, crie um bucket (Cloudflare R2 ou Backblaze B2) e coloque no `.env` do Pi:
+`RCLONE_REMOTE=offsite:nome-do-bucket`, `RCLONE_CONFIG_OFFSITE_TYPE=s3`, `RCLONE_CONFIG_OFFSITE_PROVIDER=Cloudflare`,
+`RCLONE_CONFIG_OFFSITE_ACCESS_KEY_ID=...`, `RCLONE_CONFIG_OFFSITE_SECRET_ACCESS_KEY=...`, `RCLONE_CONFIG_OFFSITE_ENDPOINT=https://<conta>.r2.cloudflarestorage.com`.
+Recomendado também: um SSD USB/NVMe para `/var/lib/docker`.
 
-## 6. Opcionais
+## 6. Pesquisa científica e opcionais
 
-- `ANTHROPIC_API_KEY` (rascunhos de resumos e títulos; defina limite de gasto no console da Anthropic).
-- `NCBI_API_KEY` e `NCBI_EMAIL` (PubMed, limite maior de consultas).
+- `NCBI_EMAIL=` um e-mail de contato (PubMed e Crossref pedem um). Sem ele a pesquisa semanal não roda.
+- `NCBI_API_KEY=` opcional (limite maior de consultas).
+- `RETENTION_LEADS_DAYS=90` **somente depois que o João confirmar**: apaga, todo dia, leads (cliques de anúncio) mais antigos que isso. Vazio = nunca apaga leads.
+- Resumos em português com IA (`ANTHROPIC_API_KEY`) ainda **não** estão implementados: o rascunho semanal cita o resumo original.
 
-## 7. Ligar a plataforma nova (só depois dos itens 0 e 1)
+## 7. Airflow
 
-```bash
-cd /var/www/jvfd-cc && bash deploy/deploy.sh
-```
-Este script sobe Postgres, auth e API e troca o nginx (alguns segundos fora do ar na primeira vez).
-**Hoje o deploy normal é `bash scripts/deploy.sh`, que não mexe em nada disso.**
+Roda no Pi (perfil `airflow` do compose), só acessível pela rede local: `ssh -L 8088:localhost:8088 xnths@192.168.68.110`
+e abra <http://localhost:8088> (usuário `admin`, senha `AIRFLOW_ADMIN_PASSWORD` do `.env`).
+Para desligar: `AIRFLOW_ENABLED=0` e `docker compose -f deploy/compose.yml --profile airflow stop`. O site não depende dele.
