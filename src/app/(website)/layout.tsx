@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { FloatingCatButton } from "@/components/floating-cat-button";
@@ -11,14 +11,18 @@ import { siteGraph } from "@/lib/jsonld";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { GoogleAnalytics } from '@next/third-parties/google'
 
-const inter = Inter({
-    subsets: ["latin"],
+// Self-hosted (fontsource variable files): the production build runs on a
+// Raspberry Pi whose DNS is unreliable, so it must not fetch fonts at build time.
+const inter = localFont({
+    src: "../../assets/fonts/Inter-Variable.woff2",
+    weight: "100 900",
     display: "swap",
     variable: "--font-inter",
 });
 
-const fraunces = Fraunces({
-    subsets: ["latin"],
+const fraunces = localFont({
+    src: "../../assets/fonts/Fraunces-Variable.woff2",
+    weight: "100 900",
     display: "swap",
     variable: "--font-fraunces",
 });
