@@ -1,3 +1,5 @@
+import { Editable } from "@/edit/Editable";
+
 const cards = [
   {
     title: "Autoconhecimento",
@@ -72,16 +74,16 @@ export function CardsSolucao() {
     <section className="py-20 bg-slate-50" id="areas">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-slate-900 text-2xl font-bold mb-4">
+          <Editable as="h2" k="presencial.areas.title" className="text-slate-900 text-2xl font-bold mb-4">
             Áreas de trabalho
-          </h2>
-          <p className="text-slate-600 max-w-xl mx-auto">
+          </Editable>
+          <Editable as="p" k="presencial.areas.subtitle" className="text-slate-600 max-w-xl mx-auto">
             O processo terapêutico pode contemplar diferentes dimensões do desenvolvimento pessoal
-          </p>
+          </Editable>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {cards.map((card) => (
+          {cards.map((card, i) => (
             <div
               key={card.title}
               className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 flex flex-col gap-4"
@@ -89,8 +91,8 @@ export function CardsSolucao() {
               <div className="w-14 h-14 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
                 {card.icon}
               </div>
-              <h3 className="text-slate-900 font-semibold text-lg">{card.title}</h3>
-              <p className="text-slate-600 leading-relaxed">{card.description}</p>
+              <Editable as="h3" k={`presencial.areas.${i}.title`} className="text-slate-900 font-semibold text-lg">{card.title}</Editable>
+              <Editable as="p" k={`presencial.areas.${i}.description`} className="text-slate-600 leading-relaxed">{card.description}</Editable>
             </div>
           ))}
         </div>

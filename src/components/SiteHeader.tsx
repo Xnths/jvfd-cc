@@ -9,13 +9,14 @@ import { sendGAEvent } from "@next/third-parties/google";
 import { Logo } from "@/components/brand/Logo";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
+import { Editable } from "@/edit/Editable";
 
 const NAV = [
-    { href: "/#services", label: "Atendimentos" },
-    { href: "/aulas-particulares", label: "Aulas" },
-    { href: "/#about", label: "Sobre" },
-    { href: "/blog", label: "Blog" },
-    { href: "/#contact", label: "Contato" },
+    { key: "services", href: "/#services", label: "Atendimentos" },
+    { key: "tutoring", href: "/aulas-particulares", label: "Aulas" },
+    { key: "about", href: "/#about", label: "Sobre" },
+    { key: "blog", href: "/blog", label: "Blog" },
+    { key: "contact", href: "/#contact", label: "Contato" },
 ];
 
 export function SiteHeader() {
@@ -39,7 +40,7 @@ export function SiteHeader() {
                 <nav aria-label="Principal" className="hidden items-center gap-7 text-sm font-medium text-slate-700 lg:flex">
                     {NAV.map((item) => (
                         <Link key={item.href} href={item.href} className="transition-colors hover:text-green-700">
-                            {item.label}
+                            <Editable k={`site.header.nav.${item.key}`}>{item.label}</Editable>
                         </Link>
                     ))}
                     <a
@@ -50,7 +51,7 @@ export function SiteHeader() {
                         className="inline-flex items-center gap-2 rounded-md bg-green-700 px-4 py-2 font-semibold text-white transition-colors hover:bg-green-800"
                     >
                         <FaWhatsapp className="h-4 w-4" />
-                        Agendar
+                        <Editable k="site.header.cta">Agendar</Editable>
                     </a>
                 </nav>
 
@@ -76,7 +77,7 @@ export function SiteHeader() {
                                     onClick={() => setOpen(false)}
                                     className="block py-3 text-base font-medium text-slate-800"
                                 >
-                                    {item.label}
+                                    <Editable k={`site.header.nav.${item.key}`}>{item.label}</Editable>
                                 </Link>
                             </li>
                         ))}
@@ -89,7 +90,7 @@ export function SiteHeader() {
                                 className="flex items-center justify-center gap-2 rounded-md bg-green-700 px-4 py-3 font-semibold text-white"
                             >
                                 <FaWhatsapp className="h-5 w-5" />
-                                Agendar pelo WhatsApp
+                                <Editable k="site.header.cta_mobile">Agendar pelo WhatsApp</Editable>
                             </a>
                         </li>
                     </ul>

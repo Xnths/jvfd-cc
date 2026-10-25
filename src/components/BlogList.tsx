@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MoveRight, Search } from "lucide-react";
 import Fuse from "fuse.js";
 import posthog from "posthog-js";
+import { Editable } from "@/edit/Editable";
 
 interface Post {
     id: string;
@@ -39,10 +40,10 @@ export function BlogList({ posts }: BlogListProps) {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold mb-4 text-slate-900">Blog e Discussões</h1>
-            <p className="text-xl text-slate-600 mb-8">
+            <Editable as="h1" k="blog.title" className="text-4xl font-bold mb-4 text-slate-900">Blog e Discussões</Editable>
+            <Editable as="p" k="blog.subtitle" className="text-xl text-slate-600 mb-8">
                 Explorando temas da psicologia comportamental e saúde mental.
-            </p>
+            </Editable>
 
             <div className="relative mb-12">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -92,7 +93,7 @@ export function BlogList({ posts }: BlogListProps) {
                             href={`/blog/${post.slug}`}
                             className="inline-flex items-center text-blue-600 font-medium hover:gap-2 transition-all gap-1 group"
                         >
-                            Ler artigo completo
+                            <Editable k="blog.read_full">Ler artigo completo</Editable>
                             <MoveRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </article>

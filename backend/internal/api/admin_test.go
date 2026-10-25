@@ -524,3 +524,55 @@ func TestProfilePermissions(t *testing.T) {
 		t.Errorf("clinical admin sets CRP: %d", c)
 	}
 }
+
+func TestSiteTexts(t *testing.T) {
+	e := newTestEnv(t)
+	tok := e.token(authn.RoleAdminTech)
+	put := func(key, body string, ifm string) int {
+		return e.do("PUT", "/api/v1/admin/texts/"+key, body, tok, "If-Match", ifm).Code
+	}
+	if c := e.do("PUT", "/api/v1/admin/texts/home.hero.title", `{"value":"x"}`, tok).Code; c != 428 {
+		t.Errorf("missing If-Match: %d", c)
+	}
+	if c := put("home.hero.title", `{"value":"Cuidado com escuta"}`, "0"); c != 200 {
+		t.Fatalf("create: %d", c)
+	}
+	if c := put("home.hero.title", `{"value":"Outro"}`, "0"); c != 412 {
+		t.Errorf("stale create: %d", c)
+	}
+	if c := put("home.hero.title", `{"value":"Outro"}`, "1"); c != 200 {
+		t.Errorf("update: %d", c)
+	}
+	if c := put("home.hero.title", `{"value":"Outro"}`, "1"); c != 412 {
+		t.Errorf("stale update: %d", c)
+	}
+	if c := put("home.hero.title", `{"value":"Resultados garantidos em 3 sessões"}`, "2"); c != 422 {
+		t.Errorf("lint should block: %d", c)
+	}
+	if c := put("home.hero.title", `{"value":"Resultados garantidos em 3 sessões","acknowledgeLint":true}`, "2"); c != 200 {
+		t.Errorf("acknowledged lint: %d", c)
+	}
+	if c := put("Bad%20Key", `{"value":"x"}`, "0"); c != 400 {
+		t.Errorf("bad key: %d", c)
+	}
+	if c := put("home.faq", `{"value":[{"id":"a","question":"Q","answer":"A"}]}`, "0"); c != 200 {
+		t.Errorf("list value: %d", c)
+	}
+	if c := put("home.bad", `{"value":{"a":1}}`, "0"); c != 400 {
+		t.Errorf("object value: %d", c)
+	}
+	rec := e.do("GET", "/api/v1/public/texts", "", "")
+	if rec.Code != 200 || !strings.Contains(rec.Body.String(), "home.hero.title") {
+		t.Errorf("public texts: %d %s", rec.Code, rec.Body.String())
+	}
+	h := e.do("GET", "/api/v1/admin/texts/home.hero.title/history", "", tok)
+	if !strings.Contains(h.Body.String(), "Cuidado com escuta") {
+		t.Errorf("history: %s", h.Body.String())
+	}
+	if c := e.do("DELETE", "/api/v1/admin/texts/home.hero.title", "", tok).Code; c != 204 {
+		t.Errorf("delete: %d", c)
+	}
+	if strings.Contains(e.do("GET", "/api/v1/public/texts", "", "").Body.String(), "home.hero.title") {
+		t.Errorf("deleted override still public")
+	}
+}

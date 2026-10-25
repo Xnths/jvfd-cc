@@ -7,6 +7,7 @@ import { sendGAEvent } from "@next/third-parties/google";
 import posthog from "posthog-js";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { getGclidFromCookie } from "@/lib/gclid";
+import { Editable } from "@/edit/Editable";
 
 const PHONE = "5511955591996";
 const MESSAGE = encodeURIComponent("Olá, gostaria de saber mais sobre o atendimento presencial.");
@@ -76,15 +77,15 @@ export function HeroPresencial() {
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl">
-            <span className="text-red-400 font-semibold tracking-widest uppercase text-sm mb-4 block">
+            <Editable k="presencial.hero.eyebrow" className="text-red-400 font-semibold tracking-widest uppercase text-sm mb-4 block">
               Atendimento Presencial — Vila Madalena
-            </span>
-            <h1 className="text-white mb-6 text-4xl md:text-6xl font-bold leading-tight">
+            </Editable>
+            <Editable as="h1" k="presencial.hero.title" className="text-white mb-6 text-4xl md:text-6xl font-bold leading-tight">
               Atendimento Psicológico Presencial em Vila Madalena
-            </h1>
-            <p className="text-slate-200 mb-10 text-lg md:text-xl leading-relaxed max-w-2xl">
+            </Editable>
+            <Editable as="p" k="presencial.hero.subtitle" className="text-slate-200 mb-10 text-lg md:text-xl leading-relaxed max-w-2xl">
               Espaço dedicado ao equilíbrio emocional e autoconhecimento
-            </p>
+            </Editable>
 
             {/* Desktop CTA */}
             <a
@@ -95,7 +96,7 @@ export function HeroPresencial() {
               className="hidden md:inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-md text-lg font-bold transition-all shadow-lg"
             >
               <FaWhatsapp className="w-6 h-6" />
-              Entrar em contato pelo WhatsApp
+              <Editable k="presencial.hero.cta">Entrar em contato pelo WhatsApp</Editable>
             </a>
           </div>
         </div>

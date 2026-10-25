@@ -121,3 +121,20 @@
     text-wrap: balance;
   }
 }
+/* ── Admin bar and inline editing (only active for signed-in admins) ─────── */
+html[data-admin-bar] body { padding-top: var(--admin-bar-h); }
+html[data-admin-bar] header.sticky { top: var(--admin-bar-h); }
+[data-edit-key].edit-box {
+    outline: 2px dashed rgb(22 163 74 / 0.75);
+    outline-offset: 3px;
+    cursor: text;
+    transition: background-color 0.15s;
+}
+[data-edit-key].edit-box:hover { background-color: rgb(22 163 74 / 0.12); }
+[data-edit-key].edit-active {
+    outline: 2px solid rgb(22 163 74);
+    outline-offset: 3px;
+    background-color: rgb(255 255 255 / 0.9);
+    color: rgb(15 23 42);
+    cursor: text;
+}

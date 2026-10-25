@@ -4,6 +4,7 @@ import { useState } from "react";
 import { sendGAEvent } from "@next/third-parties/google";
 import Link from "next/link";
 import posthog from "posthog-js";
+import { Editable } from "@/edit/Editable";
 
 type FormState = "idle" | "submitting" | "success" | "duplicate" | "error";
 
@@ -51,12 +52,12 @@ export function NewsletterForm() {
 
     return (
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8">
-            <h3 className="text-xl font-semibold text-slate-900 mb-1">
+            <Editable as="h3" k="newsletter.title" className="text-xl font-semibold text-slate-900 mb-1">
                 Receba novidades do blog
-            </h3>
-            <p className="text-slate-600 mb-6 text-sm">
+            </Editable>
+            <Editable as="p" k="newsletter.text" className="text-slate-600 mb-6 text-sm">
                 Quando João publicar um novo artigo, você recebe no e-mail. Sem spam e cancele quando quiser.
-            </p>
+            </Editable>
 
             {state !== "success" ? (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>

@@ -14,6 +14,8 @@ import { NewsletterForm } from "@/components/NewsletterForm";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata } from "@/lib/seo";
 import { faqNode, graph, webPageNode } from "@/lib/jsonld";
+import { getTexts } from "@/lib/texts";
+import { resolvedFaq, resolvedTutoringFaq } from "@/content/resolve";
 
 // Rendered per request (it reads ?lgbt=true), but all CMS reads go through
 // the cached query layer, so no request hits the database directly.
@@ -36,13 +38,14 @@ export default async function Home({
 }) {
     const params = await searchParams;
     const showLgbt = params.lgbt === "true";
+    const texts = await getTexts();
 
     return (
         <div className="min-h-screen">
             <JsonLd
                 data={graph(
                     webPageNode({ path: "/", name: "Psicólogo João Fernandes", description }),
-                    faqNode(),
+                    faqNode(resolvedFaq(texts)),
                 )}
             />
             <Hero showLgbt={showLgbt} />

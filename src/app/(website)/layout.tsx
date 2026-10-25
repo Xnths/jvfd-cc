@@ -9,6 +9,8 @@ import { person } from "@/content/clinic";
 import { SITE_NAME } from "@/lib/seo";
 import { siteGraph } from "@/lib/jsonld";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { EditProvider } from "@/edit/EditContext";
+import { getTexts } from "@/lib/texts";
 import { GoogleAnalytics } from '@next/third-parties/google'
 
 // Self-hosted (fontsource variable files): the production build runs on a
@@ -95,12 +97,13 @@ export const metadata: Metadata = {
     formatDetection: { telephone: false },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     const gaId = process.env.NEXT_PUBLIC_GA_ID
+    const texts = await getTexts()
 
     return (
         <html lang="pt-BR" className={`${inter.variable} ${fraunces.variable}`}>
@@ -111,6 +114,7 @@ export default function RootLayout({
                     Pular para o conteúdo principal
                 </a>
 
+                <EditProvider initial={texts}>
                 <SiteHeader />
 
                 <main id="main-content">
@@ -119,6 +123,7 @@ export default function RootLayout({
 
                 <GclidCapture />
                 <FloatingCatButton />
+                </EditProvider>
                 {gaId && <GoogleAnalytics gaId={gaId} />}
             </body>
         </html>

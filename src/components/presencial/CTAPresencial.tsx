@@ -6,6 +6,7 @@ import { sendGAEvent } from "@next/third-parties/google";
 import posthog from "posthog-js";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { getGclidFromCookie } from "@/lib/gclid";
+import { Editable } from "@/edit/Editable";
 
 const PHONE = "5511955591996";
 const MESSAGE = encodeURIComponent("Olá, gostaria de saber mais sobre o atendimento presencial.");
@@ -58,12 +59,12 @@ export function CTAPresencial() {
     <section className="py-20 bg-slate-900" id="contato">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-white text-2xl md:text-3xl font-bold mb-4">
+          <Editable as="h2" k="presencial.cta.title" className="text-white text-2xl md:text-3xl font-bold mb-4">
             Iniciar o processo terapêutico
-          </h2>
-          <p className="text-slate-300 mb-8 leading-relaxed">
+          </Editable>
+          <Editable as="p" k="presencial.cta.text" className="text-slate-300 mb-8 leading-relaxed">
             O primeiro contato pode ser feito pelo WhatsApp. Respondemos em até 2h em dias úteis.
-          </p>
+          </Editable>
 
           <a
             href={whatsappUrl}
@@ -73,13 +74,13 @@ export function CTAPresencial() {
             className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-md text-lg font-bold transition-all shadow-lg mb-8"
           >
             <FaWhatsapp className="w-6 h-6" />
-            Entrar em contato pelo WhatsApp
+            <Editable k="presencial.cta.button">Entrar em contato pelo WhatsApp</Editable>
           </a>
 
           <div className="mt-8 border-t border-slate-700 pt-8 text-slate-400 text-sm space-y-1">
-            <p className="font-semibold text-slate-300">Horários de atendimento</p>
-            <p>Segunda a sexta: 8h às 21h</p>
-            <p className="mt-3 text-slate-500">Atendimento presencial em Vila Madalena, São Paulo</p>
+            <Editable as="p" k="presencial.cta.hours_title" className="font-semibold text-slate-300">Horários de atendimento</Editable>
+            <Editable as="p" k="presencial.cta.hours">Segunda a sexta: 8h às 21h</Editable>
+            <Editable as="p" k="presencial.cta.place" className="mt-3 text-slate-500">Atendimento presencial em Vila Madalena, São Paulo</Editable>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { Editable } from "@/edit/Editable";
 import { FaWhatsapp } from "react-icons/fa";
 import posthog from "posthog-js";
 import { sendGAEvent } from "@next/third-parties/google";
@@ -8,6 +9,17 @@ import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { RichText } from "@/components/RichText";
 import { Footer } from "@/components/Footer";
 import { Contact } from "@/components/Contact";
+
+// Copy on a service page is keyed `service.<slug>.<name>`, so each service edits its own text inline.
+const SlugCtx = createContext("");
+function SE({ k, as, className, multiline, children }: { k: string; as?: React.ElementType; className?: string; multiline?: boolean; children: string }) {
+  const slug = useContext(SlugCtx);
+  return (
+    <Editable k={`service.${slug}.${k}`} as={as} className={className} multiline={multiline}>
+      {children}
+    </Editable>
+  );
+}
 
 // ─── Per-service config ─────────────────────────────────────────────────────
 
@@ -153,7 +165,7 @@ function CTAButton({
       }`}
     >
       <FaWhatsapp className={size === "large" ? "w-6 h-6" : "w-5 h-5"} />
-      {text}
+      <SE k="cta">{text}</SE>
     </a>
   );
 }
@@ -181,19 +193,19 @@ function CalmingLayout({
             <span
               className={`inline-block text-sm font-semibold uppercase tracking-widest mb-4 ${config.accentTextClass}`}
             >
-              {config.badge}
+              <SE k="badge">{config.badge}</SE>
             </span>
           )}
           <h1
             className={`text-4xl md:text-5xl font-bold leading-tight mb-6 ${config.heroHeadingClass}`}
           >
-            {title}
+            <SE k="title">{title}</SE>
           </h1>
           {subtitle && (
             <p
               className={`text-xl md:text-2xl leading-relaxed font-light max-w-2xl mx-auto ${config.heroSubtitleClass}`}
             >
-              {subtitle}
+              <SE k="subtitle" multiline>{subtitle}</SE>
             </p>
           )}
           {/* Immediate low-friction CTA in the hero */}
@@ -206,7 +218,7 @@ function CalmingLayout({
             />
           </div>
           <p className="mt-4 text-sm text-slate-500">
-            Sem compromissos. Apenas uma conversa.
+            <SE k="hero_note">Sem compromissos. Apenas uma conversa.</SE>
           </p>
         </div>
       </section>
@@ -222,10 +234,10 @@ function CalmingLayout({
       <section className="py-16 px-4 bg-slate-50">
         <div className="container mx-auto max-w-2xl text-center">
           <p className={`text-sm font-semibold uppercase tracking-widest mb-3 ${config.accentTextClass}`}>
-            Próximo passo
+            <SE k="closing_eyebrow">Próximo passo</SE>
           </p>
           <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6">
-            Você não precisa ter certeza para começar.
+            <SE k="closing_heading">Você não precisa ter certeza para começar.</SE>
           </h2>
           <CTAButton
             href={whatsappUrl}
@@ -263,15 +275,15 @@ function StructuredLayout({
         <div className="container mx-auto max-w-4xl">
           {config.badge && (
             <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">
-              {config.badge}
+              <SE k="badge">{config.badge}</SE>
             </span>
           )}
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight max-w-2xl mb-6">
-            {title}
+            <SE k="title">{title}</SE>
           </h1>
           {subtitle && (
             <p className="text-lg text-slate-600 max-w-xl leading-relaxed">
-              {subtitle}
+              <SE k="subtitle" multiline>{subtitle}</SE>
             </p>
           )}
           <div className="mt-8">
@@ -297,10 +309,10 @@ function StructuredLayout({
             <aside className="space-y-6">
               <div className="border border-slate-200 rounded-2xl p-6 bg-slate-50 sticky top-28">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">
-                  Próximo passo
+                  <SE k="sidebar_eyebrow">Próximo passo</SE>
                 </p>
                 <p className="text-slate-800 font-semibold mb-5 leading-snug">
-                  Estratégias práticas que respeitam o seu ritmo.
+                  <SE k="sidebar_text" multiline>Estratégias práticas que respeitam o seu ritmo.</SE>
                 </p>
                 <CTAButton
                   href={whatsappUrl}
@@ -309,7 +321,7 @@ function StructuredLayout({
                   onClick={onCTAClick}
                 />
                 <p className="mt-4 text-xs text-slate-500 leading-relaxed">
-                  Atendimento presencial em Vila Madalena ou online.
+                  <SE k="sidebar_note">Atendimento presencial em Vila Madalena ou online.</SE>
                 </p>
               </div>
             </aside>
@@ -344,19 +356,19 @@ function PlantaoLayout({
       <section className="min-h-[80svh] flex flex-col items-center justify-center px-4 text-center">
         {config.badge && (
           <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">
-            {config.badge}
+            <SE k="badge">{config.badge}</SE>
           </span>
         )}
         <h1 className="text-4xl md:text-5xl font-bold text-slate-900 leading-tight max-w-2xl mb-4">
-          {title}
+          <SE k="title">{title}</SE>
         </h1>
         {subtitle && (
           <p className="text-xl text-slate-600 max-w-xl leading-relaxed mb-8">
-            {subtitle}
+            <SE k="subtitle" multiline>{subtitle}</SE>
           </p>
         )}
         <p className="text-slate-700 text-lg font-medium mb-8 max-w-md">
-          Você não precisa passar por isso sozinho hoje.
+          <SE k="hero_reassurance">Você não precisa passar por isso sozinho hoje.</SE>
         </p>
 
         {/* The dominant action — large, green, impossible to miss */}
@@ -368,7 +380,7 @@ function PlantaoLayout({
           size="large"
         />
         <p className="mt-5 text-sm text-slate-500">
-          Resposta rápida. Sem julgamentos.
+          <SE k="hero_note">Resposta rápida. Sem julgamentos.</SE>
         </p>
       </section>
 
@@ -419,19 +431,19 @@ function ExploratoryLayout({
             <span
               className={`inline-block text-sm font-semibold uppercase tracking-widest mb-5 ${config.accentTextClass}`}
             >
-              {config.badge}
+              <SE k="badge">{config.badge}</SE>
             </span>
           )}
           <h1
             className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-8 ${config.heroHeadingClass}`}
           >
-            {title}
+            <SE k="title">{title}</SE>
           </h1>
           {subtitle && (
             <p
               className={`text-xl md:text-2xl leading-relaxed font-light ${config.heroSubtitleClass}`}
             >
-              {subtitle}
+              <SE k="subtitle" multiline>{subtitle}</SE>
             </p>
           )}
         </div>
@@ -448,13 +460,13 @@ function ExploratoryLayout({
       <section className="py-20 px-4 bg-gradient-to-r from-amber-50 to-stone-50">
         <div className="container mx-auto max-w-2xl text-center">
           <p className="text-stone-500 text-sm uppercase tracking-widest font-semibold mb-4">
-            Quando estiver pronto
+            <SE k="closing_eyebrow">Quando estiver pronto</SE>
           </p>
           <h2 className="text-2xl md:text-3xl font-bold text-stone-900 mb-3">
-            Dar nome ao que se sente é o primeiro passo.
+            <SE k="closing_heading">Dar nome ao que se sente é o primeiro passo.</SE>
           </h2>
           <p className="text-stone-600 mb-8 text-lg">
-            Não há urgência. Há um espaço esperando por você.
+            <SE k="closing_text">Não há urgência. Há um espaço esperando por você.</SE>
           </p>
           <CTAButton
             href={whatsappUrl}
@@ -492,15 +504,15 @@ function SupervisaoLayout({
         <div className="container mx-auto max-w-4xl">
           {config.badge && (
             <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-red-400 mb-6">
-              {config.badge}
+              <SE k="badge">{config.badge}</SE>
             </span>
           )}
           <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight max-w-2xl mb-6">
-            {title}
+            <SE k="title">{title}</SE>
           </h1>
           {subtitle && (
             <p className="text-xl text-slate-300 max-w-xl leading-relaxed mb-10 font-light">
-              {subtitle}
+              <SE k="subtitle" multiline>{subtitle}</SE>
             </p>
           )}
           <CTAButton
@@ -516,12 +528,12 @@ function SupervisaoLayout({
       <div className="bg-slate-800 py-5 px-4">
         <div className="container mx-auto max-w-4xl flex flex-wrap gap-x-8 gap-y-2 items-center">
           {["Análise do Comportamento Aplicada", "Discussão de Casos Clínicos", "Fundamentação Científica", "Ética Profissional"].map(
-            (tag) => (
+            (tag, ti) => (
               <span
                 key={tag}
                 className="text-sm text-slate-300 font-medium before:content-['—'] before:text-red-500 before:mr-2"
               >
-                {tag}
+                <SE k={`method_tag_${ti}`}>{tag}</SE>
               </span>
             )
           )}
@@ -538,11 +550,10 @@ function SupervisaoLayout({
             <aside className="space-y-6">
               <div className="border border-slate-200 rounded-2xl p-6 sticky top-28">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">
-                  Para psicólogos
+                  <SE k="sidebar_eyebrow">Para psicólogos</SE>
                 </p>
                 <p className="text-slate-800 font-semibold mb-5 leading-snug text-sm">
-                  Supervisão clínica em Análise do Comportamento com foco em
-                  aprimoramento técnico e ética.
+                  <SE k="sidebar_text" multiline>Supervisão clínica em Análise do Comportamento com foco em aprimoramento técnico e ética.</SE>
                 </p>
                 <CTAButton
                   href={whatsappUrl}
@@ -551,7 +562,7 @@ function SupervisaoLayout({
                   onClick={onCTAClick}
                 />
                 <p className="mt-4 text-xs text-slate-500 leading-relaxed">
-                  Atendimento presencial em Vila Madalena ou online.
+                  <SE k="sidebar_note">Atendimento presencial em Vila Madalena ou online.</SE>
                 </p>
               </div>
             </aside>
@@ -613,19 +624,19 @@ function AffirmativeLayout({
                 <span className="w-2 h-2 rounded-full bg-blue-500" />
                 <span className="w-2 h-2 rounded-full bg-violet-600" />
               </span>
-              {config.badge}
+              <SE k="badge">{config.badge}</SE>
             </span>
           )}
           <h1
             className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-8 ${config.heroHeadingClass}`}
           >
-            {title}
+            <SE k="title">{title}</SE>
           </h1>
           {subtitle && (
             <p
               className={`text-xl md:text-2xl leading-relaxed font-light mb-10 ${config.heroSubtitleClass}`}
             >
-              {subtitle}
+              <SE k="subtitle" multiline>{subtitle}</SE>
             </p>
           )}
           <CTAButton
@@ -635,7 +646,7 @@ function AffirmativeLayout({
             onClick={onCTAClick}
           />
           <p className="mt-5 text-sm text-slate-500">
-            Um psicólogo gay que entende sua história. Aqui, você é livre para ser quem é.
+            <SE k="hero_note">Um psicólogo gay que entende sua história. Aqui, você é livre para ser quem é.</SE>
           </p>
         </div>
       </section>
@@ -648,13 +659,13 @@ function AffirmativeLayout({
             "Relacionamentos mais plenos",
             "Aceitação e leveza",
             "Sigilo absoluto",
-          ].map((tag) => (
+          ].map((tag, ti) => (
             <span
               key={tag}
               className="text-sm text-slate-600 font-medium flex items-center gap-1.5"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-              {tag}
+              <SE k={`trust_tag_${ti}`}>{tag}</SE>
             </span>
           ))}
         </div>
@@ -674,13 +685,13 @@ function AffirmativeLayout({
             <RainbowBar />
           </div>
           <p className="text-violet-600 text-sm uppercase tracking-widest font-semibold mb-4">
-            Você merece cuidado
+            <SE k="closing_eyebrow">Você merece cuidado</SE>
           </p>
           <h2 className="text-2xl md:text-3xl font-bold text-violet-900 mb-3">
-            Aqui, sua autenticidade é celebrada. Vamos construir juntos uma vida com mais alegria.
+            <SE k="closing_heading">Aqui, sua autenticidade é celebrada. Vamos construir juntos uma vida com mais alegria.</SE>
           </h2>
           <p className="text-slate-600 mb-8 text-lg">
-            Com a empatia de quem compartilha da sua experiência.
+            <SE k="closing_text">Com a empatia de quem compartilha da sua experiência.</SE>
           </p>
           <CTAButton
             href={whatsappUrl}
@@ -711,11 +722,11 @@ function GenericLayout({
       <section className="pt-20 pb-20 px-4 bg-slate-900 text-white">
         <div className="container mx-auto max-w-4xl text-center md:text-left">
           <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
-            {title}
+            <SE k="title">{title}</SE>
           </h1>
           {subtitle && (
             <p className="text-xl text-slate-300 leading-relaxed max-w-2xl font-light">
-              {subtitle}
+              <SE k="subtitle" multiline>{subtitle}</SE>
             </p>
           )}
         </div>
@@ -761,7 +772,15 @@ interface ServicePageProps {
   content: any;
 }
 
-export function ServicePage({ slug, title, subtitle, content }: ServicePageProps) {
+export function ServicePage(props: ServicePageProps) {
+  return (
+    <SlugCtx.Provider value={props.slug}>
+      <ServicePageInner {...props} />
+    </SlugCtx.Provider>
+  );
+}
+
+function ServicePageInner({ slug, title, subtitle, content }: ServicePageProps) {
   const config = SERVICE_CONFIG[slug];
   const defaultMessage = config?.whatsappMessage ?? "Olá! Gostaria de agendar uma conversa.";
 

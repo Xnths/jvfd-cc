@@ -11,6 +11,7 @@ import {
 } from "./ui/carousel"
 import Autoplay from "embla-carousel-autoplay"
 import { FaQuoteLeft } from "react-icons/fa"
+import { Editable } from "@/edit/Editable";
 
 const testimonials = [
   { testimonial: "Excelente! Minhas dificuldades emocionais e minha relação com a alimentação melhoraram muito desde que começamos. Além disso, me sinto emocionalmente muito mais madura para lidar com as questões do dia a dia. Não sei como seria viver sem ❤️" },
@@ -71,9 +72,9 @@ export function Testimonials() {
     <section className="py-20 bg-white" id="testimonials">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-slate-900 mb-4 text-2xl">
+          <Editable as="h2" k="home.testimonials.title" className="text-slate-900 mb-4 text-2xl">
             Depoimentos de pacientes
-          </h2>
+          </Editable>
         </div>
 
         <div ref={containerRef}>

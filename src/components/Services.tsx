@@ -27,6 +27,7 @@ import { services as baseServices } from "@/content/clinic";
 import { tutoring } from "@/content/tutoring";
 import { sendGAEvent } from "@next/third-parties/google";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
+import { Editable } from "@/edit/Editable";
 
 
 const ICONS: Record<string, LucideIcon> = {
@@ -69,15 +70,12 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
     <section className="py-20 bg-slate-50" id="services">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-slate-900 mb-4 text-3xl">
+          <Editable as="h2" k="home.services.title" className="text-slate-900 mb-4 text-3xl">
             Como posso te ajudar?
-          </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto text-lg">
-            Nem sempre é fácil saber quando procurar ajuda. Dificuldades emocionais,
-            comportamentais ou de relacionamento costumam se acumular aos poucos e
-            começam a pesar em várias áreas da vida. Estas são algumas situações em
-            que o acompanhamento psicológico pode ajudar.
-          </p>
+          </Editable>
+          <Editable as="p" k="home.services.intro" className="text-slate-600 max-w-2xl mx-auto text-lg">
+            Nem sempre é fácil saber quando procurar ajuda. Dificuldades emocionais, comportamentais ou de relacionamento costumam se acumular aos poucos e começam a pesar em várias áreas da vida. Estas são algumas situações em que o acompanhamento psicológico pode ajudar.
+          </Editable>
           {/* LGBTQIA+ friendly badge */}
           {showLgbt && (
             <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-4 py-2 shadow-sm">
@@ -89,7 +87,7 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
                 <span className="w-2 h-2 rounded-full bg-blue-500" />
                 <span className="w-2 h-2 rounded-full bg-violet-600" />
               </span>
-              <span className="text-sm font-semibold text-violet-700">Psicólogo LGBTQIA+</span>
+              <Editable k="home.services.lgbt_badge" className="text-sm font-semibold text-violet-700">Psicólogo LGBTQIA+</Editable>
             </div>
           )}
         </div>
@@ -134,12 +132,12 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
                           : "text-slate-900 group-hover:text-red-700"
                       }`}
                     >
-                      {service.title}
+                      <Editable k={`home.services.${service.href.slice(1)}.title`}>{service.title}</Editable>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col justify-between">
                     <CardDescription className="text-slate-600 mb-6">
-                      {service.description}
+                      <Editable k={`home.services.${service.href.slice(1)}.description`}>{service.description}</Editable>
                     </CardDescription>
                     <div
                       className={`flex items-center font-medium transition-colors mt-auto ${
@@ -148,7 +146,7 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
                           : "text-red-600 group-hover:text-red-700"
                       }`}
                     >
-                      Saiba mais <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      <Editable k="home.services.more">Saiba mais</Editable> <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </div>
                   </CardContent>
                 </Card>
@@ -167,7 +165,7 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
           >
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
               <FaWhatsapp className="w-5 h-5" />
-              Conversar pelo WhatsApp
+              <Editable k="home.services.cta">Conversar pelo WhatsApp</Editable>
             </a>
           </Button>
         </div>

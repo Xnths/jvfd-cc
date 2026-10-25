@@ -9,6 +9,7 @@ import Image from "next/image";
 import { FaWhatsapp } from "react-icons/fa";
 import { ContactForm } from "./ContactForm";
 import { AffirmativeBadge } from "./AffirmativeBadge";
+import { Editable, useText } from "@/edit/Editable";
 
 export function Hero({ showLgbt = false }: { showLgbt?: boolean }) {
   const whatsappUrl = useWhatsappUrl();
@@ -53,7 +54,7 @@ export function Hero({ showLgbt = false }: { showLgbt?: boolean }) {
         <Image
           fill
           src="/consultorio.jpg"
-          alt="Ambiente clínico para atendimento psicológico na Vila Madalena"
+          alt={useText("home.hero.image_alt", "Ambiente clínico para atendimento psicológico na Vila Madalena")}
           className="w-full h-full object-cover"
           sizes="100vw"
           priority
@@ -63,23 +64,19 @@ export function Hero({ showLgbt = false }: { showLgbt?: boolean }) {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl">
-          <p className="text-red-300 font-semibold tracking-widest uppercase text-sm mb-4">
-            Psicólogo clínico · Análise do Comportamento
-            <br />
-            João Fernandes · CRP 06/157908
-          </p>
+          <Editable as="p" k="home.hero.eyebrow" multiline className="text-red-300 font-semibold tracking-widest uppercase text-sm mb-4">
+            {"Psicólogo clínico · Análise do Comportamento\nJoão Fernandes · CRP 06/157908"}
+          </Editable>
 
           {showLgbt && <AffirmativeBadge />}
 
-          <h1 className="text-white mb-6 text-4xl md:text-6xl lg:text-7xl font-medium leading-[1.05]">
-            Você não precisa resolver
-            <br />
-            tudo de uma vez.
-          </h1>
+          <Editable as="h1" k="home.hero.title" multiline className="text-white mb-6 text-4xl md:text-6xl lg:text-7xl font-medium leading-[1.05]">
+            {"Você não precisa resolver\ntudo de uma vez."}
+          </Editable>
 
-          <p className="text-slate-200 mb-10 text-lg md:text-2xl leading-relaxed max-w-2xl">
+          <Editable as="p" k="home.hero.subtitle" multiline className="text-slate-200 mb-10 text-lg md:text-2xl leading-relaxed max-w-2xl">
             Na terapia, entendemos juntos o que mantém os padrões que te travam e construímos, passo a passo, caminhos mais leves. Online para todo o Brasil ou presencial na Vila Madalena, em São Paulo.
-          </p>
+          </Editable>
 
           <div className="flex flex-col gap-4 w-full md:w-fit">
             <a
@@ -90,12 +87,12 @@ export function Hero({ showLgbt = false }: { showLgbt?: boolean }) {
               rel="noopener noreferrer"
             >
               <FaWhatsapp className="w-6 h-6" />
-              Conversar com o João
+              <Editable k="home.hero.cta">Conversar com o João</Editable>
             </a>
 
             <div className="flex items-center gap-4">
               <div className="flex-1 h-px bg-slate-600"></div>
-              <span className="text-slate-400 text-sm">ou</span>
+              <Editable k="home.hero.or" className="text-slate-400 text-sm">ou</Editable>
               <div className="flex-1 h-px bg-slate-600"></div>
             </div>
 

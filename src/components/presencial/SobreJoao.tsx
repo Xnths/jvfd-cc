@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Editable } from "@/edit/Editable";
 
 export function SobreJoao() {
   return (
@@ -19,22 +20,22 @@ export function SobreJoao() {
           </div>
 
           <div className="order-1 lg:order-2">
-            <h2 className="text-slate-900 mb-6 text-2xl font-bold">
+            <Editable as="h2" k="presencial.about.title" className="text-slate-900 mb-6 text-2xl font-bold">
               Sobre o profissional
-            </h2>
+            </Editable>
             <div className="flex flex-col mb-4">
-              <h3 className="text-xl font-semibold text-slate-900">João Fernandes</h3>
+              <Editable as="h3" k="presencial.about.name" className="text-xl font-semibold text-slate-900">João Fernandes</Editable>
               <span className="text-slate-600 text-sm mt-1">CRP 06/157908</span>
             </div>
-            <p className="text-slate-600 mb-4 leading-relaxed">
+            <Editable as="p" k="presencial.about.p1" multiline className="text-slate-600 mb-4 leading-relaxed">
               Psicólogo clínico com atuação fundamentada na Análise do Comportamento, exercendo prática profissional desde 2019. Possui sólida formação acadêmica, com participação contínua em atividades de pesquisa e atualização.
-            </p>
-            <p className="text-slate-600 mb-4 leading-relaxed">
+            </Editable>
+            <Editable as="p" k="presencial.about.p2" multiline className="text-slate-600 mb-4 leading-relaxed">
               O processo terapêutico é construído de forma colaborativa, com foco em identificar padrões de comportamento e ampliar o repertório para lidar com as demandas da vida.
-            </p>
-            <p className="text-slate-600 leading-relaxed">
+            </Editable>
+            <Editable as="p" k="presencial.about.p3" multiline className="text-slate-600 leading-relaxed">
               O consultório em Vila Madalena oferece um espaço reservado e acolhedor, propício ao desenvolvimento pessoal e ao autoconhecimento.
-            </p>
+            </Editable>
           </div>
         </div>
       </div>

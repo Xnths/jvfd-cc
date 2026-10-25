@@ -8,6 +8,7 @@ import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
 import { ContactForm } from "./ContactForm";
 import posthog from "posthog-js";
+import { Editable } from "@/edit/Editable";
 
 interface RelatedPost {
     id: string;
@@ -41,12 +42,12 @@ export function BlogArticleFooter({ relatedPosts }: BlogArticleFooterProps) {
         <div className="mt-16 space-y-12">
             {/* CTA Block */}
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 flex flex-col items-center text-center">
-                <h3 className="text-2xl font-semibold text-slate-900 mb-3">
+                <Editable as="h3" k="blog.article.cta_title" className="text-2xl font-semibold text-slate-900 mb-3">
                     Quer aprofundar esse assunto?
-                </h3>
-                <p className="text-slate-600 mb-6 text-lg">
+                </Editable>
+                <Editable as="p" k="blog.article.cta_text" className="text-slate-600 mb-6 text-lg">
                     Vamos conversar. O primeiro passo pode ser mais simples do que você imagina.
-                </p>
+                </Editable>
 
                 <div className="flex flex-col gap-4 w-full max-w-xs">
                     <a
@@ -57,7 +58,7 @@ export function BlogArticleFooter({ relatedPosts }: BlogArticleFooterProps) {
                         className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-md text-lg font-bold transition-all shadow-lg hover:shadow-green-500/20"
                     >
                         <FaWhatsapp className="w-6 h-6" />
-                        Conversar com o João
+                        <Editable k="blog.article.cta_button">Conversar com o João</Editable>
                     </a>
 
                     <div className="flex items-center gap-4">
@@ -73,9 +74,9 @@ export function BlogArticleFooter({ relatedPosts }: BlogArticleFooterProps) {
             {/* Related Posts */}
             {relatedPosts.length > 0 && (
                 <div>
-                    <h3 className="text-xl font-semibold text-slate-900 mb-6">
+                    <Editable as="h3" k="blog.article.related" className="text-xl font-semibold text-slate-900 mb-6">
                         Outros artigos que podem te interessar
-                    </h3>
+                    </Editable>
                     <div className="grid gap-4 md:grid-cols-3">
                         {relatedPosts.map((post) => (
                             <Link

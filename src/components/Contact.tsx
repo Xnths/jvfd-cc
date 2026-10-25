@@ -9,6 +9,7 @@ import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { sendGAEvent } from "@next/third-parties/google";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import posthog from "posthog-js";
+import { Editable } from "@/edit/Editable";
 
 
 export function Contact() {
@@ -58,10 +59,10 @@ export function Contact() {
     <section id="contact" className="py-20 bg-slate-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-slate-900 mb-4 text-2xl">Contato</h2>
-          <p className="text-slate-600 max-w-2xl mx-auto text-lg">
+          <Editable as="h2" k="home.contact.title" className="text-slate-900 mb-4 text-2xl">Contato</Editable>
+          <Editable as="p" k="home.contact.subtitle" className="text-slate-600 max-w-2xl mx-auto text-lg">
             Entre em contato com o profissional
-          </p>
+          </Editable>
         </div>
 
         <div className="gap-12 max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-center">
@@ -82,7 +83,7 @@ export function Contact() {
                           <Icon className="w-6 h-6 text-red-600" />
                         </div>
                         <div>
-                          <h3 className="text-slate-900 mb-1">{info.title}</h3>
+                          <Editable as="h3" k={`home.contact.${info.type}.title`} className="text-slate-900 mb-1">{info.title}</Editable>
                           <p className="text-slate-600">{info.details}</p>
                         </div>
                       </div>

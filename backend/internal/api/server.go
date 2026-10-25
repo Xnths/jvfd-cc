@@ -59,6 +59,7 @@ func claimsFrom(ctx context.Context) *authn.Claims {
 func (s *Server) Routes() http.Handler {
 	mux := http.NewServeMux()
 	s.publicRoutes(mux)
+	s.textRoutes(mux)
 	s.publicWriteRoutes(mux)
 	s.adminRoutes(mux)
 	s.internalRoutes(mux)

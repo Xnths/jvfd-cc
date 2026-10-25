@@ -9,6 +9,7 @@ import { contact, formatAddress, links, person, services } from "@/content/clini
 import { tutoring } from "@/content/tutoring";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
+import { Editable } from "@/edit/Editable";
 
 const linkClass =
   "rounded-sm transition-colors hover:text-white focus:text-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900";
@@ -32,9 +33,9 @@ export function Footer() {
         <div className="mx-auto mb-10 grid max-w-6xl gap-10 md:grid-cols-[1.3fr_1fr_1fr]">
           <div className="space-y-4">
             <Logo size={44} className="text-white" />
-            <p className="max-w-sm text-sm leading-relaxed">
+            <Editable as="p" k="site.footer.tagline" className="max-w-sm text-sm leading-relaxed">
               Psicoterapia baseada em Análise do Comportamento. Online para todo o Brasil e presencial na Vila Madalena, São Paulo.
-            </p>
+            </Editable>
             <address className="text-sm not-italic leading-relaxed text-green-50/70">
               {formatAddress()}
               <br />
@@ -43,37 +44,37 @@ export function Footer() {
           </div>
 
           <div>
-            <h2 className="mb-4 font-sans text-sm font-semibold uppercase tracking-widest text-white">Atendimentos</h2>
+            <h2 className="mb-4 font-sans text-sm font-semibold uppercase tracking-widest text-white"><Editable k="site.footer.services_title">Atendimentos</Editable></h2>
             <ul className="space-y-2 text-sm">
               {services
                 .filter((s) => !s.pride)
                 .map((s) => (
                   <li key={s.href}>
                     <Link href={s.href} className={linkClass}>
-                      {s.name}
+                      <Editable k={`site.footer.service.${s.href.slice(1)}`}>{s.name}</Editable>
                     </Link>
                   </li>
                 ))}
               <li>
                 <Link href={tutoring.path} className={linkClass}>
-                  {tutoring.shortName}
+                  <Editable k="site.footer.tutoring">{tutoring.shortName}</Editable>
                 </Link>
               </li>
               <li>
                 <Link href="/presencial" className={linkClass}>
-                  Atendimento presencial
+                  <Editable k="site.footer.presencial">Atendimento presencial</Editable>
                 </Link>
               </li>
               <li>
                 <Link href="/blog" className={linkClass}>
-                  Blog
+                  <Editable k="site.footer.blog">Blog</Editable>
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h2 className="mb-4 font-sans text-sm font-semibold uppercase tracking-widest text-white">Contato</h2>
+            <h2 className="mb-4 font-sans text-sm font-semibold uppercase tracking-widest text-white"><Editable k="site.footer.contact_title">Contato</Editable></h2>
             <div className="grid w-fit grid-cols-3 gap-3">
               <a href={links.instagram} target="_blank" rel="noopener noreferrer" className={iconClass} aria-label="Instagram de João Fernandes">
                 <Instagram className="h-5 w-5" />
@@ -99,14 +100,14 @@ export function Footer() {
         </div>
 
         <div className="border-t border-white/15 pt-8 text-center text-sm text-green-50/70">
-          <p>© {new Date().getFullYear()} {person.name}. Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} {person.name}. <Editable k="site.footer.rights">Todos os direitos reservados.</Editable></p>
           <p className="mt-1">Psicólogo, CRP {person.crp}</p>
           <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1">
             <Link href="/politica-de-privacidade" className={`${linkClass} underline`}>
-              Política de Privacidade
+              <Editable k="site.footer.privacy">Política de Privacidade</Editable>
             </Link>
             <Link href="/termos-de-uso" className={`${linkClass} underline`}>
-              Termos de Uso
+              <Editable k="site.footer.terms">Termos de Uso</Editable>
             </Link>
           </div>
         </div>

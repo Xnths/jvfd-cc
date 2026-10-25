@@ -6,7 +6,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 
 const MAX_SKEW_SECONDS = 300;
 const ALL_PATHS = ["/", "/blog", "/sitemap.xml", "/feed.xml", "/llms.txt", "/llms-full.txt"];
-const ALL_TAGS = ["posts", "treatments", "comments", "pages", "services", "settings", "profiles", "glossary", "faq"];
+const ALL_TAGS = ["texts", "posts", "treatments", "comments", "pages", "services", "settings", "profiles", "glossary", "faq"];
 
 function valid(secret: string, ts: string, sig: string, body: string) {
     const age = Math.abs(Date.now() / 1000 - Number(ts));
@@ -35,5 +35,7 @@ export async function POST(request: Request) {
     const paths = input.all ? ALL_PATHS : (input.paths ?? []);
     for (const tag of tags) revalidateTag(tag, { expire: 0 });
     for (const path of paths) revalidatePath(path);
+    // Copy changes show on every page (header, footer, static pages): refresh the whole layout.
+    if (tags.includes("texts")) revalidatePath("/", "layout");
     return Response.json({ ok: true, tags: tags.length, paths: paths.length });
 }

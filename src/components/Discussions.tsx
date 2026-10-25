@@ -2,6 +2,7 @@ import { getPublishedPosts } from "@/lib/queries";
 import Link from "next/link";
 import { MoveRight } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "./ui/card";
+import { Editable } from "@/edit/Editable";
 
 export async function Discussions() {
     const posts = (await getPublishedPosts().catch(() => [])).slice(0, 3);
@@ -14,10 +15,10 @@ export async function Discussions() {
         <section className="py-20 bg-slate-50" id="discussions">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold text-slate-900 mb-4">Discussões</h2>
-                    <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                    <Editable as="h2" k="home.discussions.title" className="text-3xl font-bold text-slate-900 mb-4">Discussões</Editable>
+                    <Editable as="p" k="home.discussions.subtitle" className="text-xl text-slate-600 max-w-2xl mx-auto">
                         Artigos e reflexões sobre psicologia e saúde mental.
-                    </p>
+                    </Editable>
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
@@ -45,7 +46,7 @@ export async function Discussions() {
                                     href={`/blog/${post.slug}`}
                                     className="inline-flex items-center text-blue-600 font-medium hover:gap-2 transition-all gap-1 group"
                                 >
-                                    Ler mais
+                                    <Editable k="home.discussions.read_more">Ler mais</Editable>
                                     <MoveRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             </CardFooter>
@@ -58,7 +59,7 @@ export async function Discussions() {
                         href="/blog"
                         className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-slate-900 hover:bg-slate-800 md:text-lg md:px-10 transition-colors"
                     >
-                        Ver todos os artigos
+                        <Editable k="home.discussions.all">Ver todos os artigos</Editable>
                     </Link>
                 </div>
             </div>

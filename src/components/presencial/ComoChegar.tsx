@@ -1,5 +1,6 @@
 import { contact } from "@/content/clinic";
 import { FaSubway, FaBus, FaCar, FaWheelchair } from "react-icons/fa";
+import { Editable } from "@/edit/Editable";
 
 const transitItems = [
   {
@@ -29,7 +30,7 @@ export function ComoChegar() {
     <section className="py-20 bg-white" id="como-chegar">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-slate-900 text-2xl font-bold mb-4">Como chegar</h2>
+          <Editable as="h2" k="presencial.how.title" className="text-slate-900 text-2xl font-bold mb-4">Como chegar</Editable>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 max-w-5xl mx-auto items-start">
@@ -69,8 +70,8 @@ export function ComoChegar() {
                 <li key={item.label} className="flex items-start gap-3">
                   {item.icon}
                   <div>
-                    <span className="font-semibold text-slate-900">{item.label}:</span>{" "}
-                    <span className="text-slate-600">{item.detail}</span>
+                    <Editable k={`presencial.how.${item.label}.label`} className="font-semibold text-slate-900">{item.label}</Editable><span className="font-semibold text-slate-900">:</span>{" "}
+                    <Editable k={`presencial.how.${item.label}.detail`} className="text-slate-600">{item.detail}</Editable>
                   </div>
                 </li>
               ))}
