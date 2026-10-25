@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import { LegalBody } from "@/edit/LegalBody";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 
@@ -16,6 +17,7 @@ export default function PrivacyPolicyPage() {
             <h1 className="text-3xl font-bold mb-8 text-slate-900">Política de Privacidade</h1>
 
             <div className="prose prose-slate max-w-none text-slate-700">
+                <LegalBody k="legal.privacidade">
                 <p className="mb-4">
                     A sua privacidade é importante para nós. Esta política descreve como o site do{" "}
                     <Link href="/" className="text-blue-600 hover:underline">Psicólogo João Fernandes</Link>{" "}
@@ -150,6 +152,7 @@ export default function PrivacyPolicyPage() {
                 <p className="mt-8 text-sm text-slate-500">
                     Esta política é efetiva a partir de {new Date().getFullYear()}. Última atualização: março de 2026.
                 </p>
+                </LegalBody>
             </div>
         </div>
     );

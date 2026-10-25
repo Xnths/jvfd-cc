@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
     $createParagraphNode,
+    $getRoot,
+    $isElementNode,
     $getSelection,
     $insertNodes,
     $isRangeSelection,
@@ -15,6 +17,7 @@ import {
     UNDO_COMMAND,
     type EditorState,
 } from 'lexical'
+import { $generateNodesFromDOM } from '@lexical/html'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
@@ -186,8 +189,11 @@ export function RichTextEditor({
     onChange,
     onPickImage,
     inline = false,
+    initialHtml,
 }: {
     inline?: boolean
+    /** Starts from HTML (the default copy of a page that has never been edited) instead of a document. */
+    initialHtml?: string
     value: LexicalDoc | null | undefined
     media: MediaRef[]
     onChange: (doc: LexicalDoc) => void
@@ -204,7 +210,17 @@ export function RichTextEditor({
                 initialConfig={{
                     namespace: 'clinic-editor',
                     theme: inline ? publicTheme : theme,
-                    editorState: initial,
+                    editorState: initialHtml
+                        ? (editor: import('lexical').LexicalEditor) => {
+                              const dom = new DOMParser().parseFromString(initialHtml, 'text/html')
+                              const root = $getRoot()
+                              root.clear()
+                              for (const node of $generateNodesFromDOM(editor, dom)) {
+                                  if ($isElementNode(node) && !node.isInline()) root.append(node)
+                                  else root.append($createParagraphNode().append(node))
+                              }
+                          }
+                        : initial,
                     nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, HorizontalRuleNode, UploadNode],
                     onError: (e) => console.error('[editor]', e),
                 }}

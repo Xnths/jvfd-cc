@@ -52,10 +52,15 @@ func (s *Server) adminListTexts(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, 200, map[string]any{"texts": s.loadTexts(r)})
 }
 
-// textValueOK accepts a string, or a list of flat objects of strings (editable lists).
+// textValueOK accepts a string, a Lexical document, or a list of flat objects (editable lists).
 func textValueOK(raw json.RawMessage) bool {
 	var str string
 	if json.Unmarshal(raw, &str) == nil {
+		return true
+	}
+	// A Lexical document (legal pages edited inline).
+	var doc map[string]any
+	if json.Unmarshal(raw, &doc) == nil && doc["root"] != nil {
 		return true
 	}
 	var list []map[string]any
@@ -114,7 +119,7 @@ func (s *Server) adminPutText(w http.ResponseWriter, r *http.Request) {
 		Value           json.RawMessage `json:"value"`
 		AcknowledgeLint bool            `json:"acknowledgeLint"`
 	}
-	if !decode(w, r, &in, 64<<10) {
+	if !decode(w, r, &in, 512<<10) {
 		return
 	}
 	if len(in.Value) == 0 || !textValueOK(in.Value) {

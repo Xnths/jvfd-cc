@@ -1,15 +1,13 @@
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
-import { getPayload, type Where } from "payload";
-import configPromise from "@payload-config";
 import { CACHE_TAGS } from "./cache-tags";
-import { ApiNotFound, apiGet, contentFromApi } from "./api";
+import { ApiNotFound, apiGet } from "./api";
 
 export { CACHE_TAGS };
 
-// Cached read layer for public pages. Every query is tagged so the Payload
-// hooks in src/hooks/revalidate.ts can invalidate it the moment content
-// changes — pages stay fast without serving stale content.
+// Cached read layer for public pages. Every query is tagged so the Go API can invalidate it
+// (POST /internal/revalidate) the moment content changes: pages stay fast without serving stale content.
+// Without API_INTERNAL_URL (the Docker build, local dev) every read fails and pages fall back to code defaults.
 
 // Long safety net; real freshness comes from tag invalidation.
 const REVALIDATE_SECONDS = 60 * 60 * 24;
@@ -84,60 +82,6 @@ export type CommentView = {
     authorName: string;
 };
 
-// Posts created before the `status` field existed have no value at all;
-// `not_equals` (Mongo $ne) keeps them visible while hiding real drafts.
-const publishedWhere: Where = { status: { not_equals: "draft" } };
-
-async function payloadClient() {
-    return getPayload({ config: configPromise });
-}
-
-export const getPublishedPosts = cache(
-    unstable_cache(
-        async (): Promise<PostDoc[]> => {
-            if (contentFromApi()) {
-                return (await apiGet<{ posts: PostDoc[] }>("/api/v1/public/posts?content=1")).posts;
-            }
-            const payload = await payloadClient();
-            const result = await payload.find({
-                collection: "posts",
-                where: publishedWhere,
-                sort: "-publishedDate",
-                limit: 1000,
-                depth: 1,
-            });
-            return result.docs as unknown as PostDoc[];
-        },
-        ["published-posts"],
-        { tags: [CACHE_TAGS.posts], revalidate: REVALIDATE_SECONDS },
-    ),
-);
-
-export const getPostBySlug = cache(
-    unstable_cache(
-        async (slug: string): Promise<PostDoc | null> => {
-            if (contentFromApi()) {
-                try {
-                    return await apiGet<PostDoc>(`/api/v1/public/posts/${encodeURIComponent(slug)}`);
-                } catch (e) {
-                    if (e instanceof ApiNotFound) return null;
-                    throw e;
-                }
-            }
-            const payload = await payloadClient();
-            const result = await payload.find({
-                collection: "posts",
-                where: { and: [{ slug: { equals: slug } }, publishedWhere] },
-                limit: 1,
-                depth: 1,
-            });
-            return (result.docs[0] as unknown as PostDoc) ?? null;
-        },
-        ["post-by-slug"],
-        { tags: [CACHE_TAGS.posts], revalidate: REVALIDATE_SECONDS },
-    ),
-);
-
 type PageApi = {
     id: string;
     slug: string;
@@ -159,21 +103,35 @@ function treatmentFromPage(p: PageApi): TreatmentDoc | null {
     };
 }
 
+export const getPublishedPosts = cache(
+    unstable_cache(
+        async (): Promise<PostDoc[]> => (await apiGet<{ posts: PostDoc[] }>("/api/v1/public/posts?content=1")).posts,
+        ["published-posts"],
+        { tags: [CACHE_TAGS.posts], revalidate: REVALIDATE_SECONDS },
+    ),
+);
+
+export const getPostBySlug = cache(
+    unstable_cache(
+        async (slug: string): Promise<PostDoc | null> => {
+            try {
+                return await apiGet<PostDoc>(`/api/v1/public/posts/${encodeURIComponent(slug)}`);
+            } catch (e) {
+                if (e instanceof ApiNotFound) return null;
+                throw e;
+            }
+        },
+        ["post-by-slug"],
+        { tags: [CACHE_TAGS.posts], revalidate: REVALIDATE_SECONDS },
+    ),
+);
+
 export const getTreatments = cache(
     unstable_cache(
         async (): Promise<TreatmentDoc[]> => {
-            if (contentFromApi()) {
-                const list = (await apiGet<{ services: ServiceInfo[] }>("/api/v1/public/services")).services;
-                const pages = await Promise.all(list.map((sv) => apiGet<PageApi>(`/api/v1/public/pages/${encodeURIComponent(sv.slug)}`).catch(() => null)));
-                return pages.flatMap((p) => (p ? [treatmentFromPage(p)].filter((t): t is TreatmentDoc => !!t) : []));
-            }
-            const payload = await payloadClient();
-            const result = await payload.find({
-                collection: "treatments",
-                limit: 100,
-                depth: 1,
-            });
-            return result.docs as unknown as TreatmentDoc[];
+            const list = (await apiGet<{ services: ServiceInfo[] }>("/api/v1/public/services")).services;
+            const pages = await Promise.all(list.map((sv) => apiGet<PageApi>(`/api/v1/public/pages/${encodeURIComponent(sv.slug)}`).catch(() => null)));
+            return pages.flatMap((p) => (p ? [treatmentFromPage(p)].filter((t): t is TreatmentDoc => !!t) : []));
         },
         ["treatments"],
         { tags: [CACHE_TAGS.treatments, "services", "pages"], revalidate: REVALIDATE_SECONDS },
@@ -183,33 +141,22 @@ export const getTreatments = cache(
 export const getTreatmentBySlug = cache(
     unstable_cache(
         async (slug: string): Promise<TreatmentDoc | null> => {
-            if (contentFromApi()) {
-                try {
-                    return treatmentFromPage(await apiGet<PageApi>(`/api/v1/public/pages/${encodeURIComponent(slug)}`));
-                } catch (e) {
-                    if (e instanceof ApiNotFound) return null;
-                    throw e;
-                }
+            try {
+                return treatmentFromPage(await apiGet<PageApi>(`/api/v1/public/pages/${encodeURIComponent(slug)}`));
+            } catch (e) {
+                if (e instanceof ApiNotFound) return null;
+                throw e;
             }
-            const payload = await payloadClient();
-            const result = await payload.find({
-                collection: "treatments",
-                where: { slug: { equals: slug } },
-                limit: 1,
-                depth: 1,
-            });
-            return (result.docs[0] as unknown as TreatmentDoc) ?? null;
         },
         ["treatment-by-slug"],
         { tags: [CACHE_TAGS.treatments, "services", "pages"], revalidate: REVALIDATE_SECONDS },
     ),
 );
 
-/** Cards for the home grid and the footer. Falls back to the copy in code when the API is off. */
+/** Cards for the home grid and the footer; null when the API is unreachable (the copy in code shows instead). */
 export const getServiceCards = cache(
     unstable_cache(
         async (): Promise<ServiceCard[] | null> => {
-            if (!contentFromApi()) return null;
             const list = (await apiGet<{ services: ServiceInfo[] }>("/api/v1/public/services")).services;
             return list.map((sv) => ({
                 href: `/${sv.slug}`, name: sv.name, title: sv.cardTitle, description: sv.cardDescription, icon: sv.icon,
@@ -223,33 +170,8 @@ export const getServiceCards = cache(
 
 export const getApprovedComments = cache(
     unstable_cache(
-        async (postId: string): Promise<CommentView[]> => {
-            if (contentFromApi()) {
-                return (await apiGet<{ comments: CommentView[] }>(`/api/v1/public/posts/${encodeURIComponent(postId)}/comments`)).comments;
-            }
-            const payload = await payloadClient();
-            const { docs } = await payload.find({
-                collection: "comments",
-                where: {
-                    and: [
-                        { post: { equals: postId } },
-                        { status: { equals: "approved" } },
-                    ],
-                },
-                sort: "createdAt",
-                limit: 100,
-                depth: 1,
-            });
-            return docs.map((c) => ({
-                id: c.id as string,
-                body: c.body as string,
-                createdAt: c.createdAt as string,
-                authorName:
-                    typeof c.author === "object" && c.author
-                        ? ((c.author as { name?: string }).name ?? "Anônimo")
-                        : "Anônimo",
-            }));
-        },
+        async (postId: string): Promise<CommentView[]> =>
+            (await apiGet<{ comments: CommentView[] }>(`/api/v1/public/posts/${encodeURIComponent(postId)}/comments`)).comments,
         ["approved-comments"],
         { tags: [CACHE_TAGS.comments], revalidate: REVALIDATE_SECONDS },
     ),

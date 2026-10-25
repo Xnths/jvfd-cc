@@ -1,5 +1,3 @@
-import { withPayload } from '@payloadcms/next/withPayload'
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: "standalone",
@@ -142,11 +140,11 @@ const nextConfig = {
                 headers: [staticAssetCache],
             },
             {
-                source: '/:area(admin|payload-admin)/:path*',
+                source: '/:area(admin)/:path*',
                 headers: [...commonHeaders, adminCSP],
             },
             {
-                source: '/((?!admin|payload-admin).*)',
+                source: '/((?!admin).*)',
                 headers: [...commonHeaders, publicCSP],
             },
         ]
@@ -154,4 +152,4 @@ const nextConfig = {
 
 };
 
-export default withPayload(nextConfig);
+export default nextConfig;

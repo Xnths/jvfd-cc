@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import { LegalBody } from "@/edit/LegalBody";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 
@@ -16,6 +17,7 @@ export default function TermsOfUsePage() {
             <h1 className="text-3xl font-bold mb-8 text-slate-900">Termos de Uso</h1>
 
             <div className="prose prose-slate max-w-none text-slate-700">
+                <LegalBody k="legal.termos">
                 <p className="mb-4">
                     Bem-vindo ao site do Psicólogo João Fernandes. Ao acessar e utilizar este site, você concorda com os seguintes termos e condições de uso.
                 </p>
@@ -81,6 +83,7 @@ export default function TermsOfUsePage() {
                 <p className="mt-8 text-sm text-slate-500">
                     Estes termos são efetivos a partir de {new Date().getFullYear()}. Última atualização: março de 2026.
                 </p>
+                </LegalBody>
             </div>
         </div>
     );

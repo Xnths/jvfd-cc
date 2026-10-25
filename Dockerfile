@@ -32,7 +32,7 @@ ARG NEXT_PUBLIC_POSTHOG_HOST
 ENV NEXT_PUBLIC_POSTHOG_TOKEN=$NEXT_PUBLIC_POSTHOG_TOKEN
 ENV NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST
 
-# DATABASE_URI and PAYLOAD_SECRET are runtime-only (passed via docker run -e)
+# Runtime-only settings (API_INTERNAL_URL, REVALIDATE_SECRET, …) are passed by deploy/deploy.sh via docker run -e
 # Do NOT set them at build time or they get inlined into the Next.js bundle
 
 RUN pnpm build

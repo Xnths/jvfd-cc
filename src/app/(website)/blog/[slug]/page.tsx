@@ -15,8 +15,8 @@ import { getMedia, getPostBySlug, getPublishedPosts } from "@/lib/queries";
 import { buildMetadata } from "@/lib/seo";
 import { blogPostingNode, breadcrumbNode, graph } from "@/lib/jsonld";
 
-// ISR: rendered on first request, then served from cache until a Payload
-// hook invalidates the "posts" or "comments" tag.
+// ISR: rendered on first request, then served from cache until the Go API
+// invalidates the "posts" or "comments" tag.
 export const revalidate = 86400;
 
 interface PostPageProps {

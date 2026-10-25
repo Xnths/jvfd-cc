@@ -21,5 +21,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/((?!_next|api|admin|edit|payload-admin|auth|ingest|internal|media|markdown|.*\\.(?!md$)[a-zA-Z0-9]+$).*)'],
+    matcher: ['/((?!_next|api|admin|edit|auth|ingest|internal|media|markdown|.*\\.(?!md$)[a-zA-Z0-9]+$).*)'],
 }

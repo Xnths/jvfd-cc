@@ -3,8 +3,8 @@
 
 const API = process.env.API_INTERNAL_URL ?? "http://clinic-api:8080";
 
-/** True when posts and comments come from the Go API instead of Payload. */
-export const contentFromApi = () => process.env.CONTENT_SOURCE === "api";
+/** True when a Go API is configured (production). Without it (Docker build, local dev) pages use the copy in code. */
+export const contentFromApi = () => Boolean(process.env.API_INTERNAL_URL);
 
 export class ApiNotFound extends Error {}
 

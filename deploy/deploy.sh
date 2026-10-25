@@ -32,12 +32,8 @@ main() {
 
     # --- 3. Go services + database ---
     mkdir -p deploy/nginx/active
-    # Once content lives in Postgres, the old /api/{leads,subscribe,unsubscribe} URLs are served by Go.
-    if [ "${CONTENT_SOURCE:-payload}" = api ]; then
-        cp deploy/nginx/legacy-api.cutover.conf deploy/nginx/active/legacy-api.conf
-    else
-        : > deploy/nginx/active/legacy-api.conf
-    fi
+    # Content lives in Postgres: the old /api/{leads,subscribe,unsubscribe} URLs are served by Go.
+    cp deploy/nginx/legacy-api.cutover.conf deploy/nginx/active/legacy-api.conf
 
     echo "Starting postgres..."
     "${compose[@]}" up -d postgres
@@ -71,11 +67,9 @@ main() {
     docker rm -f "clinic-frontend-$new" >/dev/null 2>&1 || true
     docker run -d --name "clinic-frontend-$new" --network "$net_public" --restart always \
         -e NODE_ENV=production -e NEXT_TELEMETRY_DISABLED=1 -e HOSTNAME=0.0.0.0 \
-        -e DATABASE_URI="${DATABASE_URI:-}" -e PAYLOAD_SECRET="${PAYLOAD_SECRET:-}" \
         -e NEXT_PUBLIC_GA_ID="${NEXT_PUBLIC_GA_ID:-}" \
         -e NEXT_PUBLIC_POSTHOG_TOKEN="${NEXT_PUBLIC_POSTHOG_TOKEN:-}" -e NEXT_PUBLIC_POSTHOG_HOST="${NEXT_PUBLIC_POSTHOG_HOST:-}" \
         -e RESEND_API_KEY="${RESEND_API_KEY:-}" \
-        -e CONTENT_SOURCE="${CONTENT_SOURCE:-payload}" \
         -e API_INTERNAL_URL="${API_INTERNAL_URL:-}" -e AUTH_INTERNAL_URL="${AUTH_INTERNAL_URL:-}" \
         -e REVALIDATE_SECRET="${REVALIDATE_SECRET:-}" \
         -e JWT_ISSUER="${JWT_ISSUER:-}" -e JWT_AUDIENCE="${JWT_AUDIENCE:-}" \

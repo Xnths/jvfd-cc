@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { SITE_URL } from '@/content/clinic'
 
-const PRIVATE_PATHS = ['/admin', '/edit', '/payload-admin', '/auth', '/api', '/conta', '/login', '/registro', '/markdown']
+const PRIVATE_PATHS = ['/admin', '/edit', '/auth', '/api', '/conta', '/login', '/registro', '/markdown']
 
 // AI crawlers and answer engines, listed explicitly so the intent is
 // unambiguous: the clinic wants to be found and cited by them.

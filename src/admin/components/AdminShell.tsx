@@ -68,8 +68,8 @@ export function AdminShell({ me, children }: { me: Me; children: React.ReactNode
                 <Link href="/" target="_blank" className="flex items-center gap-2 px-3 py-1.5 text-muted-foreground hover:text-foreground">
                     <ExternalLink className="h-3.5 w-3.5" aria-hidden /> Ver o site
                 </Link>
-                <a href="/payload-admin" className="flex items-center gap-2 px-3 py-1.5 text-muted-foreground hover:text-foreground">
-                    <ExternalLink className="h-3.5 w-3.5" aria-hidden /> Painel antigo (Payload)
+                <a href="/edit/enter?return=/" className="flex items-center gap-2 px-3 py-1.5 text-muted-foreground hover:text-foreground">
+                    <ExternalLink className="h-3.5 w-3.5" aria-hidden /> Editar o site
                 </a>
             </div>
         </nav>

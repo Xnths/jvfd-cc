@@ -8,7 +8,7 @@ import { getTreatmentBySlug, getTreatments } from '@/lib/queries'
 import { buildMetadata } from '@/lib/seo'
 import { breadcrumbNode, graph, therapyNode, webPageNode } from '@/lib/jsonld'
 
-// ISR: cached until a Payload hook invalidates the "treatments" tag.
+// ISR: cached until the Go API invalidates the "services"/"pages" tags on publish.
 export const revalidate = 86400
 
 type Params = {
@@ -63,7 +63,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
     if (!treatment) {
         // A service that is not published yet opens at its own URL for the admin who is writing it.
-        if (process.env.CONTENT_SOURCE === 'api' && (await draftMode()).isEnabled) return <DraftService slug={slug} />
+        if ((await draftMode()).isEnabled) return <DraftService slug={slug} />
         notFound()
     }
 
