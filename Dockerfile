@@ -23,6 +23,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 ARG NEXT_PUBLIC_GA_ID
 ENV NEXT_PUBLIC_GA_ID=$NEXT_PUBLIC_GA_ID
+# PostHog public values are inlined into the client bundle, so they must exist at build time.
+# (.env is no longer copied into the image; deploy.sh passes these as build args.)
+ARG NEXT_PUBLIC_POSTHOG_TOKEN
+ARG NEXT_PUBLIC_POSTHOG_HOST
+ENV NEXT_PUBLIC_POSTHOG_TOKEN=$NEXT_PUBLIC_POSTHOG_TOKEN
+ENV NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST
 
 # DATABASE_URI and PAYLOAD_SECRET are runtime-only (passed via docker run -e)
 # Do NOT set them at build time or they get inlined into the Next.js bundle

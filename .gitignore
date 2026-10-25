@@ -47,3 +47,9 @@ logs_*.txt
 
 # treatment copy backups (may contain CMS content)
 /backups
+
+# go platform
+/secrets/
+*.pem
+/deploy/nginx/active/
+/backend/bin/
