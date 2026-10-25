@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/Xnths/jvfd-cc/backend/internal/research"
@@ -41,5 +42,15 @@ func init() {
 	}
 }
 
-// summarizerFromEnv returns the optional LLM summarizer (nil without ANTHROPIC_API_KEY).
-func summarizerFromEnv(*Server) research.Summarizer { return nil }
+// summarizerFromEnv returns the optional OpenAI summarizer (nil without OPENAI_API_KEY: the digest then quotes the abstract).
+func summarizerFromEnv(s *Server) research.Summarizer {
+	key := os.Getenv("OPENAI_API_KEY")
+	if key == "" {
+		return nil
+	}
+	budget := 5.0
+	if v, err := strconv.ParseFloat(os.Getenv("LLM_MONTHLY_BUDGET_USD"), 64); err == nil && v > 0 {
+		budget = v
+	}
+	return research.NewOpenAISummarizer(s.Pool, key, os.Getenv("OPENAI_MODEL"), budget)
+}
