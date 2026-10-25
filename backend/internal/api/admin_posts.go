@@ -55,6 +55,7 @@ func (s *Server) adminContentRoutes(mux *http.ServeMux) {
 
 	s.adminProfileRoutes(mux)
 	s.jobAdminRoutes(mux)
+	s.seoAdminRoutes(mux)
 }
 
 type adminPost struct {

@@ -58,8 +58,11 @@ services:
       API_ADDR: ":8080"
       MEDIA_DIR: /srv/media
       TRUST_PROXY: "true"
+      GSC_CREDENTIALS_FILE: /run/secrets/gsc/gsc-sa.json
     volumes:
       - media-data:/srv/media
+      # Search Console service-account key (secrets/gsc/gsc-sa.json, 0600). The folder may be empty.
+      - ../secrets/gsc:/run/secrets/gsc:ro
     depends_on:
       postgres: { condition: service_healthy }
     networks: [internal]

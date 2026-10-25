@@ -31,7 +31,7 @@ main() {
     git pull --ff-only origin "${DEPLOY_BRANCH:-main}"
 
     # --- 3. Go services + database ---
-    mkdir -p deploy/nginx/active
+    mkdir -p deploy/nginx/active secrets/gsc
     # Content lives in Postgres: the old /api/{leads,subscribe,unsubscribe} URLs are served by Go.
     cp deploy/nginx/legacy-api.cutover.conf deploy/nginx/active/legacy-api.conf
 

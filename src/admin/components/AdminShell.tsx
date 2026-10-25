@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
+    BookOpen,
+    CalendarDays,
     ExternalLink,
     HelpCircle,
     History,
@@ -16,6 +18,7 @@ import {
     MessageSquare,
     MousePointerClick,
     Phone,
+    Search,
     Timer,
     X,
 } from 'lucide-react'
@@ -34,6 +37,9 @@ const NAV = [
     { href: '/admin/assinantes', label: 'Assinantes', icon: Mail },
     { href: '/admin/contatos', label: 'Contatos', icon: Phone, clinicalOnly: true },
     { href: '/admin/midia', label: 'Mídia', icon: ImageIcon },
+    { href: '/admin/seo', label: 'Busca no Google', icon: Search },
+    { href: '/admin/pesquisa', label: 'Pesquisa', icon: BookOpen },
+    { href: '/admin/pautas', label: 'Pautas', icon: CalendarDays },
     { href: '/admin/jobs', label: 'Tarefas', icon: Timer },
     { href: '/admin/auditoria', label: 'Histórico', icon: History },
 ]

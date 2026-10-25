@@ -11,7 +11,7 @@ if bag.import_errors:
     for path, err in bag.import_errors.items():
         print(f"IMPORT ERROR {path}:\n{err}")
     sys.exit(1)
-expected = {"maintenance_daily", "backup_daily"}
+expected = {"maintenance_daily", "backup_daily", "seo_gsc_daily", "trend_radar_weekly", "research_weekly"}
 missing = expected - set(bag.dag_ids)
 if missing:
     print(f"missing DAGs: {missing}")
