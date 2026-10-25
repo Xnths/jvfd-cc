@@ -1,4 +1,7 @@
 import { notFound } from "next/navigation";
+import { draftMode } from "next/headers";
+import { PostSwap } from "@/edit/PostSwap";
+import { DraftPost } from "@/edit/DraftPost";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { RichText } from "@/components/RichText";
@@ -57,6 +60,14 @@ export default async function PostPage({ params }: PostPageProps) {
     const post = await getPostBySlug(slug);
 
     if (!post) {
+        // Drafts have no public page: an admin who opened one through /edit/enter writes it here.
+        if ((await draftMode()).isEnabled) {
+            return (
+                <article className="container mx-auto px-4 py-20 min-h-screen max-w-4xl">
+                    <DraftPost slug={slug} />
+                </article>
+            );
+        }
         notFound();
     }
 
@@ -85,6 +96,7 @@ export default async function PostPage({ params }: PostPageProps) {
                 )}
             />
             <ArticleEngagementTracker slug={slug} />
+            <PostSwap postId={String(post.id)}>
             <header className="mb-12 text-center">
                 <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-4">
                     <time dateTime={post.publishedDate}>
@@ -124,6 +136,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <div className="prose prose-lg prose-slate mx-auto prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-img:rounded-xl">
                 <RichText content={post.content} />
             </div>
+            </PostSwap>
 
             <BlogArticleFooter relatedPosts={relatedPosts} />
 

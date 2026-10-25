@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { api, errorMessage } from "@/admin/lib/adminFetch";
 import { useEdit } from "./EditContext";
 
 type Me = { id: string; email: string; name?: string; role: string };
@@ -13,6 +14,19 @@ export function AdminBar() {
     const { editing, setEditing } = useEdit();
     const pathname = usePathname();
     const [me, setMe] = useState<Me | null>(null);
+    const [creating, setCreating] = useState(false);
+
+    // A new post starts as a draft and opens on its real URL, ready to be written in place.
+    async function newPost() {
+        setCreating(true);
+        try {
+            const res = await api<{ slug: string }>("/posts", { method: "POST", json: { title: "Novo post" } });
+            window.location.href = `/edit/enter?return=${encodeURIComponent(`/blog/${res.slug}`)}`;
+        } catch (e) {
+            alert(errorMessage(e));
+            setCreating(false);
+        }
+    }
 
     useEffect(() => {
         // Quiet check: a stale hint cookie must never bounce a public visitor to the login page.
@@ -57,6 +71,9 @@ export function AdminBar() {
                 className={`rounded px-3 py-1 font-medium ${editing ? "bg-green-600 hover:bg-green-700" : "bg-white/10 hover:bg-white/20"}`}
             >
                 {editing ? "Editando: clique num texto" : "Editar página"}
+            </button>
+            <button type="button" onClick={newPost} disabled={creating} className="rounded px-3 py-1 font-medium bg-white/10 hover:bg-white/20 disabled:opacity-50">
+                + Novo post
             </button>
             <span className="mx-auto" />
             <Link href="/admin" className="rounded px-2 py-1 hover:bg-white/10">

@@ -110,7 +110,12 @@ func (s *Server) adminListPosts(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) loadPost(r *http.Request, id string) (adminPost, error) {
 	var p adminPost
-	err := s.Pool.QueryRow(r.Context(), `SELECT `+adminPostSelect+`, content FROM posts WHERE id::text = $1`, id).
+	// "slug:<slug>" lets the on-page editor open a post by the URL it is sitting on.
+	where := `id::text = $1`
+	if strings.HasPrefix(id, "slug:") {
+		where, id = `slug::text = $1`, strings.TrimPrefix(id, "slug:")
+	}
+	err := s.Pool.QueryRow(r.Context(), `SELECT `+adminPostSelect+`, content FROM posts WHERE `+where, id).
 		Scan(&p.ID, &p.Slug, &p.Title, &p.Excerpt, &p.Keywords, &p.Status, &p.PublishedAt, &p.AuthorName, &p.AuthorProfileID,
 			&p.ReviewedByProfileID, &p.LastReviewedAt, &p.ImageID, &p.MetaTitle, &p.MetaDescription, &p.Origin, &p.Citations, &p.LintAckAt,
 			&p.NewsletterSentAt, &p.Version, &p.HasUnpublished, &p.UpdatedAt, &p.CreatedAt, &p.Content)

@@ -46,7 +46,7 @@ const EMPTY: LexicalDoc = {
 
 type Block = 'paragraph' | 'h2' | 'h3' | 'h4' | 'quote' | 'bullet' | 'number'
 
-function Toolbar({ media, onPickImage }: { media: MediaRef[]; onPickImage: () => Promise<string | null> }) {
+function Toolbar({ media, onPickImage, inline }: { media: MediaRef[]; onPickImage: () => Promise<string | null>; inline?: boolean }) {
     const [editor] = useLexicalComposerContext()
     const [state, setState] = useState({ bold: false, italic: false, underline: false, link: false, block: 'paragraph' as Block })
     const [canUndo, setCanUndo] = useState(false)
@@ -125,7 +125,12 @@ function Toolbar({ media, onPickImage }: { media: MediaRef[]; onPickImage: () =>
     )
 
     return (
-        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-0.5 border-b bg-card p-1.5" role="toolbar" aria-label="Formatação">
+        <div
+            className={cn('sticky z-[55] flex flex-wrap items-center gap-0.5 border bg-white p-1.5 shadow-sm', inline ? 'mb-6 rounded-lg' : 'top-0 z-10 border-0 border-b bg-card')}
+            style={inline ? { top: 'calc(var(--admin-bar-h, 0px) + 4.25rem)' } : undefined}
+            role="toolbar"
+            aria-label="Formatação"
+        >
             <Btn label="Desfazer" on={() => editor.dispatchCommand(UNDO_COMMAND, undefined)} disabled={!canUndo}><Undo2 className="h-4 w-4" /></Btn>
             <Btn label="Refazer" on={() => editor.dispatchCommand(REDO_COMMAND, undefined)} disabled={!canRedo}><Redo2 className="h-4 w-4" /></Btn>
             <span className="mx-1 h-5 w-px bg-border" />
@@ -156,6 +161,21 @@ const theme = {
     text: { bold: 'font-bold', italic: 'italic', underline: 'underline' },
 }
 
+// Same classes the public RichText renderer uses, so the inline editor looks like the final page.
+const publicTheme = {
+    paragraph: 'mb-5 leading-[1.75] text-slate-700',
+    quote: 'my-6 border-l-4 border-green-700/40 pl-5 italic text-slate-600',
+    heading: {
+        h1: 'text-[2rem] font-bold leading-[1.2] tracking-tight text-slate-900 mt-14 mb-4 uppercase',
+        h2: 'text-[1.75rem] font-bold leading-[1.25] tracking-tight text-slate-900 mt-12 mb-3 uppercase',
+        h3: 'text-[1.375rem] font-semibold leading-[1.3] text-slate-900 mt-10 mb-2 capitalize',
+        h4: 'text-[1.125rem] font-semibold leading-[1.35] text-slate-800 mt-8 mb-1.5 capitalize italic',
+    },
+    list: { ul: 'list-disc pl-7 my-5 space-y-1.5 marker:text-red-600', ol: 'list-decimal pl-7 my-5 space-y-1.5 marker:text-red-600', listitem: 'leading-[1.7] text-slate-700 pl-1' },
+    link: 'text-green-700 underline underline-offset-2',
+    text: { bold: 'font-bold', italic: 'italic', underline: 'underline' },
+}
+
 /**
  * Lexical editor for posts and rich-text blocks. It reads and writes the same Lexical JSON the
  * public RichText renderer and the Go API use. `value` is only read on mount (use `key` to reset).
@@ -165,7 +185,9 @@ export function RichTextEditor({
     media,
     onChange,
     onPickImage,
+    inline = false,
 }: {
+    inline?: boolean
     value: LexicalDoc | null | undefined
     media: MediaRef[]
     onChange: (doc: LexicalDoc) => void
@@ -181,17 +203,17 @@ export function RichTextEditor({
             <LexicalComposer
                 initialConfig={{
                     namespace: 'clinic-editor',
-                    theme,
+                    theme: inline ? publicTheme : theme,
                     editorState: initial,
                     nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, HorizontalRuleNode, UploadNode],
                     onError: (e) => console.error('[editor]', e),
                 }}
             >
-                <div className="rounded-lg border bg-card">
-                    <Toolbar media={media} onPickImage={onPickImage} />
+                <div className={inline ? undefined : 'rounded-lg border bg-card'}>
+                    <Toolbar media={media} onPickImage={onPickImage} inline={inline} />
                     <div className="relative">
                         <RichTextPlugin
-                            contentEditable={<ContentEditable aria-label="Conteúdo" className="min-h-[24rem] px-5 py-4 text-base leading-relaxed outline-none" />}
+                            contentEditable={<ContentEditable aria-label="Conteúdo" className={inline ? 'min-h-[16rem] outline-none' : 'min-h-[24rem] px-5 py-4 text-base leading-relaxed outline-none'} />}
                             ErrorBoundary={LexicalErrorBoundary}
                         />
                     </div>

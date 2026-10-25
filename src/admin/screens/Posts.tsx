@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -33,18 +31,13 @@ const STATUS: Record<PostRow['status'], string> = {
     archived: 'Arquivado',
 }
 
-export function slugify(s: string) {
-    return s
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 80)
-}
+import { slugify } from '../lib/slugify'
+export { slugify }
+
+// Posts are written on their own page: this opens it in edit mode.
+const editUrl = (slug: string) => `/edit/enter?return=${encodeURIComponent(`/blog/${slug}`)}`
 
 export function Posts() {
-    const router = useRouter()
     const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all')
     const { data, error, loading } = useResource<{ posts: PostRow[] }>(`/posts${filter === 'all' ? '' : `?status=${filter}`}`)
     const [creating, setCreating] = useState(false)
@@ -56,8 +49,8 @@ export function Posts() {
         if (!title.trim()) return
         setBusy(true)
         try {
-            const p = await api<{ id: string }>('/posts', { method: 'POST', json: { title: title.trim(), slug: slugify(title) } })
-            router.push(`/admin/posts/${p.id}`)
+            const p = await api<{ slug: string }>('/posts', { method: 'POST', json: { title: title.trim(), slug: slugify(title) } })
+            window.location.href = editUrl(p.slug)
         } catch (e) {
             toast.error(errorMessage(e))
             setBusy(false)
@@ -98,7 +91,7 @@ export function Posts() {
                             {posts.map((p) => (
                                 <TableRow key={p.id}>
                                     <TableCell>
-                                        <Link href={`/admin/posts/${p.id}`} className="font-medium underline-offset-2 hover:underline">{p.title}</Link>
+                                        <a href={editUrl(p.slug)} className="font-medium underline-offset-2 hover:underline">{p.title}</a>
                                         <p className="text-xs text-muted-foreground">/blog/{p.slug}</p>
                                     </TableCell>
                                     <TableCell className="space-x-1">
