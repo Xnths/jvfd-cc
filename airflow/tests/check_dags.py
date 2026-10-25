@@ -3,6 +3,9 @@ import sys
 
 from airflow.models import DagBag
 
+# The scheduler puts the DAG folder on sys.path; do the same so `import clinic_hook` works here.
+sys.path.insert(0, "/opt/airflow/dags")
+
 bag = DagBag(dag_folder="/opt/airflow/dags", include_examples=False)
 if bag.import_errors:
     for path, err in bag.import_errors.items():
