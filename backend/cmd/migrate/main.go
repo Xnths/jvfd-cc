@@ -4,6 +4,8 @@
 //	migrate keys generate <file>  create an Ed25519 signing key (PKCS#8 PEM, mode 0600)
 //	migrate keys public <file>    print the PKIX public key of a private key file
 //	migrate client create <id>    create a machine client; prints the secret once
+//	migrate payload-import <dir> [--apply]   import a mongoexport directory (dry run unless --apply)
+//	migrate verify-import <dir>              check every exported row exists in Postgres
 package main
 
 import (
@@ -16,6 +18,7 @@ import (
 
 	"github.com/Xnths/jvfd-cc/backend/internal/auth"
 	"github.com/Xnths/jvfd-cc/backend/internal/authn"
+	"github.com/Xnths/jvfd-cc/backend/internal/importer"
 	"github.com/Xnths/jvfd-cc/backend/migrations"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -40,6 +43,8 @@ func run(args []string) error {
 		return keysCmd(args[1:])
 	case "client":
 		return clientCmd(args[1:])
+	case "payload-import", "verify-import":
+		return importCmd(args)
 	}
 	return fmt.Errorf("unknown command %q", args[0])
 }
@@ -124,4 +129,40 @@ func clientCmd(args []string) error {
 	}
 	fmt.Printf("client_id=%s\nclient_secret=%s\n(store the secret now; it cannot be shown again)\n", args[1], secret)
 	return nil
+}
+
+func importCmd(args []string) error {
+	if len(args) < 2 {
+		return fmt.Errorf("usage: migrate %s <export-dir> [--apply]", args[0])
+	}
+	url := os.Getenv("DATABASE_URL")
+	if url == "" {
+		return fmt.Errorf("DATABASE_URL is required")
+	}
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, url)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	if args[0] == "verify-import" {
+		problems, err := importer.Verify(ctx, pool, args[1])
+		if err != nil {
+			return err
+		}
+		for _, p := range problems {
+			fmt.Println("PROBLEM:", p)
+		}
+		if len(problems) > 0 {
+			return fmt.Errorf("%d problem(s)", len(problems))
+		}
+		fmt.Println("verify-import: OK")
+		return nil
+	}
+	apply := len(args) > 2 && args[2] == "--apply"
+	rep, err := importer.Run(ctx, pool, args[1], apply)
+	if rep != nil {
+		fmt.Print(rep)
+	}
+	return err
 }
