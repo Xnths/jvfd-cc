@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { isStaff } from './access'
 
 export const Subscribers: CollectionConfig = {
     slug: 'subscribers',
@@ -14,9 +15,9 @@ export const Subscribers: CollectionConfig = {
     },
     access: {
         create: () => true,
-        read: ({ req: { user } }) => !!user,
-        update: ({ req: { user } }) => !!user,
-        delete: ({ req: { user } }) => !!user,
+        read: isStaff,
+        update: isStaff,
+        delete: isStaff,
     },
     timestamps: true,
     fields: [

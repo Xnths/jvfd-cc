@@ -40,7 +40,7 @@ export function NewPostNotification({
                 <Container style={containerStyle}>
                     {/* Header */}
                     <Section style={headerStyle}>
-                        <Text style={brandStyle}>João Fernandes · CRP-12/16198 · Psicólogo</Text>
+                        <Text style={brandStyle}>João Fernandes · CRP 06/157908 · Psicólogo</Text>
                     </Section>
 
                     {/* Body */}

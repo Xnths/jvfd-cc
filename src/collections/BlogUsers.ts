@@ -17,7 +17,8 @@ export const BlogUsers: CollectionConfig = {
         plural: 'Usuários do Blog',
     },
     access: {
-        create: () => true,
+        // Sign-ups go through /api/auth/register (local API); the REST endpoint stays closed.
+        create: () => false,
         read: ({ req: { user } }) => {
             if (!user) return false
             if ((user as unknown as { collection: string }).collection === 'users') return true

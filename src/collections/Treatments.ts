@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { isStaff } from './access'
 import formatSlug from '../utils/formatSlug'
 import { revalidateTreatmentAfterChange, revalidateTreatmentAfterDelete } from '../hooks/revalidate'
 
@@ -9,6 +10,9 @@ export const Treatments: CollectionConfig = {
     },
     access: {
         read: () => true,
+        create: isStaff,
+        update: isStaff,
+        delete: isStaff,
     },
     hooks: {
         afterChange: [revalidateTreatmentAfterChange],

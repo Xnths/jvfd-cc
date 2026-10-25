@@ -1,9 +1,9 @@
 name: deploy
 
+# Manual only: the Cloudflare Access SSH path is currently broken and production is released by
+# hand on the Raspberry Pi (see CLAUDE.md).
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   deploy:

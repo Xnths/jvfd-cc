@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { isStaff } from './access'
 
 export const Contatos: CollectionConfig = {
     slug: 'contatos',
@@ -18,17 +19,9 @@ export const Contatos: CollectionConfig = {
         // Apenas usuário autenticado (João) pode ler e gerenciar
         // Jonathas (admin técnico) usa uma conta separada mas NÃO possui acesso
         // à collection Contatos por design — apenas o psicólogo acessa dados de pacientes.
-        read: ({ req: { user } }) => {
-            if (!user) return false;
-            // Apenas o psicólogo acessa — bloqueia qualquer user que não seja do grupo clínico
-            return {
-                createdAt: {
-                    exists: true,
-                },
-            };
-        },
-        update: ({ req: { user } }) => !!user,
-        delete: ({ req: { user } }) => !!user,
+        read: isStaff,
+        update: isStaff,
+        delete: isStaff,
     },
     timestamps: true,
     fields: [

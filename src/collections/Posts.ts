@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { isStaff } from './access'
 import formatSlug from '../utils/formatSlug'
 import { sendNewsletterForPost } from '../hooks/sendNewsletterForPost'
 import { revalidatePostAfterChange, revalidatePostAfterDelete } from '../hooks/revalidate'
@@ -10,6 +11,9 @@ export const Posts: CollectionConfig = {
     },
     access: {
         read: () => true,
+        create: isStaff,
+        update: isStaff,
+        delete: isStaff,
     },
     hooks: {
         afterChange: [sendNewsletterForPost, revalidatePostAfterChange],

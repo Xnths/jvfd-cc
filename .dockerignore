@@ -1,2 +1,13 @@
 node_modules
 .next
+.git
+.env
+.env.*
+!.env.example
+media
+backups
+docker-compose/logs_*.txt
+*.tsbuildinfo
+backend
+airflow
+e2e
