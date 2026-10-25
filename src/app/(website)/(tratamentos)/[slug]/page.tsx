@@ -1,11 +1,13 @@
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { ServicePage } from '@/components/ServicePage'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { getTreatmentBySlug, getTreatments } from '@/lib/queries'
+import { buildMetadata } from '@/lib/seo'
+import { breadcrumbNode, graph, therapyNode, webPageNode } from '@/lib/jsonld'
 
-// Force dynamic rendering if necessary, but ISR is better
-export const revalidate = 60
+// ISR: cached until a Payload hook invalidates the "treatments" tag.
+export const revalidate = 86400
 
 type Params = {
     slug: string
@@ -19,15 +21,8 @@ export async function generateStaticParams() {
     }
 
     try {
-        const payload = await getPayload({ config: configPromise })
-        const treatments = await payload.find({
-            collection: 'treatments',
-            limit: 100,
-        })
-
-        return treatments.docs.map((treatment) => ({
-            slug: treatment.slug,
-        }))
+        const treatments = await getTreatments()
+        return treatments.map((treatment) => ({ slug: treatment.slug }))
     } catch (error) {
         console.warn('Could not connect to database during generateStaticParams. Skipping static generation.', error)
         return []
@@ -36,28 +31,18 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
     const { slug } = await params
-    const payload = await getPayload({ config: configPromise })
 
     try {
-        const result = await payload.find({
-            collection: 'treatments',
-            where: {
-                slug: {
-                    equals: slug,
-                },
-            },
-        })
-
-        if (!result.docs[0]) {
+        const treatment = await getTreatmentBySlug(slug)
+        if (!treatment) {
             return {}
         }
 
-        const treatment = result.docs[0]
-
-        return {
-            title: treatment.metaTitle || treatment.title + ' | Psicólogo João Fernandes',
-            description: treatment.metaDescription,
-        }
+        return buildMetadata({
+            ...(treatment.metaTitle ? { absoluteTitle: treatment.metaTitle } : { title: treatment.title }),
+            description: treatment.metaDescription || treatment.subtitle || undefined,
+            path: `/${treatment.slug}`,
+        })
     } catch (error) {
         console.error('Error fetching metadata:', error)
         return {}
@@ -66,34 +51,36 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 export default async function Page({ params }: { params: Promise<Params> }) {
     const { slug } = await params
-    const payload = await getPayload({ config: configPromise })
 
+    let treatment
     try {
-        const result = await payload.find({
-            collection: 'treatments',
-            where: {
-                slug: {
-                    equals: slug,
-                },
-            },
-        })
+        treatment = await getTreatmentBySlug(slug)
+    } catch (error) {
+        console.error('Error rendering page:', error)
+    }
 
-        if (!result.docs[0]) {
-            notFound()
-        }
+    if (!treatment) {
+        notFound()
+    }
 
-        const treatment = result.docs[0]
+    const path = `/${treatment.slug}`
+    const description = treatment.metaDescription || treatment.subtitle
 
-        return (
+    return (
+        <>
+            <JsonLd
+                data={graph(
+                    webPageNode({ path, name: treatment.title, description }),
+                    therapyNode({ path, name: treatment.title, description }),
+                    breadcrumbNode([{ name: treatment.title, path }]),
+                )}
+            />
             <ServicePage
                 slug={slug}
                 title={treatment.title}
                 subtitle={treatment.subtitle || ''}
                 content={treatment.content}
             />
-        )
-    } catch (error) {
-        console.error('Error rendering page:', error)
-        notFound()
-    }
+        </>
+    )
 }

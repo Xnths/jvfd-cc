@@ -33,7 +33,7 @@ export function SobreJoao() {
               O processo terapêutico é construído de forma colaborativa, com foco em identificar padrões de comportamento e ampliar o repertório para lidar com as demandas da vida.
             </p>
             <p className="text-slate-600 leading-relaxed">
-              O consultório em Vila Madelena oferece um espaço reservado e acolhedor, propício ao desenvolvimento pessoal e ao autoconhecimento.
+              O consultório em Vila Madalena oferece um espaço reservado e acolhedor, propício ao desenvolvimento pessoal e ao autoconhecimento.
             </p>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { AccountPage } from "@/components/AccountPage";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Minha conta | Blog João Fernandes",
+    title: "Minha conta",
     robots: { index: false },
 };
 

@@ -1,15 +1,18 @@
 
 import Link from "next/link";
-import { Metadata } from "next";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-    title: "Política de Privacidade | Psicólogo João Fernandes",
+export const metadata: Metadata = buildMetadata({
+    title: "Política de Privacidade",
     description: "Política de Privacidade do site do Psicólogo João Fernandes. Saiba como seus dados são coletados e protegidos.",
-};
+    path: "/politica-de-privacidade",
+    markdown: false,
+});
 
 export default function PrivacyPolicyPage() {
     return (
-        <main className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className="container mx-auto px-4 py-12 max-w-4xl">
             <h1 className="text-3xl font-bold mb-8 text-slate-900">Política de Privacidade</h1>
 
             <div className="prose prose-slate max-w-none text-slate-700">
@@ -154,6 +157,6 @@ export default function PrivacyPolicyPage() {
                     Esta política é efetiva a partir de {new Date().getFullYear()}. Última atualização: março de 2026.
                 </p>
             </div>
-        </main>
+        </div>
     );
 }

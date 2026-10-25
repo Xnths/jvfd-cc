@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateCommentAfterChange, revalidateCommentAfterDelete } from '../hooks/revalidate'
 
 export const Comments: CollectionConfig = {
     slug: 'comments',
@@ -11,6 +12,10 @@ export const Comments: CollectionConfig = {
     labels: {
         singular: 'Comentário',
         plural: 'Comentários',
+    },
+    hooks: {
+        afterChange: [revalidateCommentAfterChange],
+        afterDelete: [revalidateCommentAfterDelete],
     },
     access: {
         // Any authenticated blog-user can create

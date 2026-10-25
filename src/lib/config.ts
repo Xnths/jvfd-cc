@@ -1,32 +1,23 @@
+import { SITE_URL, contact, links } from "@/content/clinic";
+
 export const siteConfig = {
-    name: "João Vitor Fernandes - Psicólogo",
-    description: "Psicólogo Analítico-Comportamental em Vila Madalena, SP. Atendimento baseado em evidências para manejo de contingências e regulação comportamental.",
-    url: "https://psicologojoaofernandes.com",
-    ogImage: "https://psicologojoaofernandes.com/main.jpeg",
+    name: "Psicólogo João Fernandes",
+    description: "Psicólogo analítico-comportamental em Vila Madalena, SP. Psicoterapia baseada em evidências, online para todo o Brasil e presencial em São Paulo.",
+    url: SITE_URL,
+    ogImage: `${SITE_URL}/main.jpeg`,
     links: {
-        instagram: "https://www.instagram.com/ciencia_comportamental_/",
+        instagram: links.instagram,
         whatsapp: "https://wa.me/5511955591996?text=Ol%C3%A1%2C%20gostaria%20de%20agendar%20um%20atendimento",
     },
     contact: {
-        phone: "+5511955591996",
+        phone: contact.phone,
         address: {
-            street: "Rua Harmonia, 1323",
-            locality: "São Paulo",
-            region: "SP",
-            postalCode: "05435-001",
-            country: "BR",
+            street: contact.address.street,
+            locality: contact.address.locality,
+            region: contact.address.region,
+            postalCode: contact.address.postalCode,
+            country: contact.address.country,
         },
-        geo: {
-            latitude: -23.55396,
-            longitude: -46.69175,
-        }
+        geo: contact.geo,
     },
-    keywords: [
-        "Psicólogo Vila Madalena",
-        "Terapia Comportamental",
-        "Análise do Comportamento",
-        "Psicologia Baseada em Evidências",
-        "João Vitor Fernandes",
-        "Psicólogo São Paulo"
-    ]
 }

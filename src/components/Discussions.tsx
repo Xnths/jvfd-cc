@@ -1,20 +1,12 @@
-import { getPayload } from "payload";
-import configPromise from "@payload-config";
+import { getPublishedPosts } from "@/lib/queries";
 import Link from "next/link";
 import { MoveRight } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "./ui/card";
 
 export async function Discussions() {
-    const payload = await getPayload({ config: configPromise });
+    const posts = (await getPublishedPosts().catch(() => [])).slice(0, 3);
 
-    // Fetch 3 most recent posts
-    const posts = await payload.find({
-        collection: "posts",
-        limit: 3,
-        sort: "-publishedDate",
-    });
-
-    if (posts.docs.length === 0) {
+    if (posts.length === 0) {
         return null;
     }
 
@@ -29,7 +21,7 @@ export async function Discussions() {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                    {posts.docs.map((post) => (
+                    {posts.map((post) => (
                         <Card key={post.id} className="border-slate-200 hover:shadow-lg transition-shadow bg-white flex flex-col">
                             <CardHeader>
                                 <div className="text-sm text-slate-500 mb-2">

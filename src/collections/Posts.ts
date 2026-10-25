@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import formatSlug from '../utils/formatSlug'
 import { sendNewsletterForPost } from '../hooks/sendNewsletterForPost'
+import { revalidatePostAfterChange, revalidatePostAfterDelete } from '../hooks/revalidate'
 
 export const Posts: CollectionConfig = {
     slug: 'posts',
@@ -11,7 +12,8 @@ export const Posts: CollectionConfig = {
         read: () => true,
     },
     hooks: {
-        afterChange: [sendNewsletterForPost],
+        afterChange: [sendNewsletterForPost, revalidatePostAfterChange],
+        afterDelete: [revalidatePostAfterDelete],
     },
     fields: [
         {

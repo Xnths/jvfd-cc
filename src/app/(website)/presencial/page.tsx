@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { buildMetadata } from "@/lib/seo";
+import { breadcrumbNode, graph, webPageNode } from "@/lib/jsonld";
 import { HeroPresencial } from "@/components/presencial/HeroPresencial";
 import { SobreJoao } from "@/components/presencial/SobreJoao";
 import { CardsSolucao } from "@/components/presencial/CardsSolucao";
@@ -7,44 +9,23 @@ import { ComoChegar } from "@/components/presencial/ComoChegar";
 import { CTAPresencial } from "@/components/presencial/CTAPresencial";
 import { Footer } from "@/components/Footer";
 
-export const metadata: Metadata = {
-  title: "Psicólogo Presencial em Vila Madelena | João Fernandes",
-  description:
-    "Atendimento psicológico presencial em Sumarezinho, Vila Madelena. Foco em equilíbrio emocional, autoconhecimento e desenvolvimento pessoal.",
-  alternates: {
-    canonical: "https://psicologojoaofernandes.com/presencial",
-  },
-};
+const description =
+  "Atendimento psicológico presencial no Sumarezinho, Vila Madalena (SP), a 4 min do metrô Vila Madalena. Psicoterapia em Análise do Comportamento com João Fernandes, CRP 06/157908.";
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  name: "João Fernandes Psicólogo",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "Rua Harmonia, 1323",
-    addressLocality: "São Paulo",
-    addressRegion: "SP",
-    postalCode: "05435-001",
-    addressCountry: "BR",
-  },
-  geo: {
-    "@type": "GeoCoordinates",
-    latitude: -23.55396,
-    longitude: -46.69175,
-  },
-  url: "https://psicologojoaofernandes.com/presencial",
-  telephone: "+5511955591996",
-};
+export const metadata: Metadata = buildMetadata({
+  absoluteTitle: "Psicólogo Presencial na Vila Madalena, SP | João Fernandes",
+  description,
+  path: "/presencial",
+});
 
 export default function PresencialPage() {
   return (
     <div className="min-h-screen">
-      <Script
-        id="json-ld-presencial"
-        type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <JsonLd
+        data={graph(
+          webPageNode({ path: "/presencial", name: "Psicólogo presencial na Vila Madalena", description }),
+          breadcrumbNode([{ name: "Atendimento presencial", path: "/presencial" }]),
+        )}
       />
       <HeroPresencial />
       <SobreJoao />

@@ -66,7 +66,7 @@ export function HeroPresencial() {
           <Image
             fill
             src="/consultorio.jpg"
-            alt="Consultório do psicólogo João Fernandes em Vila Madelena"
+            alt="Consultório do psicólogo João Fernandes em Vila Madalena"
             className="w-full h-full object-cover"
             sizes="100vw"
             priority
@@ -77,10 +77,10 @@ export function HeroPresencial() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-3xl">
             <span className="text-red-400 font-semibold tracking-widest uppercase text-sm mb-4 block">
-              Atendimento Presencial — Vila Madelena
+              Atendimento Presencial — Vila Madalena
             </span>
             <h1 className="text-white mb-6 text-4xl md:text-6xl font-bold leading-tight">
-              Atendimento Psicológico Presencial em Vila Madelena
+              Atendimento Psicológico Presencial em Vila Madalena
             </h1>
             <p className="text-slate-200 mb-10 text-lg md:text-xl leading-relaxed max-w-2xl">
               Espaço dedicado ao equilíbrio emocional e autoconhecimento

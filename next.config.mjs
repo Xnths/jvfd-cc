@@ -6,6 +6,12 @@ const nextConfig = {
     productionBrowserSourceMaps: true,
     images: {
         formats: ['image/avif', 'image/webp'],
+        // Optimized images rarely change; cache them for 30 days.
+        minimumCacheTTL: 60 * 60 * 24 * 30,
+    },
+    // OG cards read fonts and the portrait from disk at request time.
+    outputFileTracingIncludes: {
+        '/**/opengraph-image*': ['./src/assets/fonts/**/*', './public/jv.jpeg'],
     },
     async rewrites() {
         return [
@@ -116,7 +122,16 @@ const nextConfig = {
             `.replace(/\s{2,}/g, ' ').trim(),
         }
 
+        const staticAssetCache = {
+            key: 'Cache-Control',
+            value: 'public, max-age=604800, stale-while-revalidate=86400',
+        }
+
         return [
+            {
+                source: '/:file(.*\\.(?:jpg|jpeg|png|webp|avif|svg|ico|woff2))',
+                headers: [staticAssetCache],
+            },
             {
                 source: '/admin/:path*',
                 headers: [...commonHeaders, adminCSP],

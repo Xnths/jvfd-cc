@@ -1,3 +1,4 @@
+import { contact } from "@/content/clinic";
 import { FaSubway, FaBus, FaCar, FaWheelchair } from "react-icons/fa";
 
 const transitItems = [
@@ -57,7 +58,7 @@ export function ComoChegar() {
               </svg>
               <address className="not-italic text-slate-700 leading-relaxed">
                 <span className="font-semibold text-slate-900 block">Rua Harmonia, 1323</span>
-                Sumarezinho — Vila Madelena
+                Sumarezinho — Vila Madalena
                 <br />
                 São Paulo, SP — CEP 05435-001
               </address>
@@ -80,14 +81,14 @@ export function ComoChegar() {
           <div className="rounded-xl overflow-hidden shadow-md border border-slate-200">
             {/* Replace with the real iframe from Google Maps → Compartilhar → Incorporar um mapa */}
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.123456789!2d-46.69175!3d-23.55396!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce579b591f3b33%3A0x1234567890abcdef!2sRua%20Harmonia%2C%201323%20-%20Vila%20Madalena%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2005435-001!5e0!3m2!1spt-BR!2sbr!4v1234567890"
+              src={contact.mapEmbedUrl}
               width="100%"
               height="400"
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Localização do consultório em Vila Madelena"
+              title="Localização do consultório em Vila Madalena"
             />
           </div>
         </div>

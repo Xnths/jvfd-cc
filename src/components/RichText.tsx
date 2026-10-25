@@ -17,13 +17,14 @@ export const RichText: React.FC<{ content: any }> = ({ content }) => {
         return null
     }
 
-    const renderChildren = (node: any) => {
+    const renderChildren = (node: any, index: number = 0) => {
+        const key = index
         if (node.text !== undefined) {
             if (!node.text) return null
-            let text: React.ReactNode = <span key={Math.random()}>{node.text}</span>
-            if (node.format & 1) text = <strong key={Math.random()}>{text}</strong>
-            if (node.format & 2) text = <em key={Math.random()}>{text}</em>
-            if (node.format & 8) text = <u key={Math.random()}>{text}</u>
+            let text: React.ReactNode = <span key={key}>{node.text}</span>
+            if (node.format & 1) text = <strong key={key}>{text}</strong>
+            if (node.format & 2) text = <em key={key}>{text}</em>
+            if (node.format & 8) text = <u key={key}>{text}</u>
             return text
         }
 
@@ -32,7 +33,7 @@ export const RichText: React.FC<{ content: any }> = ({ content }) => {
             if (!media || typeof media !== 'object' || !media.url) return null
             const { url, alt, width, height } = media
             return (
-                <figure key={Math.random()} className="my-8">
+                <figure key={key} className="my-8">
                     <Image
                         src={url}
                         alt={alt ?? ''}
@@ -50,19 +51,43 @@ export const RichText: React.FC<{ content: any }> = ({ content }) => {
             )
         }
 
+        if (node.type === 'linebreak') return <br key={key} />
+        if (node.type === 'horizontalrule') return <hr key={key} className="my-8 border-slate-200" />
+
         if (!node.children) return null
 
         switch (node.type) {
+            case 'link':
+            case 'autolink': {
+                const url: string = node.fields?.url ?? node.url ?? '#'
+                const external = /^https?:\/\//.test(url) && !url.includes('psicologojoaofernandes.com')
+                return (
+                    <a
+                        key={key}
+                        href={url}
+                        className="text-green-700 underline underline-offset-2 hover:text-green-800"
+                        {...(external || node.fields?.newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    >
+                        {node.children.map(renderChildren)}
+                    </a>
+                )
+            }
+            case 'quote':
+                return (
+                    <blockquote key={key} className="my-6 border-l-4 border-green-700/40 pl-5 italic text-slate-600">
+                        {node.children.map(renderChildren)}
+                    </blockquote>
+                )
             case 'paragraph':
                 return (
-                    <p key={Math.random()} className="mb-5 leading-[1.75] text-slate-700">
+                    <p key={key} className="mb-5 leading-[1.75] text-slate-700">
                         {node.children.map(renderChildren)}
                     </p>
                 )
             case 'heading': {
                 const Tag = node.tag as keyof React.JSX.IntrinsicElements
                 const cls = HEADING_CLASSES[node.tag] ?? 'font-bold text-slate-900 mt-8 mb-3'
-                return <Tag key={Math.random()} className={cls}>{node.children.map(renderChildren)}</Tag>
+                return <Tag key={key} className={cls}>{node.children.map(renderChildren)}</Tag>
             }
             case 'list': {
                 // pl-7 gives a proper hanging indent (~1.75rem); space-y-1.5 keeps items
@@ -71,7 +96,7 @@ export const RichText: React.FC<{ content: any }> = ({ content }) => {
                 const markerClass = node.listType === 'number' ? 'list-decimal' : 'list-disc'
                 return (
                     <ListTag
-                        key={Math.random()}
+                        key={key}
                         className={`${markerClass} pl-7 my-5 space-y-1.5 marker:text-red-600`}
                     >
                         {node.children.map(renderChildren)}
@@ -80,12 +105,12 @@ export const RichText: React.FC<{ content: any }> = ({ content }) => {
             }
             case 'listitem':
                 return (
-                    <li key={Math.random()} className="leading-[1.7] text-slate-700 pl-1">
+                    <li key={key} className="leading-[1.7] text-slate-700 pl-1">
                         {node.children.map(renderChildren)}
                     </li>
                 )
             default:
-                return <div key={Math.random()}>{node.children.map(renderChildren)}</div>
+                return <div key={key}>{node.children.map(renderChildren)}</div>
         }
     }
 

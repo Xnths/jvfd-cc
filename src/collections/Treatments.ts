@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import formatSlug from '../utils/formatSlug'
+import { revalidateTreatmentAfterChange, revalidateTreatmentAfterDelete } from '../hooks/revalidate'
 
 export const Treatments: CollectionConfig = {
     slug: 'treatments',
@@ -8,6 +9,10 @@ export const Treatments: CollectionConfig = {
     },
     access: {
         read: () => true,
+    },
+    hooks: {
+        afterChange: [revalidateTreatmentAfterChange],
+        afterDelete: [revalidateTreatmentAfterDelete],
     },
     fields: [
         {

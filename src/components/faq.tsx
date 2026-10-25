@@ -1,31 +1,4 @@
-"use client";
-
-const faq = [
-    {
-        id: "item-2",
-        question: "O atendimento é presencial ou online?",
-        answer:
-            "Como você preferir. O atendimento online acontece por videochamada segura, ideal para quem precisa de flexibilidade ou está longe. O presencial ocorre no consultório na Vila Madalena, SP. Ambos têm a mesma qualidade e eficácia.",
-    },
-    {
-        id: "item-1",
-        question: "Como funciona a primeira sessão?",
-        answer:
-            "É um momento para nos conhecermos, sem pressão. Você poderá me contar o que o trouxe à terapia, suas dúvidas e expectativas. Eu explicarei como trabalho e juntos definiremos os próximos passos.",
-    },
-    {
-        id: "item-3",
-        question: "Qual a duração da terapia?",
-        answer:
-            "Cada processo é único. As sessões duram cerca de 50 minutos e geralmente são semanais. A duração total do acompanhamento varia conforme seus objetivos e necessidades, tudo alinhado com transparência entre nós.",
-    },
-    {
-        id: "item-4",
-        question: "Aceita convênios?",
-        answer:
-            "O atendimento é particular, mas forneço recibos para reembolso no seu plano de saúde.",
-    },
-];
+import { faq } from "@/content/clinic";
 
 export function FAQ() {
 

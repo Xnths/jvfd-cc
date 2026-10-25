@@ -1,6 +1,5 @@
+import type { Metadata } from "next";
 import { Hero } from "@/components/Hero";
-
-export const dynamic = "force-dynamic";
 import { Services } from "@/components/Services";
 import { Excellence } from "@/components/Excellence";
 import { About } from "@/components/About";
@@ -12,6 +11,23 @@ import { FAQ } from "@/components/faq";
 import { Discussions } from "@/components/Discussions";
 import { SoftCta } from "@/components/SoftCta";
 import { NewsletterForm } from "@/components/NewsletterForm";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { buildMetadata } from "@/lib/seo";
+import { faqNode, graph, webPageNode } from "@/lib/jsonld";
+
+// Rendered per request (it reads ?lgbt=true), but all CMS reads go through
+// the cached query layer, so no request hits the database directly.
+export const dynamic = "force-dynamic";
+
+const description =
+    "Psicólogo particular, LGBT+ e especialista em Análise do Comportamento (PUCSP). Psicoterapia online para todo o Brasil ou presencial na Vila Madalena, SP. Agende sua sessão.";
+
+// The ?lgbt=true campaign variant canonicalizes to "/" like every other visit.
+export const metadata: Metadata = buildMetadata({
+    absoluteTitle: "Psicólogo João Fernandes | Terapia Comportamental Online e Presencial",
+    description,
+    path: "/",
+});
 
 export default async function Home({
     searchParams,
@@ -23,6 +39,12 @@ export default async function Home({
 
     return (
         <div className="min-h-screen">
+            <JsonLd
+                data={graph(
+                    webPageNode({ path: "/", name: "Psicólogo João Fernandes", description }),
+                    faqNode(),
+                )}
+            />
             <Hero showLgbt={showLgbt} />
             <SoftCta />
             <Discussions />

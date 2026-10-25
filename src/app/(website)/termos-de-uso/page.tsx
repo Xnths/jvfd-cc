@@ -1,15 +1,18 @@
 
 import Link from "next/link";
-import { Metadata } from "next";
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-    title: "Termos de Uso | Psicólogo João Fernandes",
+export const metadata: Metadata = buildMetadata({
+    title: "Termos de Uso",
     description: "Termos de Uso do site do Psicólogo João Fernandes. Informações sobre o caráter informativo do conteúdo.",
-};
+    path: "/termos-de-uso",
+    markdown: false,
+});
 
 export default function TermsOfUsePage() {
     return (
-        <main className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className="container mx-auto px-4 py-12 max-w-4xl">
             <h1 className="text-3xl font-bold mb-8 text-slate-900">Termos de Uso</h1>
 
             <div className="prose prose-slate max-w-none text-slate-700">
@@ -80,6 +83,6 @@ export default function TermsOfUsePage() {
                     Estes termos são efetivos a partir de {new Date().getFullYear()}. Última atualização: março de 2026.
                 </p>
             </div>
-        </main>
+        </div>
     );
 }

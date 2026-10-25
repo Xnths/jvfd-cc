@@ -79,7 +79,7 @@ export function CTAPresencial() {
           <div className="mt-8 border-t border-slate-700 pt-8 text-slate-400 text-sm space-y-1">
             <p className="font-semibold text-slate-300">Horários de atendimento</p>
             <p>Segunda a sexta: 8h às 21h</p>
-            <p className="mt-3 text-slate-500">Atendimento presencial em Vila Madelena, São Paulo</p>
+            <p className="mt-3 text-slate-500">Atendimento presencial em Vila Madalena, São Paulo</p>
           </div>
         </div>
       </div>

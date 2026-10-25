@@ -1,42 +1,13 @@
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { getPayload } from "payload";
-import configPromise from "@payload-config";
+import { getApprovedComments } from "@/lib/queries";
 
 interface CommentListProps {
     postId: string;
 }
 
 export async function CommentList({ postId }: CommentListProps) {
-    let comments: { id: string; body: string; createdAt: string; authorName: string }[] = [];
-
-    try {
-        const payload = await getPayload({ config: configPromise });
-        const { docs } = await payload.find({
-            collection: "comments",
-            where: {
-                and: [
-                    { post: { equals: postId } },
-                    { status: { equals: "approved" } },
-                ],
-            },
-            sort: "createdAt",
-            limit: 100,
-            depth: 1,
-        });
-
-        comments = docs.map((c) => ({
-            id: c.id as string,
-            body: c.body as string,
-            createdAt: c.createdAt as string,
-            authorName:
-                typeof c.author === "object" && c.author
-                    ? ((c.author as { name?: string }).name ?? "Anônimo")
-                    : "Anônimo",
-        }));
-    } catch {
-        // Silently fail — show empty state
-    }
+    const comments = await getApprovedComments(postId).catch(() => []);
 
     if (comments.length === 0) {
         return (

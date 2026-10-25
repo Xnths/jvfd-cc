@@ -207,7 +207,7 @@ function CalmingLayout({
   config,
 }: LayoutProps) {
   return (
-    <main className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
       <NavBar />
 
       {/* Hero — spacious, airy, validating */}
@@ -274,7 +274,7 @@ function CalmingLayout({
 
       <Contact />
       <Footer />
-    </main>
+    </div>
   );
 }
 
@@ -292,7 +292,7 @@ function StructuredLayout({
   config,
 }: LayoutProps) {
   return (
-    <main className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
       <NavBar />
 
       {/* Hero — stark, left-aligned, no-nonsense */}
@@ -356,7 +356,7 @@ function StructuredLayout({
 
       <Contact />
       <Footer />
-    </main>
+    </div>
   );
 }
 
@@ -375,7 +375,7 @@ function PlantaoLayout({
   config,
 }: LayoutProps) {
   return (
-    <main className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
       <NavBar />
 
       {/* Full-viewport hero — CTA visible without scrolling */}
@@ -430,7 +430,7 @@ function PlantaoLayout({
       )}
 
       <Footer />
-    </main>
+    </div>
   );
 }
 
@@ -448,7 +448,7 @@ function ExploratoryLayout({
   config,
 }: LayoutProps) {
   return (
-    <main className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
       <NavBar />
 
       {/* Hero — gradient, reflective, meditative */}
@@ -506,7 +506,7 @@ function ExploratoryLayout({
 
       <Contact />
       <Footer />
-    </main>
+    </div>
   );
 }
 
@@ -524,7 +524,7 @@ function SupervisaoLayout({
   config,
 }: LayoutProps) {
   return (
-    <main className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
       <NavBar dark />
 
       {/* Hero — dark, authoritative */}
@@ -601,7 +601,7 @@ function SupervisaoLayout({
 
       <Contact />
       <Footer />
-    </main>
+    </div>
   );
 }
 
@@ -633,7 +633,7 @@ function AffirmativeLayout({
   config,
 }: LayoutProps) {
   return (
-    <main className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
       <NavBar />
 
       {/* Rainbow accent below the nav */}
@@ -734,7 +734,7 @@ function AffirmativeLayout({
 
       <Contact />
       <Footer />
-    </main>
+    </div>
   );
 }
 
@@ -748,7 +748,7 @@ function GenericLayout({
   onCTAClick,
 }: Omit<LayoutProps, "config">) {
   return (
-    <main className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
       <NavBar />
       <section className="pt-32 pb-20 px-4 bg-slate-900 text-white">
         <div className="container mx-auto max-w-4xl text-center md:text-left">
@@ -777,7 +777,7 @@ function GenericLayout({
       </div>
       <Contact />
       <Footer />
-    </main>
+    </div>
   );
 }
 

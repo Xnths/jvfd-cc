@@ -1,21 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { sendGAEvent } from "@next/third-parties/google";
 
 interface CommentFormProps {
     postId: string;
-    user: { id: string; name: string } | null;
 }
+
+type SessionUser = { id: string; name: string } | null;
 
 type FormState = "idle" | "submitting" | "success" | "error";
 
-export function CommentForm({ postId, user }: CommentFormProps) {
+export function CommentForm({ postId }: CommentFormProps) {
     const [body, setBody] = useState("");
     const [state, setState] = useState<FormState>("idle");
     const [errorMsg, setErrorMsg] = useState("");
+    // The post page is statically cached for everyone, so the session is
+    // resolved here in the browser rather than during server render.
+    const [user, setUser] = useState<SessionUser | undefined>(undefined);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch("/api/auth/me", { credentials: "same-origin" })
+            .then((res) => res.json())
+            .then((data) => {
+                if (!cancelled) setUser(data.user ? { id: data.user.id, name: data.user.name } : null);
+            })
+            .catch(() => {
+                if (!cancelled) setUser(null);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    if (user === undefined) {
+        return <div className="h-24 rounded-xl bg-slate-50 animate-pulse" aria-hidden="true" />;
+    }
 
     if (!user) {
         return (

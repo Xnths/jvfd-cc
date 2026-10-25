@@ -1,37 +1,17 @@
 import { ImageResponse } from 'next/og'
+import { BrandMark } from '@/components/brand/BrandMark'
+import { brand } from '@/lib/brand'
 
-// Image metadata
-export const size = {
-    width: 32,
-    height: 32,
-}
+export const size = { width: 32, height: 32 }
 export const contentType = 'image/png'
 
-// Image generation
 export default function Icon() {
     return new ImageResponse(
         (
-            // ImageResponse JSX element
-            <div
-                style={{
-                    fontSize: 20,
-                    background: '#be185d', // New brand red (pink-700 equivalent)
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    borderRadius: '100%', // Circular
-                    fontWeight: 700,
-                }}
-            >
-                JF
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: brand.colors.paper, borderRadius: 8 }}>
+                <BrandMark size={28} color={brand.colors.forest} accent={brand.colors.clay} />
             </div>
         ),
-        // ImageResponse options
-        {
-            ...size,
-        }
+        { ...size },
     )
 }

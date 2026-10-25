@@ -8,9 +8,9 @@ export default function BlogLayout({
     return (
         <div className="flex flex-col min-h-svh">
             <Header />
-            <main className="flex-grow">
+            <div className="flex-grow">
                 {children}
-            </main>
+            </div>
         </div>
     );
 }

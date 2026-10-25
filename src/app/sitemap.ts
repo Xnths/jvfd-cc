@@ -1,32 +1,37 @@
-import { MetadataRoute } from 'next'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
+import type { MetadataRoute } from 'next'
+import { SITE_URL } from '@/content/clinic'
+import { tutoring } from '@/content/tutoring'
+import { getMedia, getPublishedPosts, getTreatments } from '@/lib/queries'
 
+// Per request, but backed by the tag-invalidated query cache (no DB hit).
 export const dynamic = 'force-dynamic'
 
+// Bump when the hand-written pages (home sections, presencial, aulas,
+// policies) change meaningfully.
+const STATIC_CONTENT_UPDATED = new Date('2026-10-24')
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const payload = await getPayload({ config: configPromise })
-    const siteUrl = 'https://psicologojoaofernandes.com'
+    const [posts, treatments] = await Promise.all([
+        getPublishedPosts().catch(() => []),
+        getTreatments().catch(() => []),
+    ])
 
-    const posts = await payload.find({
-        collection: 'posts',
-        limit: 1000,
+    const latest = (dates: string[]) =>
+        dates.reduce((max, d) => (new Date(d) > max ? new Date(d) : max), STATIC_CONTENT_UPDATED)
+
+    const blogEntries: MetadataRoute.Sitemap = posts.map((post) => {
+        const image = getMedia(post.image)
+        return {
+            url: `${SITE_URL}/blog/${post.slug}`,
+            lastModified: new Date(post.updatedAt),
+            changeFrequency: 'monthly',
+            priority: 0.7,
+            ...(image?.url ? { images: [new URL(image.url, SITE_URL).toString()] } : {}),
+        }
     })
 
-    const blogEntries: MetadataRoute.Sitemap = posts.docs.map((post) => ({
-        url: `${siteUrl}/blog/${post.slug}`,
-        lastModified: new Date(post.updatedAt),
-        changeFrequency: 'weekly',
-        priority: 0.8,
-    }))
-
-    const treatments = await payload.find({
-        collection: 'treatments',
-        limit: 100,
-    })
-
-    const treatmentEntries: MetadataRoute.Sitemap = treatments.docs.map((treatment) => ({
-        url: `${siteUrl}/${treatment.slug}`,
+    const treatmentEntries: MetadataRoute.Sitemap = treatments.map((treatment) => ({
+        url: `${SITE_URL}/${treatment.slug}`,
         lastModified: new Date(treatment.updatedAt),
         changeFrequency: 'monthly',
         priority: 0.9,
@@ -34,22 +39,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const staticEntries: MetadataRoute.Sitemap = [
         {
-            url: siteUrl,
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
+            url: SITE_URL,
+            lastModified: latest(posts.slice(0, 3).map((p) => p.updatedAt)),
+            changeFrequency: 'weekly',
             priority: 1,
+            images: [`${SITE_URL}/jv.jpeg`, `${SITE_URL}/consultorio.jpg`],
         },
         {
-            url: `${siteUrl}/politica-de-privacidade`,
-            lastModified: new Date(),
-            changeFrequency: 'yearly',
-            priority: 0.5,
+            url: `${SITE_URL}/presencial`,
+            lastModified: STATIC_CONTENT_UPDATED,
+            changeFrequency: 'monthly',
+            priority: 0.9,
         },
         {
-            url: `${siteUrl}/termos-de-uso`,
-            lastModified: new Date(),
+            url: `${SITE_URL}${tutoring.path}`,
+            lastModified: STATIC_CONTENT_UPDATED,
+            changeFrequency: 'monthly',
+            priority: 0.8,
+        },
+        {
+            url: `${SITE_URL}/blog`,
+            lastModified: latest(posts.map((p) => p.updatedAt)),
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        },
+        {
+            url: `${SITE_URL}/politica-de-privacidade`,
+            lastModified: STATIC_CONTENT_UPDATED,
             changeFrequency: 'yearly',
-            priority: 0.5,
+            priority: 0.2,
+        },
+        {
+            url: `${SITE_URL}/termos-de-uso`,
+            lastModified: STATIC_CONTENT_UPDATED,
+            changeFrequency: 'yearly',
+            priority: 0.2,
         },
     ]
 
