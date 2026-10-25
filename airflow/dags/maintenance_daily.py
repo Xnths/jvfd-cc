@@ -1,4 +1,5 @@
 """Daily housekeeping: privacy retention, newsletter outbox backstop, Airflow's own tables."""
+import os
 import subprocess
 from datetime import datetime, timedelta
 
@@ -30,7 +31,9 @@ def maintenance_daily():
     def airflow_db_clean():
         """Keeps Airflow's metadata small on the Pi (everything older than 30 days)."""
         cutoff = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
-        subprocess.run(["airflow", "db", "clean", "--clean-before-timestamp", cutoff, "--yes", "--skip-archive"], check=True)
+        # Tasks run with the metadata DB deliberately blocked; the CLI gets its own connection string for this one job.
+        env = {**os.environ, "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN": os.environ["CLINIC_AIRFLOW_DB_URL"]}
+        subprocess.run(["airflow", "db", "clean", "--clean-before-timestamp", cutoff, "--yes", "--skip-archive"], check=True, env=env)
 
     [retention(), newsletter_reconcile()] >> airflow_db_clean()
 

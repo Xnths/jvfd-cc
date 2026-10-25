@@ -14,6 +14,8 @@ RUN apt-get update \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --chmod=0755 entrypoint-clinic.sh /entrypoint-clinic.sh
+# The backups volume is created from this directory, so it starts writable by the airflow user.
+RUN mkdir -p /backups && chown airflow:root /backups
 USER airflow
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "/entrypoint-clinic.sh"]
 CMD ["--help"]
