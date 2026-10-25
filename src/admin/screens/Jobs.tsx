@@ -20,6 +20,7 @@ const DESCRIPTION: Record<string, string> = {
     'trends.radar': 'Monta a fila de pautas (datas de conscientização e buscas em alta).',
     'research.fetch': 'Busca artigos científicos novos (PubMed, SciELO).',
     'research.digest': 'Cria um rascunho de post com a pesquisa da semana.',
+    'topics.backfill_references': 'Preenche as Referências dos rascunhos gerados a partir de uma pauta que ficaram sem elas (usa as fontes da pesquisa). Não mexe em post publicado nem em rascunho que já tem referências.',
 }
 const VARIANT = { ok: 'default', failed: 'destructive', running: 'secondary' } as const
 

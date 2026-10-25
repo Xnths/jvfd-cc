@@ -21,7 +21,7 @@ BASE TEÓRICA
 - Trate o comportamento como aprendido e mantido pelo ambiente, nunca como defeito de caráter ou falta de força de vontade.
 
 FONTES
-- Use só as fontes numeradas fornecidas. Marque [n] logo depois da afirmação que vem delas. Não invente estudos, números, autores nem instituições. Prefira "os estudos sugerem", "os autores observaram". Quando a evidência for fraca ou limitada, diga isso.
+- Use só as fontes numeradas fornecidas. Marque [n] logo depois da afirmação que vem delas. Não invente estudos, números, autores nem instituições. Prefira "os estudos sugerem", "os autores observaram". Quando a evidência for fraca ou limitada, diga isso. Toda afirmação vinda de estudo ou instituição leva o [n] da sua fonte; afirmações que são experiência clínica ficam sem número.
 
 FECHAMENTO
 - Uma frase de efeito que reformula o problema ("Você não precisa de mais culpa, você precisa de estratégias que funcionem no mundo real."), um convite sem pressão ("Se você se identificou com algo daqui, a psicoterapia pode ajudar a entender o que mantém esse padrão.") e "Até o próximo post :)".

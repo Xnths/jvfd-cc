@@ -37,6 +37,9 @@ func init() {
 		}
 		return research.Fetch(ctx, s.Pool, research.NewFetcher(email, os.Getenv("NCBI_API_KEY")))
 	}
+	jobs["topics.backfill_references"] = func(ctx context.Context, s *Server) (map[string]any, error) {
+		return research.BackfillReferences(ctx, s.Pool)
+	}
 	jobs["research.digest"] = func(ctx context.Context, s *Server) (map[string]any, error) {
 		return research.Digest(ctx, s.Pool, time.Now(), summarizerFromEnv(s))
 	}

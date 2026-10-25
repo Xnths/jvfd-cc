@@ -195,7 +195,10 @@ TAREFA: planejar o post (ainda não escreva o texto). Responda um objeto JSON co
 
 TAREFA: escrever o post completo, entre 700 e 1100 palavras, seguindo a ideia aprovada abaixo. Não inclua o bloco de contato.
 Responda um objeto JSON com: "title", "excerpt" (1 ou 2 frases, até 200 caracteres), "meta_description" (até 155 caracteres), "keywords" (5 a 8 palavras-chave separadas por vírgula) e
-"blocks": uma lista, na ordem do texto, de objetos {"type": "h2" | "p" | "ul", "text": "...", "items": [...]}. Use "text" para h2 e p, e "items" para ul. Use **negrito** só em termos-chave. Marque as fontes como [n].`,
+"blocks": uma lista, na ordem do texto, de objetos {"type": "h2" | "p" | "ul", "text": "...", "items": [...]}. Use "text" para h2 e p, e "items" para ul. Use **negrito** só em termos-chave. Marque as fontes como [n]:
+- todo parágrafo que afirme algo vindo de um estudo ou de uma instituição termina com o [n] da fonte; use pelo menos 3 fontes diferentes quando elas tratarem do tema;
+- não cite fonte que não trate do tema do post; se nenhuma fonte sustenta uma frase, escreva-a como experiência clínica, sem número;
+- nunca invente um número que não esteja na lista de fontes.`,
 		pauta+"\n\nIdeia aprovada:\n"+string(oj)+"\n\nFontes:\n"+numbered, 3500, &fd); err != nil {
 		return err
 	}
@@ -207,21 +210,15 @@ Responda um objeto JSON com: "title", "excerpt" (1 ou 2 frases, até 200 caracte
 	plain := plainOf(fd)
 	flags := copylint.Check(plain)
 
-	cits := make([]map[string]any, 0, len(used))
-	refs := []node{heading("h2", "Referências")}
-	for i, s := range used {
-		cits = append(cits, map[string]any{"n": i + 1, "title": s.Title, "authors": s.Authors, "journal": s.Journal, "year": s.Year, "url": s.URL})
-		line := strings.Trim(strings.Join(nonEmpty(s.Authors, s.Title, s.Journal, s.Year), ". "), ". ")
-		refs = append(refs, paragraph(text(fmt.Sprintf("[%d] %s. ", i+1, line), false), link(s.URL, s.URL)))
-	}
+	rest := uncited(sources, used)
 	all := []node{paragraph(text("Rascunho gerado por IA a partir das fontes abaixo. Confira cada afirmação e cada fonte, reescreva o que não soar como você e apague este aviso antes de publicar.", true))}
 	all = append(all, blocks...)
 	if len(ol.Cautions) > 0 {
 		all = append(all, heading("h2", "Para auditar"), list(ol.Cautions, false))
 	}
-	all = append(all, refs...)
+	all = append(all, referenceNodes(used, rest)...)
 
-	cj, _ := json.Marshal(cits)
+	cj := citationsJSON(used, rest)
 	slug := slugify(string(fd.Title))
 	var postID string
 	for i := 0; i < 20; i++ {

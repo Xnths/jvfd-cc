@@ -30,7 +30,7 @@ func fakeServices(t *testing.T) (ai *research.OpenAI, f *research.Fetcher) {
 		case strings.Contains(string(body), "planejar o post"):
 			_, _ = w.Write([]byte(chat(`{"angle":"Ansiedade não é fraqueza","title_options":["A","B","C"],"hook":"Você já travou?","sections":[{"heading":"O que acontece","points":["p"],"sources":[1]}],"example_scenario":"x","closing_line":"y","cautions":["Conferir a meta-análise [1]"]}`)))
 		case strings.Contains(string(body), "escrever o post completo"):
-			_, _ = w.Write([]byte(chat(`{"title":"Ansiedade antes das provas?","excerpt":"Um texto.","meta_description":"Meta.","keywords":"ansiedade, provas","blocks":[{"type":"p","text":"Você já travou? Os estudos sugerem algo [3]."},{"type":"h2","text":"O que acontece?"},{"type":"p","text":"A ativação comportamental ajuda [1] e a OMS descreve [9]."},{"type":"ul","items":["um","dois [2]"]}]}`)))
+			_, _ = w.Write([]byte(chat(`{"title":"Ansiedade antes das provas?","excerpt":"Um texto.","meta_description":"Meta.","keywords":"ansiedade, provas","blocks":[{"type":"p","text":"Você já travou? Os estudos sugerem algo [3]."},{"type":"h2","text":"O que acontece?"},{"type":"p","text":"A ativação comportamental ajuda [1] e a OMS descreve [9]."},{"type":"ul","items":["um","dois"]}]}`)))
 		default:
 			w.WriteHeader(500)
 		}
@@ -99,6 +99,11 @@ func TestDraftTopicPipeline(t *testing.T) {
 	}
 	if !strings.Contains(citations, "10.1000/exam") || strings.Contains(citations, "utm_source") {
 		t.Fatalf("citations: %s", citations)
+	}
+	// every researched source reaches the post: the paper the text never cites is listed under "Outras fontes"
+	if !strings.Contains(content, "Outras fontes encontradas") || !strings.Contains(content, "Ansiedade em estudantes") ||
+		!strings.Contains(compact(citations), `"cited":false`) || !strings.Contains(compact(citations), `"cited":true`) {
+		t.Fatalf("uncited source missing from the post: %s\n%s", content, citations)
 	}
 	var usage int
 	_ = e.srv.Pool.QueryRow(ctx, `SELECT count(*) FROM llm_usage WHERE job = 'topic.digest'`).Scan(&usage)
@@ -204,3 +209,56 @@ func TestDraftTopicNoCredit(t *testing.T) {
 		t.Fatalf("retry after failure: %v", err)
 	}
 }
+
+func TestBackfillReferences(t *testing.T) {
+	e := newTestEnv(t)
+	ctx := context.Background()
+	srcs := `[{"n":1,"kind":"pubmed","title":"Exam anxiety","authors":"Silva Ana","journal":"J Anxiety","year":"2024","url":"https://doi.org/10.1000/exam"},{"n":2,"kind":"web","title":"OMS","url":"https://www.who.int/x"}]`
+	emptyRefs := `{"root":{"type":"root","version":1,"format":"","indent":0,"direction":null,"children":[{"type":"paragraph","version":1,"format":"","indent":0,"direction":null,"children":[{"type":"text","version":1,"text":"Corpo.","format":0,"mode":"normal","style":"","detail":0}]},{"type":"heading","tag":"h2","version":1,"format":"","indent":0,"direction":null,"children":[{"type":"text","version":1,"text":"Referências","format":0,"mode":"normal","style":"","detail":0}]}]}}`
+	withRefs := strings.Replace(emptyRefs, `]}}`, `,{"type":"paragraph","version":1,"format":"","indent":0,"direction":null,"children":[{"type":"text","version":1,"text":"[1] Escrita pelo João.","format":0,"mode":"normal","style":"","detail":0}]}]}}`, 1)
+	mk := func(slug, status, content string) string {
+		var topicID, postID string
+		if err := e.srv.Pool.QueryRow(ctx, `INSERT INTO topic_queue (topic, source) VALUES ($1,'manual') RETURNING id::text`, slug).Scan(&topicID); err != nil {
+			t.Fatal(err)
+		}
+		if err := e.srv.Pool.QueryRow(ctx, `INSERT INTO posts (slug, title, content, origin, status, published_at, published_content) VALUES ($1::citext,$2::text,$3::jsonb,'topic_bot',$4::text, CASE WHEN $4::text='published' THEN now() END, CASE WHEN $4::text='published' THEN '{}'::jsonb END) RETURNING id::text`, slug, slug, content, status).Scan(&postID); err != nil {
+			t.Fatal(err)
+		}
+		e.exec(`INSERT INTO topic_digests (topic_id, status, sources, post_id) VALUES ($1::uuid,'done',$2,$3::uuid)`, topicID, srcs, postID)
+		return postID
+	}
+	empty := mk("empty-refs", "draft", emptyRefs)
+	written := mk("written-refs", "draft", withRefs)
+	live := mk("live", "published", emptyRefs)
+
+	res, err := research.BackfillReferences(ctx, e.srv.Pool)
+	if err != nil || res["patched"] != 1 {
+		t.Fatalf("backfill: %v %v", res, err)
+	}
+	var content, citations string
+	_ = e.srv.Pool.QueryRow(ctx, `SELECT content::text, citations::text FROM posts WHERE id::text = $1`, empty).Scan(&content, &citations)
+	if !strings.Contains(content, "[1] Silva Ana. Exam anxiety. J Anxiety. 2024. ") || !strings.Contains(content, "[2] OMS. ") || !strings.Contains(content, "Outras fontes encontradas") || !strings.Contains(content, "Corpo.") {
+		t.Fatalf("content: %s", content)
+	}
+	if strings.Count(content, "Referências") != 1 || !strings.Contains(citations, "who.int") {
+		t.Fatalf("heading repeated or citations missing: %s / %s", content, citations)
+	}
+	// João's own references and a published post stay as they were
+	for id, want := range map[string]string{written: "Escrita pelo João.", live: ""} {
+		var c string
+		_ = e.srv.Pool.QueryRow(ctx, `SELECT content::text FROM posts WHERE id::text = $1`, id).Scan(&c)
+		if strings.Contains(c, "Outras fontes") || (want != "" && !strings.Contains(c, want)) {
+			t.Fatalf("post %s was touched: %s", id, c)
+		}
+	}
+	again, _ := research.BackfillReferences(ctx, e.srv.Pool)
+	if again["patched"] != 0 {
+		t.Fatalf("second run patched %v", again)
+	}
+	if _, ok := jobs["topics.backfill_references"]; !ok {
+		t.Fatal("job not registered")
+	}
+}
+
+// compact drops the spaces Postgres puts in jsonb text so substring checks do not depend on its formatting.
+func compact(s string) string { return strings.ReplaceAll(s, " ", "") }
