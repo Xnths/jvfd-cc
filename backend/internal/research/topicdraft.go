@@ -81,7 +81,7 @@ func DraftTopic(ctx context.Context, pool *pgxpool.Pool, f *Fetcher, ai *OpenAI,
 	ctx, meter := WithCostMeter(ctx)
 	defer func() {
 		if err != nil {
-			msg := err.Error()
+			msg := FriendlyError(err)
 			if len(msg) > 500 {
 				msg = msg[:500]
 			}

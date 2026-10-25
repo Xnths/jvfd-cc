@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -40,6 +41,66 @@ var pricePerM = map[string][2]float64{
 const webSearchUSD = 0.025
 
 var errBudget = errors.New("monthly LLM budget reached")
+
+// APIError is a non-200 answer from OpenAI. Code is the API's error code (insufficient_quota, rate_limit_exceeded,
+// invalid_api_key, model_not_found…); Message is OpenAI's own text and only goes to the logs, never to the admin screen.
+type APIError struct {
+	Status  int
+	Code    string
+	Message string
+}
+
+func (e *APIError) Error() string {
+	return fmt.Sprintf("openai: status %d (%s): %s", e.Status, e.Code, e.Message)
+}
+
+func apiError(status int, raw []byte) *APIError {
+	var out struct {
+		Error struct {
+			Type    string `json:"type"`
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	_ = json.Unmarshal(raw, &out)
+	code := out.Error.Code
+	if code == "" {
+		code = out.Error.Type
+	}
+	return &APIError{Status: status, Code: code, Message: shorten(out.Error.Message, 300)}
+}
+
+// retryUnit is one "second" of the retry wait (tests shrink it).
+var retryUnit = time.Second
+
+// retryAfter is how long to wait before the single retry of a rate-limited call (the Retry-After header, 2–10 s).
+func retryAfter(h http.Header) time.Duration {
+	secs := 3
+	if v, err := strconv.Atoi(h.Get("Retry-After")); err == nil {
+		secs = v
+	}
+	return time.Duration(min(max(secs, 2), 10)) * retryUnit
+}
+
+// FriendlyError is the Portuguese explanation shown on the pauta when a run fails.
+func FriendlyError(err error) string {
+	var ae *APIError
+	switch {
+	case errors.Is(err, errBudget):
+		return "O orçamento mensal de IA acabou. Aumente LLM_MONTHLY_BUDGET_USD ou espere o próximo mês."
+	case !errors.As(err, &ae):
+		return err.Error()
+	case ae.Code == "insufficient_quota":
+		return "A conta da OpenAI está sem crédito. Adicione saldo em platform.openai.com (Billing) e tente de novo."
+	case ae.Status == http.StatusTooManyRequests:
+		return "A OpenAI limitou as requisições. Tente de novo em um minuto."
+	case ae.Status == http.StatusUnauthorized || ae.Code == "invalid_api_key":
+		return "Chave da OpenAI inválida (OPENAI_API_KEY)."
+	case ae.Status == http.StatusForbidden || ae.Status == http.StatusNotFound || ae.Code == "model_not_found":
+		return "A chave da OpenAI não tem acesso ao modelo configurado (OPENAI_MODEL)."
+	}
+	return fmt.Sprintf("Erro da OpenAI (%d, %s).", ae.Status, ae.Code)
+}
 
 const systemPrompt = `Você resume artigos científicos de psicologia para o blog de um psicólogo clínico brasileiro (CRP 06/157908).
 Escreva em português do Brasil, em até 3 frases, só com o que o resumo do artigo afirma (tipo de estudo, amostra e achado principal).
@@ -90,20 +151,34 @@ func (o *OpenAI) call(ctx context.Context, job, model, path string, body map[str
 	}
 	body["model"] = model
 	b, _ := json.Marshal(body)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, o.Base+path, bytes.NewReader(b))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+o.Key)
-	resp, err := o.HTTP.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("openai: status %d", resp.StatusCode)
+	var raw []byte
+	for attempt := 0; ; attempt++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, o.Base+path, bytes.NewReader(b))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+o.Key)
+		resp, err := o.HTTP.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		raw, _ = io.ReadAll(io.LimitReader(resp.Body, 4<<20))
+		resp.Body.Close()
+		if resp.StatusCode == http.StatusOK {
+			break
+		}
+		ae := apiError(resp.StatusCode, raw)
+		// A real rate limit clears in seconds; a missing balance (insufficient_quota) never does.
+		if attempt == 0 && resp.StatusCode == http.StatusTooManyRequests && ae.Code != "insufficient_quota" {
+			select {
+			case <-time.After(retryAfter(resp.Header)):
+				continue
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
+		}
+		return nil, ae
 	}
 	var u struct {
 		Usage struct {

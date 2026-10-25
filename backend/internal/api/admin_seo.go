@@ -236,7 +236,7 @@ func (s *Server) adminTopics(w http.ResponseWriter, r *http.Request) {
 }
 
 // adminTopicDigest starts "Gerar rascunho" for a pauta: search sources, outline an idea, write a draft post.
-// It returns at once; the run's progress shows on the topic (GET /topics) and the draft is never published.
+// One draft per pauta (unique index): only a failed run can be retried. It returns at once; the run's progress shows on the topic (GET /topics) and the draft is never published.
 func (s *Server) adminTopicDigest(w http.ResponseWriter, r *http.Request) {
 	ai := openAIFromEnv(s)
 	if ai == nil {
@@ -258,7 +258,7 @@ func (s *Server) adminTopicDigest(w http.ResponseWriter, r *http.Request) {
 		WHERE topic_id::text = $1 AND status IN ('searching','outlining','writing') AND created_at < now() - interval '10 minutes'`, topicID)
 	var digestID string
 	if err := s.Pool.QueryRow(ctx, `INSERT INTO topic_digests (topic_id) VALUES ($1::uuid) RETURNING id::text`, topicID).Scan(&digestID); isUnique(err) {
-		httpx.Problem(w, http.StatusConflict, "já existe um rascunho sendo gerado para esta pauta")
+		httpx.Problem(w, http.StatusConflict, "esta pauta já tem um rascunho")
 		return
 	} else if err != nil {
 		serverError(w, s.Log, r, err)

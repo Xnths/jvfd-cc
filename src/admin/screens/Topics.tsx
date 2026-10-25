@@ -34,7 +34,6 @@ export function Topics() {
     }, [anyRunning, reloadTopics])
 
     const generate = async (t: Topic) => {
-        if (!confirm('Gerar um rascunho com IA para esta pauta? Custa cerca de US$ 0,03 e leva 1 a 2 minutos. O rascunho nunca vai ao ar sem a sua revisão.')) return
         try {
             await api(`/topics/${t.id}/digest`, { method: 'POST' })
             await topics.reload()
@@ -90,7 +89,7 @@ export function Topics() {
                         {t.digest?.status === 'done' && (
                             <details className="mt-2 text-sm">
                                 <summary className="cursor-pointer text-muted-foreground">
-                                    Ideia e fontes{t.digest.costUsd != null && ` · US$ ${t.digest.costUsd.toFixed(3)}`}{!!t.digest.lintFlags && ` · ${t.digest.lintFlags} alerta(s) de redação (CFP)`}
+                                    Ideia e fontes{!!t.digest.lintFlags && ` · ${t.digest.lintFlags} alerta(s) de redação (CFP)`}
                                 </summary>
                                 {t.digest.outline && (
                                     <div className="mt-2 space-y-2">

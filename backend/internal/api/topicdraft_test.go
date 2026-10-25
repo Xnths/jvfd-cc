@@ -154,11 +154,48 @@ func TestTopicDigestEndpoint(t *testing.T) {
 	if rec := e.do("POST", "/api/v1/admin/topics/"+topicID+"/digest", "", tok); rec.Code != http.StatusConflict {
 		t.Fatalf("second run: %d %s", rec.Code, rec.Body.String())
 	}
+	// one draft per pauta: a finished run blocks another, a failed one does not
+	e.exec(`UPDATE topic_digests SET status = 'done' WHERE topic_id::text = $1`, topicID)
+	if rec := e.do("POST", "/api/v1/admin/topics/"+topicID+"/digest", "", tok); rec.Code != http.StatusConflict {
+		t.Fatalf("after a finished draft: %d %s", rec.Code, rec.Body.String())
+	}
+	e.exec(`UPDATE topic_digests SET status = 'failed' WHERE topic_id::text = $1`, topicID)
+	if rec := e.do("POST", "/api/v1/admin/topics/"+topicID+"/digest", "", tok); rec.Code != http.StatusAccepted {
+		t.Fatalf("retry after a failed run: %d %s", rec.Code, rec.Body.String())
+	}
 	if rec := e.do("POST", "/api/v1/admin/topics/00000000-0000-0000-0000-0000000000aa/digest", "", tok); rec.Code != http.StatusNotFound {
 		t.Fatalf("unknown topic: %d", rec.Code)
 	}
 	rec := e.do("GET", "/api/v1/admin/topics?status=queued", "", tok)
 	if rec.Code != 200 || !strings.Contains(rec.Body.String(), `"digest":{`) || !strings.Contains(rec.Body.String(), `"status":"searching"`) {
 		t.Fatalf("topics list: %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestDraftTopicNoCredit(t *testing.T) {
+	e := newTestEnv(t)
+	ctx := context.Background()
+	_, f := fakeServices(t)
+	broke := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(429)
+		_, _ = w.Write([]byte(`{"error":{"code":"insufficient_quota","message":"You exceeded your current quota"}}`))
+	}))
+	defer broke.Close()
+	ai := research.NewOpenAISummarizer(e.srv.Pool, "sk-secret", "", 5)
+	ai.Base = broke.URL
+	topicID, digestID := newDigest(e)
+	if err := research.DraftTopic(ctx, e.srv.Pool, f, ai, digestID); err == nil {
+		t.Fatal("expected an error")
+	}
+	var status, msg string
+	var posts int
+	_ = e.srv.Pool.QueryRow(ctx, `SELECT status, error FROM topic_digests WHERE id::text = $1`, digestID).Scan(&status, &msg)
+	_ = e.srv.Pool.QueryRow(ctx, `SELECT count(*) FROM posts WHERE origin = 'topic_bot'`).Scan(&posts)
+	if status != "failed" || !strings.Contains(msg, "sem crédito") || strings.Contains(msg, "sk-secret") || posts != 0 {
+		t.Fatalf("status=%s msg=%q posts=%d", status, msg, posts)
+	}
+	// the failed run does not use up the pauta's one draft
+	if err := e.srv.Pool.QueryRow(ctx, `INSERT INTO topic_digests (topic_id) VALUES ($1::uuid) RETURNING id::text`, topicID).Scan(&digestID); err != nil {
+		t.Fatalf("retry after failure: %v", err)
 	}
 }
