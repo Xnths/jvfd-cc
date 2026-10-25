@@ -14,4 +14,6 @@ check "auth health"          /auth/denied                   403
 check "jwks"                 /.well-known/jwks.json         200
 check "internal jobs hidden" /api/v1/internal/jobs/x        404
 check "token hidden"         /auth/token                    404
+check "revalidate hidden"    /internal/revalidate           404
+check "admin needs login"    /admin                         307
 exit $fail

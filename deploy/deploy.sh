@@ -32,7 +32,12 @@ main() {
 
     # --- 3. Go services + database ---
     mkdir -p deploy/nginx/active
-    [ -f deploy/nginx/active/legacy-api.conf ] || : > deploy/nginx/active/legacy-api.conf
+    # Once content lives in Postgres, the old /api/{leads,subscribe,unsubscribe} URLs are served by Go.
+    if [ "${CONTENT_SOURCE:-payload}" = api ]; then
+        cp deploy/nginx/legacy-api.cutover.conf deploy/nginx/active/legacy-api.conf
+    else
+        : > deploy/nginx/active/legacy-api.conf
+    fi
 
     echo "Starting postgres..."
     "${compose[@]}" up -d postgres

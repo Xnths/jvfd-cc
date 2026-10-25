@@ -4,7 +4,7 @@
 //	migrate keys generate <file>  create an Ed25519 signing key (PKCS#8 PEM, mode 0600)
 //	migrate keys public <file>    print the PKIX public key of a private key file
 //	migrate client create <id>    create a machine client; prints the secret once
-//	migrate payload-import <dir> [--apply]   import a mongoexport directory (dry run unless --apply)
+//	migrate payload-import <dir> [--apply] [--refresh-content]   import a mongoexport directory (dry run unless --apply)
 //	migrate verify-import <dir>              check every exported row exists in Postgres
 package main
 
@@ -159,8 +159,18 @@ func importCmd(args []string) error {
 		fmt.Println("verify-import: OK")
 		return nil
 	}
-	apply := len(args) > 2 && args[2] == "--apply"
-	rep, err := importer.Run(ctx, pool, args[1], apply)
+	var opts importer.Options
+	for _, a := range args[2:] {
+		switch a {
+		case "--apply":
+			opts.Apply = true
+		case "--refresh-content":
+			opts.RefreshContent = true
+		default:
+			return fmt.Errorf("unknown flag %q", a)
+		}
+	}
+	rep, err := importer.Run(ctx, pool, args[1], opts)
 	if rep != nil {
 		fmt.Print(rep)
 	}

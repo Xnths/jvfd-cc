@@ -102,8 +102,18 @@ func date(v any) *time.Time {
 
 func str(d doc, k string) string { s, _ := d[k].(string); return s }
 
-// Run imports the export in dir. With apply false everything is rolled back.
-func Run(ctx context.Context, pool *pgxpool.Pool, dir string, apply bool) (*Report, error) {
+// Options tune an import run.
+type Options struct {
+	// Apply commits the import; without it everything is rolled back (dry run).
+	Apply bool
+	// RefreshContent also overwrites posts and media that already exist in Postgres with the
+	// Mongo version. Leave it off once editing happens in the new admin, or edits would be lost.
+	RefreshContent bool
+}
+
+// Run imports the export in dir.
+func Run(ctx context.Context, pool *pgxpool.Pool, dir string, o Options) (*Report, error) {
+	apply := o.Apply
 	rep := newReport()
 	tx, err := pool.Begin(ctx)
 	if err != nil {
@@ -111,11 +121,11 @@ func Run(ctx context.Context, pool *pgxpool.Pool, dir string, apply bool) (*Repo
 	}
 	defer tx.Rollback(ctx) //nolint:errcheck
 
-	mediaMap, err := importMedia(ctx, tx, dir, rep)
+	mediaMap, err := importMedia(ctx, tx, dir, o.RefreshContent, rep)
 	if err != nil {
 		return rep, fmt.Errorf("media: %w", err)
 	}
-	postMap, err := importPosts(ctx, tx, dir, mediaMap, rep)
+	postMap, err := importPosts(ctx, tx, dir, mediaMap, o.RefreshContent, rep)
 	if err != nil {
 		return rep, fmt.Errorf("posts: %w", err)
 	}
@@ -138,7 +148,7 @@ func Run(ctx context.Context, pool *pgxpool.Pool, dir string, apply bool) (*Repo
 	return rep, tx.Commit(ctx)
 }
 
-func importMedia(ctx context.Context, tx pgx.Tx, dir string, rep *Report) (map[string]string, error) {
+func importMedia(ctx context.Context, tx pgx.Tx, dir string, refresh bool, rep *Report) (map[string]string, error) {
 	items, err := load(dir, "media")
 	if err != nil {
 		return nil, err
@@ -160,9 +170,10 @@ func importMedia(ctx context.Context, tx pgx.Tx, dir string, rep *Report) (map[s
 		err := tx.QueryRow(ctx, `
 			INSERT INTO media (filename, mime_type, filesize, width, height, alt, legacy_id, created_at)
 			VALUES ($1,$2,$3,$4,$5,$6,$7,coalesce($8, now()))
-			ON CONFLICT (filename) DO UPDATE SET alt = EXCLUDED.alt, legacy_id = coalesce(media.legacy_id, EXCLUDED.legacy_id), updated_at = now()
+			ON CONFLICT (filename) DO UPDATE SET alt = CASE WHEN $9 THEN EXCLUDED.alt ELSE media.alt END,
+			    legacy_id = coalesce(media.legacy_id, EXCLUDED.legacy_id)
 			RETURNING id::text, (xmax = 0)`,
-			fn, str(m, "mimeType"), num(m["filesize"]), nullInt(m["width"]), nullInt(m["height"]), alt, legacy, date(m["createdAt"])).Scan(&id, &inserted)
+			fn, str(m, "mimeType"), num(m["filesize"]), nullInt(m["width"]), nullInt(m["height"]), alt, legacy, date(m["createdAt"]), refresh).Scan(&id, &inserted)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", fn, err)
 		}
@@ -172,7 +183,7 @@ func importMedia(ctx context.Context, tx pgx.Tx, dir string, rep *Report) (map[s
 	return ids, nil
 }
 
-func importPosts(ctx context.Context, tx pgx.Tx, dir string, media map[string]string, rep *Report) (map[string]string, error) {
+func importPosts(ctx context.Context, tx pgx.Tx, dir string, media map[string]string, refresh bool, rep *Report) (map[string]string, error) {
 	items, err := load(dir, "posts")
 	if err != nil {
 		return nil, err
@@ -224,12 +235,19 @@ func importPosts(ctx context.Context, tx pgx.Tx, dir string, media map[string]st
 			INSERT INTO posts (slug, title, excerpt, keywords, content, published_content, status, published_at, author_name, image_id,
 			                   meta_title, meta_description, newsletter_sent_at, legacy_id, created_at, updated_at)
 			VALUES ($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7,$8,$9,$10::uuid,$11,$12,$13,$14,coalesce($15, now()),coalesce($16, now()))
-			ON CONFLICT (legacy_id) DO UPDATE SET title = EXCLUDED.title, excerpt = EXCLUDED.excerpt, keywords = EXCLUDED.keywords,
-			    content = EXCLUDED.content, published_content = EXCLUDED.published_content, status = EXCLUDED.status,
-			    published_at = EXCLUDED.published_at, author_name = EXCLUDED.author_name, image_id = EXCLUDED.image_id, updated_at = now()
+			ON CONFLICT (legacy_id) DO UPDATE SET
+			    title = CASE WHEN $17 THEN EXCLUDED.title ELSE posts.title END,
+			    excerpt = CASE WHEN $17 THEN EXCLUDED.excerpt ELSE posts.excerpt END,
+			    keywords = CASE WHEN $17 THEN EXCLUDED.keywords ELSE posts.keywords END,
+			    content = CASE WHEN $17 THEN EXCLUDED.content ELSE posts.content END,
+			    published_content = CASE WHEN $17 THEN EXCLUDED.published_content ELSE posts.published_content END,
+			    status = CASE WHEN $17 THEN EXCLUDED.status ELSE posts.status END,
+			    published_at = CASE WHEN $17 THEN EXCLUDED.published_at ELSE posts.published_at END,
+			    author_name = CASE WHEN $17 THEN EXCLUDED.author_name ELSE posts.author_name END,
+			    image_id = CASE WHEN $17 THEN EXCLUDED.image_id ELSE posts.image_id END
 			RETURNING id::text, (xmax = 0)`,
 			str(p, "slug"), str(p, "title"), str(p, "excerpt"), str(p, "keywords"), string(raw), pubContent, status, published, author, image,
-			str(p, "metaTitle"), str(p, "metaDescription"), newsletterSent, legacy, date(p["createdAt"]), date(p["updatedAt"])).Scan(&id, &inserted)
+			str(p, "metaTitle"), str(p, "metaDescription"), newsletterSent, legacy, date(p["createdAt"]), date(p["updatedAt"]), refresh).Scan(&id, &inserted)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", str(p, "slug"), err)
 		}

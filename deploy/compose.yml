@@ -50,6 +50,8 @@ services:
     container_name: clinic-api
     restart: always
     entrypoint: ["/usr/local/bin/api"]
+    # Same uid as the Next.js image: the media volume's files belong to it (uploads write there).
+    user: "1001:1001"
     env_file: [../.env]
     environment:
       DATABASE_URL: postgres://clinic:${POSTGRES_PASSWORD}@postgres:5432/clinic?sslmode=disable
