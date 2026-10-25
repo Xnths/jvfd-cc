@@ -80,6 +80,10 @@ func newTestEnv(t *testing.T) *testEnv {
 		Pool: pool, Log: slog.New(slog.NewTextHandler(io.Discard, nil)), Verifier: signer.Verifier(),
 		Notify: notes, Turnstile: fakeTurnstile{ok: true}, Now: time.Now,
 	}
+	// Production seeds João's profile in a migration; tests create their own profiles.
+	if _, err := pool.Exec(context.Background(), `DELETE FROM profiles`); err != nil {
+		t.Fatal(err)
+	}
 	// The test tokens' subject is a real admin row, as it is in production (FK targets for audit/moderation/uploads).
 	if _, err := pool.Exec(context.Background(), `INSERT INTO admin_users (id, email, role) VALUES ('00000000-0000-0000-0000-000000000001','tech@test','tech')`); err != nil {
 		t.Fatal(err)

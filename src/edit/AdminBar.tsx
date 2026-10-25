@@ -11,10 +11,12 @@ type Me = { id: string; email: string; name?: string; role: string };
 export const ADMIN_BAR_HEIGHT = 44;
 
 const NewServiceDialog = dynamic(() => import("./ServiceDialogs").then((m) => m.NewServiceDialog), { ssr: false });
+const NewTermDialog = dynamic(() => import("./NewItemDialogs").then((m) => m.NewTermDialog), { ssr: false });
+const NewProfileDialog = dynamic(() => import("./NewItemDialogs").then((m) => m.NewProfileDialog), { ssr: false });
 const ServiceSettingsDialog = dynamic(() => import("./ServiceDialogs").then((m) => m.ServiceSettingsDialog), { ssr: false });
 
 // One-segment paths owned by code, never services.
-const CODE_PAGES = new Set(["blog", "presencial", "aulas-particulares", "politica-de-privacidade", "termos-de-uso", "admin", "edit", "auth"]);
+const CODE_PAGES = new Set(["blog", "presencial", "aulas-particulares", "glossario", "sobre", "perguntas", "ferramentas", "politica-de-privacidade", "termos-de-uso", "admin", "edit", "auth"]);
 
 /** Fixed bar above the real site for signed-in admins. */
 export function AdminBar() {
@@ -24,6 +26,9 @@ export function AdminBar() {
     const [creating, setCreating] = useState(false);
     const [newServiceOpen, setNewServiceOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [newTermOpen, setNewTermOpen] = useState(false);
+    const [newProfileOpen, setNewProfileOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
     const [serviceSlug, setServiceSlug] = useState<string | null>(null);
 
     // On a service page (published or draft) the bar offers its settings.
@@ -93,12 +98,19 @@ export function AdminBar() {
             >
                 {editing ? "Editando: clique num texto" : "Editar página"}
             </button>
-            <button type="button" onClick={newPost} disabled={creating} className="rounded px-3 py-1 font-medium bg-white/10 hover:bg-white/20 disabled:opacity-50">
-                + Novo post
-            </button>
-            <button type="button" onClick={() => setNewServiceOpen(true)} className="rounded px-3 py-1 font-medium bg-white/10 hover:bg-white/20">
-                + Novo serviço
-            </button>
+            <div className="relative">
+                <button type="button" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} className="rounded px-3 py-1 font-medium bg-white/10 hover:bg-white/20">
+                    + Novo ▾
+                </button>
+                {menuOpen && (
+                    <ul role="menu" className="absolute left-0 top-9 w-44 overflow-hidden rounded-md bg-slate-800 py-1 shadow-lg" onClick={() => setMenuOpen(false)}>
+                        <li><button role="menuitem" type="button" disabled={creating} onClick={newPost} className="block w-full px-3 py-1.5 text-left hover:bg-white/10 disabled:opacity-50">Post</button></li>
+                        <li><button role="menuitem" type="button" onClick={() => setNewServiceOpen(true)} className="block w-full px-3 py-1.5 text-left hover:bg-white/10">Serviço</button></li>
+                        <li><button role="menuitem" type="button" onClick={() => setNewTermOpen(true)} className="block w-full px-3 py-1.5 text-left hover:bg-white/10">Termo do glossário</button></li>
+                        {me.role === "clinical" && <li><button role="menuitem" type="button" onClick={() => setNewProfileOpen(true)} className="block w-full px-3 py-1.5 text-left hover:bg-white/10">Perfil da equipe</button></li>}
+                    </ul>
+                )}
+            </div>
             {serviceSlug && (
                 <button type="button" onClick={() => setSettingsOpen(true)} className="rounded px-3 py-1 font-medium bg-white/10 hover:bg-white/20">
                     Configurar serviço
@@ -112,6 +124,8 @@ export function AdminBar() {
                 {me.email} ({me.role === "clinical" ? "clínico" : "técnico"})
             </span>
             {newServiceOpen && <NewServiceDialog open onOpenChange={setNewServiceOpen} />}
+            {newTermOpen && <NewTermDialog onClose={() => setNewTermOpen(false)} />}
+            {newProfileOpen && <NewProfileDialog onClose={() => setNewProfileOpen(false)} />}
             {settingsOpen && serviceSlug && <ServiceSettingsDialog open onOpenChange={setSettingsOpen} slug={serviceSlug} />}
         </div>
     );

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { SITE_URL } from '@/content/clinic'
 import { tutoring } from '@/content/tutoring'
-import { getMedia, getPublishedPosts, getTreatments } from '@/lib/queries'
+import { getMedia, getPublishedPosts, getRoutes, getTreatments } from '@/lib/queries'
 
 // Per request, but backed by the tag-invalidated query cache (no DB hit).
 export const dynamic = 'force-dynamic'
@@ -11,10 +11,12 @@ export const dynamic = 'force-dynamic'
 const STATIC_CONTENT_UPDATED = new Date('2026-10-24')
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const [posts, treatments] = await Promise.all([
+    const [posts, treatments, routes] = await Promise.all([
         getPublishedPosts().catch(() => []),
         getTreatments().catch(() => []),
+        getRoutes().catch(() => []),
     ])
+    const hasKind = (k: string) => routes.some((r) => r.kind === k)
 
     const latest = (dates: string[]) =>
         dates.reduce((max, d) => (new Date(d) > max ? new Date(d) : max), STATIC_CONTENT_UPDATED)
@@ -77,5 +79,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
     ]
 
-    return [...staticEntries, ...treatmentEntries, ...blogEntries]
+    // Glossary terms, answered questions and team profiles come from the Go API's route list.
+    const dynamicEntries: MetadataRoute.Sitemap = routes
+        .filter((r) => ['glossary', 'question', 'profile'].includes(r.kind))
+        .map((r) => ({ url: `${SITE_URL}${r.path}`, lastModified: new Date(r.updatedAt), changeFrequency: 'monthly' as const, priority: r.kind === 'profile' ? 0.6 : 0.5 }))
+
+    const sectionEntries: MetadataRoute.Sitemap = [
+        { url: `${SITE_URL}/ferramentas`, lastModified: STATIC_CONTENT_UPDATED, changeFrequency: 'yearly', priority: 0.5 },
+        { url: `${SITE_URL}/ferramentas/phq-9`, lastModified: STATIC_CONTENT_UPDATED, changeFrequency: 'yearly', priority: 0.6 },
+        { url: `${SITE_URL}/ferramentas/gad-7`, lastModified: STATIC_CONTENT_UPDATED, changeFrequency: 'yearly', priority: 0.6 },
+        ...(hasKind('profile') ? [{ url: `${SITE_URL}/sobre`, lastModified: STATIC_CONTENT_UPDATED, changeFrequency: 'monthly' as const, priority: 0.6 }] : []),
+        ...(hasKind('glossary') ? [{ url: `${SITE_URL}/glossario`, lastModified: latest(routes.filter((r) => r.kind === 'glossary').map((r) => r.updatedAt)), changeFrequency: 'weekly' as const, priority: 0.6 }] : []),
+        ...(hasKind('question') ? [{ url: `${SITE_URL}/perguntas`, lastModified: latest(routes.filter((r) => r.kind === 'question').map((r) => r.updatedAt)), changeFrequency: 'weekly' as const, priority: 0.6 }] : []),
+    ]
+
+    return [...staticEntries, ...sectionEntries, ...treatmentEntries, ...dynamicEntries, ...blogEntries]
 }

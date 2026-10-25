@@ -490,6 +490,9 @@ func TestProfilePermissions(t *testing.T) {
 		('aaaa0000-0000-0000-0000-000000000001','jonathas','Jonathas','00000000-0000-0000-0000-000000000001'),
 		('aaaa0000-0000-0000-0000-000000000002','joao','João','00000000-0000-0000-0000-000000000002')`)
 	tech := e.token(authn.RoleAdminTech) // subject ...0001
+	if body := e.do("GET", "/api/v1/admin/profiles/slug:jonathas", "", tech).Body.String(); !strings.Contains(body, `"displayName":"Jonathas"`) {
+		t.Errorf("admin profile json: %s", body)
+	}
 	if c := e.do("PATCH", "/api/v1/admin/profiles/aaaa0000-0000-0000-0000-000000000001", `{"jobTitle":"Desenvolvedor"}`, tech).Code; c != 204 {
 		t.Errorf("own profile: %d", c)
 	}
@@ -596,5 +599,33 @@ func TestServicePublishLint(t *testing.T) {
 	}
 	if c := e.do("POST", pub, `{"acknowledgeLint":true}`, tok).Code; c != 200 {
 		t.Fatalf("acknowledged publish: %d", c)
+	}
+}
+
+func TestGlossaryAndRoutes(t *testing.T) {
+	e := newTestEnv(t)
+	tok := e.token(authn.RoleAdminClinical)
+	e.exec(`INSERT INTO profiles (id, slug, display_name, is_clinician, crp, visibility) VALUES ('99999999-9999-9999-9999-999999999999','joao','João',true,'06/157908','public')`)
+	rec := e.do("POST", "/api/v1/admin/glossary", `{"term":"Reforço positivo","shortDefinition":"Consequência que aumenta a frequência de um comportamento.","reviewedByProfileId":"99999999-9999-9999-9999-999999999999"}`, tok)
+	if rec.Code != 200 {
+		t.Fatalf("create term: %d %s", rec.Code, rec.Body.String())
+	}
+	var made struct{ ID, Slug string }
+	_ = json.Unmarshal(rec.Body.Bytes(), &made)
+	if c := e.do("GET", "/api/v1/public/glossary/"+made.Slug, "", "").Code; c != 404 {
+		t.Fatalf("draft term is public: %d", c)
+	}
+	if c := e.do("POST", "/api/v1/admin/glossary/"+made.ID+"/publish", "", tok).Code; c != 204 {
+		t.Fatalf("publish: %d", c)
+	}
+	routes := e.do("GET", "/api/v1/public/routes", "", "").Body.String()
+	if !strings.Contains(routes, `"/glossario/reforco-positivo"`) || !strings.Contains(routes, `"/sobre/joao"`) {
+		t.Fatalf("routes missing glossary/profile: %s", routes)
+	}
+	if c := e.do("POST", "/api/v1/admin/glossary/"+made.ID+"/unpublish", "", tok).Code; c != 204 {
+		t.Fatalf("unpublish: %d", c)
+	}
+	if strings.Contains(e.do("GET", "/api/v1/public/routes", "", "").Body.String(), "reforco-positivo") {
+		t.Fatal("unpublished term still in routes")
 	}
 }

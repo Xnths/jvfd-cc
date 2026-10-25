@@ -66,6 +66,16 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/sobre" className={linkClass}>
+                  <Editable k="site.footer.team">Quem somos</Editable>
+                </Link>
+              </li>
+              <li>
+                <Link href="/ferramentas" className={linkClass}>
+                  <Editable k="site.footer.tools">Ferramentas de autoavaliação</Editable>
+                </Link>
+              </li>
+              <li>
                 <Link href="/blog" className={linkClass}>
                   <Editable k="site.footer.blog">Blog</Editable>
                 </Link>

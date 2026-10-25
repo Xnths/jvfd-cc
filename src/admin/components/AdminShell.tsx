@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
     ExternalLink,
+    HelpCircle,
     FileText,
     Image as ImageIcon,
     LayoutDashboard,
@@ -27,6 +28,7 @@ const NAV = [
     { href: '/admin/posts', label: 'Posts', icon: FileText },
     { href: '/admin/leads', label: 'Leads', icon: MousePointerClick },
     { href: '/admin/comentarios', label: 'Comentários', icon: MessageSquare },
+    { href: '/admin/perguntas', label: 'Perguntas', icon: HelpCircle, clinicalOnly: true },
     { href: '/admin/assinantes', label: 'Assinantes', icon: Mail },
     { href: '/admin/contatos', label: 'Contatos', icon: Phone, clinicalOnly: true },
     { href: '/admin/midia', label: 'Mídia', icon: ImageIcon },

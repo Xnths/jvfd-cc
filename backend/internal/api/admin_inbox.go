@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/Xnths/jvfd-cc/backend/internal/copylint"
 	"net/http"
 	"strconv"
 	"strings"
@@ -418,6 +419,18 @@ func (s *Server) adminPublishQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(ans) == 0 {
 		httpx.Problem(w, http.StatusUnprocessableEntity, "answer the question before publishing")
+		return
+	}
+	// Published answers are advertising-adjacent copy: same CFP lint as posts and service pages.
+	var in struct {
+		AcknowledgeLint bool `json:"acknowledgeLint"`
+	}
+	if r.ContentLength > 0 {
+		_ = json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&in)
+	}
+	doc, _ := richtext.Parse(ans)
+	if flags := copylint.Check(q + "\n" + richtext.PlainText(doc)); len(flags) > 0 && !in.AcknowledgeLint {
+		httpx.JSON(w, http.StatusUnprocessableEntity, map[string]any{"title": "copy needs review", "flags": flags})
 		return
 	}
 	slug, err := s.uniqueFAQSlug(r, Slugify(q))

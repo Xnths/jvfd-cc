@@ -13,6 +13,7 @@ import type { MediaRef } from "@/editor/UploadNode";
 import { ApiError, api, errorMessage } from "@/admin/lib/adminFetch";
 import { useMediaPicker } from "@/admin/components/MediaPicker";
 import { slugify } from "@/admin/lib/slugify";
+import { InlineText } from "./InlineText";
 
 type Post = {
     id: string;
@@ -33,32 +34,6 @@ type Post = {
 };
 type Flag = { rule: string; match: string; message: string };
 type MediaItem = MediaRef & { filename: string };
-
-/** Single-line contentEditable that looks exactly like the final heading/paragraph. */
-function InlineText({ as: Tag, value, onChange, className, placeholder }: { as: "h1" | "p"; value: string; onChange: (v: string) => void; className: string; placeholder: string }) {
-    const ref = useRef<HTMLElement>(null);
-    useEffect(() => {
-        if (ref.current) ref.current.textContent = value;
-        // set once: later typing must not be overwritten by React
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    return (
-        <Tag
-            // @ts-expect-error ref typing for dynamic tag
-            ref={ref}
-            contentEditable="plaintext-only"
-            suppressContentEditableWarning
-            data-placeholder={placeholder}
-            className={`${className} edit-box`}
-            onInput={(e: React.FormEvent<HTMLElement>) => onChange((e.currentTarget.textContent ?? "").replace(/\s*\n\s*/g, " "))}
-            onKeyDown={(e: React.KeyboardEvent) => e.key === "Enter" && e.preventDefault()}
-            onPaste={(e: React.ClipboardEvent) => {
-                e.preventDefault();
-                document.execCommand("insertText", false, e.clipboardData.getData("text/plain").replace(/\s*\n\s*/g, " "));
-            }}
-        />
-    );
-}
 
 /**
  * The post page itself, editable: same markup as /blog/<slug>, but title, resumo, capa and texto are

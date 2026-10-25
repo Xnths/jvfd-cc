@@ -180,3 +180,126 @@ export const getApprovedComments = cache(
 export function getMedia(image: PostDoc["image"]): MediaDoc | null {
     return image && typeof image === "object" && image.url ? image : null;
 }
+
+// ── Profiles, glossary, answered questions ─────────────────────────────────
+
+export type ProfileEntry = {
+    id: string;
+    title: string;
+    organization: string;
+    location: string;
+    startDate?: string | null;
+    endDate?: string | null;
+    isCurrent: boolean;
+    description: string;
+    url: string;
+    credentialId: string;
+    icon: string;
+    featured: boolean;
+};
+export type ProfileSection = { id: string; kind: string; title: string; entries: ProfileEntry[] };
+export type ProfileDoc = {
+    id: string;
+    slug: string;
+    displayName: string;
+    fullName: string;
+    jobTitle: string;
+    crp?: string | null;
+    isClinician: boolean;
+    practicingSince?: number | null;
+    approach: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    bio: any;
+    photo?: MediaDoc | null;
+    knowsAbout: string[];
+    languages: string[];
+    alumniOf: string[];
+    links: Record<string, string>;
+    isPrimary: boolean;
+    sections?: ProfileSection[];
+    updatedAt?: string;
+};
+
+export type GlossaryItem = { slug: string; term: string; altNames: string[]; shortDefinition: string; updatedAt: string };
+export type GlossaryTerm = GlossaryItem & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    body: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sources: any;
+    reviewedBy?: { name: string; slug: string; crp?: string | null };
+};
+
+export type AnsweredQuestion = {
+    id: string;
+    slug: string | null;
+    question: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    answer: any;
+    topic: string;
+    publishedAt: string | null;
+};
+
+export const getProfiles = cache(
+    unstable_cache(
+        async (): Promise<ProfileDoc[]> => (await apiGet<{ profiles: ProfileDoc[] }>("/api/v1/public/profiles")).profiles,
+        ["profiles"],
+        { tags: ["profiles"], revalidate: REVALIDATE_SECONDS },
+    ),
+);
+
+export const getProfileBySlug = cache(
+    unstable_cache(
+        async (slug: string): Promise<ProfileDoc | null> => {
+            try {
+                return await apiGet<ProfileDoc>(`/api/v1/public/profiles/${encodeURIComponent(slug)}`);
+            } catch (e) {
+                if (e instanceof ApiNotFound) return null;
+                throw e;
+            }
+        },
+        ["profile-by-slug"],
+        { tags: ["profiles"], revalidate: REVALIDATE_SECONDS },
+    ),
+);
+
+export const getGlossary = cache(
+    unstable_cache(
+        async (): Promise<GlossaryItem[]> => (await apiGet<{ terms: GlossaryItem[] }>("/api/v1/public/glossary")).terms,
+        ["glossary"],
+        { tags: ["glossary"], revalidate: REVALIDATE_SECONDS },
+    ),
+);
+
+export const getGlossaryTerm = cache(
+    unstable_cache(
+        async (slug: string): Promise<GlossaryTerm | null> => {
+            try {
+                return await apiGet<GlossaryTerm>(`/api/v1/public/glossary/${encodeURIComponent(slug)}`);
+            } catch (e) {
+                if (e instanceof ApiNotFound) return null;
+                throw e;
+            }
+        },
+        ["glossary-term"],
+        { tags: ["glossary"], revalidate: REVALIDATE_SECONDS },
+    ),
+);
+
+export const getAnsweredQuestions = cache(
+    unstable_cache(
+        async (): Promise<AnsweredQuestion[]> => (await apiGet<{ questions: AnsweredQuestion[] }>("/api/v1/public/faq")).questions,
+        ["answered-questions"],
+        { tags: ["faq"], revalidate: REVALIDATE_SECONDS },
+    ),
+);
+
+export type RouteInfo = { path: string; kind: string; title: string; description: string; updatedAt: string };
+
+/** Every public URL the Go API knows about (used for the sitemap and llms.txt). */
+export const getRoutes = cache(
+    unstable_cache(
+        async (): Promise<RouteInfo[]> => (await apiGet<{ routes: RouteInfo[] }>("/api/v1/public/routes")).routes,
+        ["routes"],
+        { tags: ["pages", "services", "posts", "glossary", "faq", "profiles"], revalidate: REVALIDATE_SECONDS },
+    ),
+);

@@ -413,6 +413,30 @@ func (s *Server) listRoutes(w http.ResponseWriter, r *http.Request) {
 		out = append(out, x)
 	}
 	rows.Close()
+	// Glossary terms, answered questions and public profiles have their own URLs (sitemap, llms.txt).
+	for _, q := range []struct{ kind, prefix, sql string }{
+		{"glossary", "/glossario/", `SELECT slug::text, term, short_definition, updated_at FROM glossary_terms WHERE status = 'published' ORDER BY term`},
+		{"question", "/perguntas/", `SELECT slug::text, question, '', coalesce(published_at, created_at) FROM faq_questions WHERE status = 'published' AND slug IS NOT NULL ORDER BY published_at DESC`},
+		{"profile", "/sobre/", `SELECT slug::text, display_name, job_title, updated_at FROM profiles WHERE visibility = 'public' ORDER BY is_primary DESC, display_name`},
+	} {
+		rows, err = s.Pool.Query(r.Context(), q.sql)
+		if err != nil {
+			serverError(w, s.Log, r, err)
+			return
+		}
+		for rows.Next() {
+			x := route{Kind: q.kind, MarkdownTwin: false}
+			var slug string
+			if err := rows.Scan(&slug, &x.Title, &x.Description, &x.UpdatedAt); err != nil {
+				rows.Close()
+				serverError(w, s.Log, r, err)
+				return
+			}
+			x.Path = q.prefix + slug
+			out = append(out, x)
+		}
+		rows.Close()
+	}
 	publicJSON(w, map[string]any{"routes": out})
 }
 

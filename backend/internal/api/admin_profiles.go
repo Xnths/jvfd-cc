@@ -32,6 +32,7 @@ func (s *Server) adminProfileRoutes(mux *http.ServeMux) {
 	mux.Handle("POST /api/v1/admin/glossary", a(s.adminUpsertGlossary))
 	mux.Handle("PUT /api/v1/admin/glossary/{id}", a(s.adminUpsertGlossary))
 	mux.Handle("POST /api/v1/admin/glossary/{id}/publish", a(s.adminPublishGlossary))
+	mux.Handle("POST /api/v1/admin/glossary/{id}/unpublish", a(s.adminUnpublishGlossary))
 	mux.Handle("DELETE /api/v1/admin/glossary/{id}", a(s.adminDeleteGlossary))
 }
 
@@ -111,15 +112,30 @@ func (s *Server) adminListProfiles(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) adminGetProfile(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
+	if strings.HasPrefix(id, "slug:") { // the on-page editor opens a profile by the URL it is sitting on
+		if err := s.Pool.QueryRow(r.Context(), `SELECT id::text FROM profiles WHERE slug = $1`, strings.TrimPrefix(id, "slug:")).Scan(&id); err != nil {
+			notFound(w)
+			return
+		}
+	}
 	var p struct {
-		ID, Slug, DisplayName, FullName, JobTitle, Approach, Visibility string
-		CRP                                                             *string
-		IsClinician, IsPrimary                                          bool
-		PracticingSince                                                 *int
-		Bio                                                             json.RawMessage
-		PhotoID                                                         *string
-		KnowsAbout, Languages, AlumniOf                                 []string
-		Links                                                           json.RawMessage
+		ID              string          `json:"id"`
+		Slug            string          `json:"slug"`
+		DisplayName     string          `json:"displayName"`
+		FullName        string          `json:"fullName"`
+		JobTitle        string          `json:"jobTitle"`
+		Approach        string          `json:"approach"`
+		Visibility      string          `json:"visibility"`
+		CRP             *string         `json:"crp"`
+		IsClinician     bool            `json:"isClinician"`
+		IsPrimary       bool            `json:"isPrimary"`
+		PracticingSince *int            `json:"practicingSince"`
+		Bio             json.RawMessage `json:"bio"`
+		PhotoID         *string         `json:"photoId"`
+		KnowsAbout      []string        `json:"knowsAbout"`
+		Languages       []string        `json:"languages"`
+		AlumniOf        []string        `json:"alumniOf"`
+		Links           json.RawMessage `json:"links"`
 	}
 	err := s.Pool.QueryRow(r.Context(), `SELECT id::text, slug::text, display_name, full_name, job_title, approach, visibility, crp, is_clinician, is_primary,
 		practicing_since, bio, photo_id::text, knows_about, languages, alumni_of, links FROM profiles WHERE id::text = $1`, id).
@@ -653,5 +669,20 @@ func (s *Server) adminDeleteGlossary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.Notify.Revalidate(r.Context(), []string{tagGlossary}, []string{"/glossario", "/sitemap.xml"}, false)
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) adminUnpublishGlossary(w http.ResponseWriter, r *http.Request) {
+	var slug string
+	err := s.Pool.QueryRow(r.Context(), `UPDATE glossary_terms SET status = 'draft', updated_at = now() WHERE id::text = $1 RETURNING slug::text`, r.PathValue("id")).Scan(&slug)
+	if isNoRows(err) {
+		notFound(w)
+		return
+	}
+	if err != nil {
+		serverError(w, s.Log, r, err)
+		return
+	}
+	s.Notify.Revalidate(r.Context(), []string{tagGlossary}, []string{"/glossario", "/glossario/" + slug, "/sitemap.xml", "/llms.txt", "/llms-full.txt"}, false)
 	w.WriteHeader(http.StatusNoContent)
 }
