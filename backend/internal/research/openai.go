@@ -85,7 +85,10 @@ func retryAfter(h http.Header) time.Duration {
 // FriendlyError is the Portuguese explanation shown on the pauta when a run fails.
 func FriendlyError(err error) string {
 	var ae *APIError
+	var fe *FormatError
 	switch {
+	case errors.As(err, &fe):
+		return "A IA respondeu num formato inesperado duas vezes. Tente de novo."
 	case errors.Is(err, errBudget):
 		return "O orçamento mensal de IA acabou. Aumente LLM_MONTHLY_BUDGET_USD ou espere o próximo mês."
 	case !errors.As(err, &ae):

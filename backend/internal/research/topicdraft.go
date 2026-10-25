@@ -47,28 +47,28 @@ type queries struct {
 
 // Outline is the "ideia de post" that step 2 stores for João to read.
 type Outline struct {
-	Angle        string   `json:"angle"`
-	TitleOptions []string `json:"title_options"`
-	Hook         string   `json:"hook"`
+	Angle        flexStr `json:"angle"`
+	TitleOptions strList `json:"title_options"`
+	Hook         flexStr `json:"hook"`
 	Sections     []struct {
-		Heading string   `json:"heading"`
-		Points  []string `json:"points"`
-		Sources []int    `json:"sources"`
+		Heading flexStr `json:"heading"`
+		Points  strList `json:"points"`
+		Sources intList `json:"sources"`
 	} `json:"sections"`
-	ExampleScenario string   `json:"example_scenario"`
-	ClosingLine     string   `json:"closing_line"`
-	Cautions        []string `json:"cautions"`
+	ExampleScenario flexStr `json:"example_scenario"`
+	ClosingLine     flexStr `json:"closing_line"`
+	Cautions        strList `json:"cautions"`
 }
 
 type finalDraft struct {
-	Title           string `json:"title"`
-	Excerpt         string `json:"excerpt"`
-	MetaDescription string `json:"meta_description"`
-	Keywords        string `json:"keywords"`
+	Title           flexStr `json:"title"`
+	Excerpt         flexStr `json:"excerpt"`
+	MetaDescription flexStr `json:"meta_description"`
+	Keywords        flexStr `json:"keywords"`
 	Blocks          []struct {
-		Type  string   `json:"type"` // h2 | p | ul
-		Text  string   `json:"text"`
-		Items []string `json:"items"`
+		Type  flexStr `json:"type"` // h2 | p | ul
+		Text  flexStr `json:"text"`
+		Items strList `json:"items"`
 	} `json:"blocks"`
 }
 
@@ -199,7 +199,7 @@ Responda um objeto JSON com: "title", "excerpt" (1 ou 2 frases, até 200 caracte
 		pauta+"\n\nIdeia aprovada:\n"+string(oj)+"\n\nFontes:\n"+numbered, 3500, &fd); err != nil {
 		return err
 	}
-	if strings.TrimSpace(fd.Title) == "" || len(fd.Blocks) < 3 {
+	if fd.Title == "" || len(fd.Blocks) < 3 {
 		return errors.New("o rascunho veio incompleto")
 	}
 
@@ -222,7 +222,7 @@ Responda um objeto JSON com: "title", "excerpt" (1 ou 2 frases, até 200 caracte
 	all = append(all, refs...)
 
 	cj, _ := json.Marshal(cits)
-	slug := slugify(fd.Title)
+	slug := slugify(string(fd.Title))
 	var postID string
 	for i := 0; i < 20; i++ {
 		s := slug
@@ -231,7 +231,7 @@ Responda um objeto JSON com: "title", "excerpt" (1 ou 2 frases, até 200 caracte
 		}
 		e := pool.QueryRow(ctx, `INSERT INTO posts (slug, title, excerpt, content, origin, citations, keywords, meta_description)
 			VALUES ($1,$2,$3,$4,'topic_bot',$5,$6,$7) ON CONFLICT (slug) DO NOTHING RETURNING id::text`,
-			s, strings.TrimSpace(fd.Title), shorten(fd.Excerpt, 300), doc(all...), cj, shorten(fd.Keywords, 200), shorten(fd.MetaDescription, 200)).Scan(&postID)
+			s, string(fd.Title), shorten(string(fd.Excerpt), 300), doc(all...), cj, shorten(string(fd.Keywords), 200), shorten(string(fd.MetaDescription), 200)).Scan(&postID)
 		if e == nil {
 			break
 		}
@@ -251,16 +251,20 @@ Responda um objeto JSON com: "title", "excerpt" (1 ou 2 frases, até 200 caracte
 	return err
 }
 
-// chatJSON asks for a JSON object and decodes it into v.
+// chatJSON asks for a JSON object and decodes it into v. A reply that cannot be read is asked for once more
+// (cheap next to the cost of losing the whole run); the second failure is returned as a *FormatError.
 func chatJSON(ctx context.Context, ai *OpenAI, model, system, user string, maxTokens int, v any) error {
-	out, err := ai.Chat(ctx, topicJob, model, system, user, maxTokens, true)
-	if err != nil {
-		return err
+	var err error
+	for attempt := 0; attempt < 2; attempt++ {
+		var out string
+		if out, err = ai.Chat(ctx, topicJob, model, system, user, maxTokens, true); err != nil {
+			return err
+		}
+		if err = decodeModelJSON(out, v); err == nil {
+			return nil
+		}
 	}
-	if err := json.Unmarshal([]byte(out), v); err != nil {
-		return errors.New("a resposta do modelo não veio no formato esperado")
-	}
-	return nil
+	return err
 }
 
 // pickPapers keeps the best papers with an abstract: PubMed first (reviews and trials rank higher), then SciELO.
@@ -351,12 +355,12 @@ func buildBody(fd finalDraft, sources []Source) ([]node, []Source) {
 	}
 	var out []node
 	for _, b := range fd.Blocks {
-		switch b.Type {
-		case "h2":
-			if t := strings.TrimSpace(fix(b.Text)); t != "" {
+		switch string(b.Type) {
+		case "h1", "h2", "h3":
+			if t := strings.TrimSpace(fix(string(b.Text))); t != "" {
 				out = append(out, heading("h2", t))
 			}
-		case "ul":
+		case "ul", "ol", "list":
 			var items []string
 			for _, it := range b.Items {
 				if t := strings.TrimSpace(fix(it)); t != "" {
@@ -364,10 +368,10 @@ func buildBody(fd finalDraft, sources []Source) ([]node, []Source) {
 				}
 			}
 			if len(items) > 0 {
-				out = append(out, list(items, false))
+				out = append(out, list(items, b.Type == "ol"))
 			}
 		default:
-			if t := strings.TrimSpace(fix(b.Text)); t != "" {
+			if t := strings.TrimSpace(fix(string(b.Text))); t != "" {
 				out = append(out, richParagraph(t))
 			}
 		}
@@ -376,9 +380,9 @@ func buildBody(fd finalDraft, sources []Source) ([]node, []Source) {
 }
 
 func plainOf(fd finalDraft) string {
-	parts := []string{fd.Title, fd.Excerpt}
+	parts := []string{string(fd.Title), string(fd.Excerpt)}
 	for _, b := range fd.Blocks {
-		parts = append(parts, b.Text)
+		parts = append(parts, string(b.Text))
 		parts = append(parts, b.Items...)
 	}
 	return strings.Join(parts, "\n")

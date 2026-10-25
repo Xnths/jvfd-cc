@@ -95,10 +95,10 @@ export function Topics() {
                                     <div className="mt-2 space-y-2">
                                         <p><strong>Ângulo:</strong> {t.digest.outline.angle}</p>
                                         <ul className="list-disc pl-5">
-                                            {t.digest.outline.sections.map((sec) => <li key={sec.heading}><strong>{sec.heading}</strong>: {sec.points.join('; ')}</li>)}
+                                            {(t.digest.outline.sections ?? []).map((sec) => <li key={sec.heading}><strong>{sec.heading}</strong>: {(sec.points ?? []).join('; ')}</li>)}
                                         </ul>
-                                        {t.digest.outline.cautions.length > 0 && (
-                                            <p className="text-amber-700"><strong>Conferir:</strong> {t.digest.outline.cautions.join(' · ')}</p>
+                                        {(t.digest.outline.cautions ?? []).length > 0 && (
+                                            <p className="text-amber-700"><strong>Conferir:</strong> {(t.digest.outline.cautions ?? []).join(' · ')}</p>
                                         )}
                                     </div>
                                 )}
