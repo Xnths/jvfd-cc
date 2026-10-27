@@ -22,7 +22,7 @@ export async function GET() {
 
     const body = `# Psicólogo João Fernandes
 
-> ${person.name} é psicólogo clínico (CRP ${person.crp}) com atuação em ${person.approach}. Atende online para todo o Brasil e presencialmente na Vila Madalena, São Paulo. Psicoterapia individual, terapia de casal, plantão psicológico, atendimento afirmativo LGBTQIA+, supervisão clínica para psicólogos e aulas particulares. Atendimento particular, com recibo para reembolso.
+> ${person.name} é psicólogo clínico (CRP ${person.crp}) com atuação em ${person.approach}. Atende online para todo o Brasil e presencialmente na Vila Madalena, São Paulo. Psicoterapia individual, terapia de casal, plantão psicológico, atendimento afirmativo LGBTQIA+, avaliação neuropsicológica (somente presencial), supervisão clínica para psicólogos e aulas particulares. Atendimento particular, com recibo para reembolso.
 
 Informações práticas: ${contact.address.street}, ${contact.address.neighborhood}, ${contact.address.locality}-${contact.address.region}, CEP ${contact.address.postalCode}. ${contact.hours.daysLabel}, ${contact.hours.opens}–${contact.hours.closes}. WhatsApp ${contact.phoneDisplay}. Todas as páginas têm versão Markdown acrescentando ".md" à URL.
 

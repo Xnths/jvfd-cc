@@ -10,6 +10,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import posthog from "posthog-js";
 import { sendGAEvent } from "@next/third-parties/google";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
+import { getGclidFromCookie } from "@/lib/gclid";
 import { RichText } from "@/components/RichText";
 import { Footer } from "@/components/Footer";
 import { Contact } from "@/components/Contact";
@@ -830,14 +831,26 @@ function ServicePageInner({ slug, title, subtitle, content, service }: ServicePa
 
   const handleCTAClick = () => {
     const elapsed = getElapsedTime() ?? 0;
-    sendGAEvent("event", "schedule_click", {
-      source: service?.analyticsKey ?? `service_page_${slug}`,
-      time_to_click_ms: elapsed,
-    });
-    posthog.capture("schedule_click", {
-      source: service?.analyticsKey ?? `service_page_${slug}`,
-      time_to_click_ms: elapsed,
-    });
+    const gclid = getGclidFromCookie();
+    const source = service?.analyticsKey ?? `service_page_${slug}`;
+    const params = { source, time_to_click_ms: elapsed, ...(gclid ? { gclid } : {}) };
+    sendGAEvent("event", "schedule_click", params);
+    posthog.capture("schedule_click", params);
+
+    if (gclid) {
+      const data = JSON.stringify({ gclid });
+      const sent = navigator.sendBeacon
+        ? navigator.sendBeacon("/api/leads", new Blob([data], { type: "application/json" }))
+        : false;
+      if (!sent) {
+        fetch("/api/leads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: data,
+          keepalive: true,
+        }).catch(() => {});
+      }
+    }
   };
 
   if (!config) {
