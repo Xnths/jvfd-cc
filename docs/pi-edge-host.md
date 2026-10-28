@@ -96,6 +96,7 @@ getent hosts github.com             # DNS works
 | Public 502 | Tunnel is up but the container behind the port is down/restarting: `docker ps`, `docker logs <name>`; test `curl -I localhost:82`. Also happens for seconds during deploys. |
 | `Could not resolve host` on the Pi | `cat /etc/resolv.conf` must list `192.168.15.1`/`192.168.68.1` (NetworkManager). If it points at 127.0.2.x, WARP came back: `sudo systemctl disable --now warp-svc`. |
 | Site fine for you, down for others | Check `https://…/?edge=origin` vs plain URL: plain URL may be served by the Worker snapshot while the Pi is down. |
+| Containers fail with `EAI_AGAIN` (admin "Servidor indisponível", analytics errors) after any change to the Pi's DNS/VPN | Docker fixes each container's upstream DNS at start. `docker restart` the affected containers (clinic-auth, clinic-api, clinic-frontend-*, airflow, blog-payload-*). |
 | Disk > 85% | `docker system prune -f`, `docker builder prune -af`, trim `~/backups`. |
 | nginx config changed after `git pull` | Single-file bind mount: `docker restart clinic-nginx` (reload keeps the old inode). |
 
