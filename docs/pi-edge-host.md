@@ -9,7 +9,7 @@ Everything public goes through a **Cloudflare Tunnel**: no router port is forwar
 | OS | Debian 13 (trixie), user `xnths` (in `docker` and `sudo` groups) |
 | LAN address | `192.168.68.110` (wired `eth0`; reserve it on the router) |
 | Remote access | `ssh xnths@192.168.68.110` on the home LAN. Tailscale is installed but logged out. |
-| Cloudflare WARP | **Removed/disabled on purpose** (2026-10-28). It sat underneath the tunnel and caused the 530 outages. Do not enable it. |
+| Cloudflare WARP | **Uninstalled on purpose** (2026-10-28, package purged). It sat underneath the tunnel and caused the 530 outages. Do not enable it. |
 
 ## How a request flows
 
