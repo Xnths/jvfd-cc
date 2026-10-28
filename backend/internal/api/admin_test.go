@@ -293,6 +293,25 @@ func TestBotPostsNeedClinicianReview(t *testing.T) {
 	}
 }
 
+func TestClinicalAdminBecomesReviewerOnPublish(t *testing.T) {
+	e := newTestEnv(t)
+	e.exec(`INSERT INTO posts (id, slug, title, excerpt, content, origin) VALUES ('88888888-8888-8888-8888-888888888889','bot2','Resumo de estudo','Resumo.',$1,'topic_bot')`, []byte(lexHello))
+	url := "/api/v1/admin/posts/88888888-8888-8888-8888-888888888889/publish"
+	rec := e.do("POST", url, "", e.token(authn.RoleAdminTech))
+	if rec.Code != 422 || !strings.Contains(rec.Body.String(), "CRP") || strings.Contains(rec.Body.String(), "automated drafts") {
+		t.Fatalf("tech admin: %d %s", rec.Code, rec.Body.String())
+	}
+	e.exec(`INSERT INTO profiles (id, slug, display_name, is_clinician, crp, is_primary) VALUES ('99999999-9999-9999-9999-999999999998','joao','João',true,'06/157908',true)`)
+	if c := e.do("POST", url, "", e.token(authn.RoleAdminClinical)).Code; c != 200 {
+		t.Fatalf("clinical admin publish: %d", c)
+	}
+	var rev string
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT coalesce(reviewed_by_profile_id::text,'') FROM posts WHERE slug = 'bot2'`).Scan(&rev)
+	if rev != "99999999-9999-9999-9999-999999999998" {
+		t.Fatalf("reviewer not set: %q", rev)
+	}
+}
+
 func TestLeadsExportMatchesLegacyFormat(t *testing.T) {
 	e := newTestEnv(t)
 	tok := e.token(authn.RoleAdminClinical)

@@ -246,7 +246,7 @@ func (s *Server) adminPatchPost(w http.ResponseWriter, r *http.Request) {
 	if in.ReviewedByProfileID != nil && *in.ReviewedByProfileID != "" {
 		var clinician bool
 		if err := s.Pool.QueryRow(r.Context(), `SELECT is_clinician AND crp IS NOT NULL FROM profiles WHERE id::text = $1`, *in.ReviewedByProfileID).Scan(&clinician); err != nil || !clinician {
-			badRequest(w, "the reviewer must be a clinician with a CRP")
+			badRequest(w, "o revisor precisa ser psicólogo(a) com CRP")
 			return
 		}
 	}
@@ -334,13 +334,26 @@ func (s *Server) adminPublishPost(w http.ResponseWriter, r *http.Request) {
 	}
 	flags := s.lintPost(p)
 	// Automated drafts (research bot, GSC, trend, FAQ) never go live without a clinician's review.
+	// When the clinical admin publishes one, publishing is the review: they become the reviewer.
+	var reviewer *string
 	if p.Origin != "manual" {
 		var clinician bool
 		if p.ReviewedByProfileID != nil {
 			_ = s.Pool.QueryRow(ctx, `SELECT is_clinician AND crp IS NOT NULL FROM profiles WHERE id::text = $1`, *p.ReviewedByProfileID).Scan(&clinician)
 		}
+		if !clinician && claimsFrom(ctx).Role == authn.RoleAdminClinical {
+			var id string
+			err := s.Pool.QueryRow(ctx, `SELECT id::text FROM profiles WHERE is_clinician AND crp IS NOT NULL
+				ORDER BY (admin_user_id::text = $1) DESC NULLS LAST, is_primary DESC LIMIT 1`, s.actorID(r)).Scan(&id)
+			if err == nil {
+				reviewer, clinician = &id, true
+			} else if !isNoRows(err) {
+				serverError(w, s.Log, r, err)
+				return
+			}
+		}
 		if !clinician {
-			httpx.Problem(w, http.StatusUnprocessableEntity, "automated drafts need a clinician reviewer (with CRP) before publishing")
+			httpx.Problem(w, http.StatusUnprocessableEntity, "Rascunhos automáticos precisam ser revisados por um psicólogo ou psicóloga com CRP antes de publicar. Peça a um profissional com CRP para publicar.")
 			return
 		}
 		if len(flags) > 0 && !in.AcknowledgeLint {
@@ -362,8 +375,10 @@ func (s *Server) adminPublishPost(w http.ResponseWriter, r *http.Request) {
 	var newlyPublished bool
 	if err := tx.QueryRow(ctx, `UPDATE posts SET published_content = content, status = 'published',
 		lint_ack_at = CASE WHEN $2 THEN now() ELSE lint_ack_at END,
+		reviewed_by_profile_id = coalesce($3::uuid, reviewed_by_profile_id),
+		last_reviewed_at = CASE WHEN $3::uuid IS NULL THEN last_reviewed_at ELSE now() END,
 		published_at = coalesce(published_at, now()), updated_at = now()
-		WHERE id::text = $1 RETURNING version, slug::text, (newsletter_sent_at IS NULL)`, p.ID, in.AcknowledgeLint).Scan(&version, &slug, &newlyPublished); err != nil {
+		WHERE id::text = $1 RETURNING version, slug::text, (newsletter_sent_at IS NULL)`, p.ID, in.AcknowledgeLint, reviewer).Scan(&version, &slug, &newlyPublished); err != nil {
 		serverError(w, s.Log, r, err)
 		return
 	}
