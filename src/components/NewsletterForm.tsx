@@ -8,7 +8,7 @@ import { Editable } from "@/edit/Editable";
 
 type FormState = "idle" | "submitting" | "success" | "duplicate" | "error";
 
-export function NewsletterForm() {
+export function NewsletterForm({ placement = "home", slug }: { placement?: "home" | "article"; slug?: string }) {
     const [email, setEmail] = useState("");
     const [consent, setConsent] = useState(false);
     const [state, setState] = useState<FormState>("idle");
@@ -32,8 +32,8 @@ export function NewsletterForm() {
                 setState("success");
                 setEmail("");
                 setConsent(false);
-                sendGAEvent("event", "newsletter_subscribe", { source: "newsletter_form" });
-                posthog.capture("newsletter_subscribed", { source: "newsletter_form" });
+                sendGAEvent("event", "newsletter_subscribe", { source: "newsletter_form", placement, slug: slug ?? "" });
+                posthog.capture("newsletter_subscribed", { source: "newsletter_form", placement, slug });
             } else if (res.status === 409) {
                 setState("duplicate");
             } else {
@@ -103,6 +103,12 @@ export function NewsletterForm() {
                             e autorizo o recebimento de novidades do blog de João Vitor Fernandes Domingues, Psicólogo (CRP 06/157908).
                         </span>
                     </label>
+
+                    {state === "idle" && !canSubmit && (email.length > 0 || consent) && (
+                        <p className="text-xs text-slate-500">
+                            {!email.includes("@") ? "Digite um e-mail válido para continuar." : "Marque a caixa de concordância para continuar."}
+                        </p>
+                    )}
 
                     {state !== "idle" && state !== "submitting" && (
                         <p className="text-sm" role="alert">{feedback[state]}</p>

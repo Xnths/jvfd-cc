@@ -141,7 +141,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <BlogArticleFooter relatedPosts={relatedPosts} />
 
             <div className="mt-12 max-w-xl mx-auto">
-                <NewsletterForm />
+                <NewsletterForm placement="article" slug={slug} />
             </div>
 
             {/* Comments section */}
