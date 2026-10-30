@@ -1,5 +1,6 @@
 "use client";
 
+import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import Link from "next/link";
 import { FaWhatsapp } from "react-icons/fa";
 import { MoveRight } from "lucide-react";
@@ -36,6 +37,7 @@ export function BlogArticleFooter({ relatedPosts }: BlogArticleFooterProps) {
             source: "blog_article_footer",
             time_to_click_ms: elapsedTime,
         });
+        trackWhatsappClick("blog_article_footer");
     };
 
     return (

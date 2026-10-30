@@ -19,7 +19,23 @@ type Lead = {
     status: 'clicked' | 'qualified' | 'converted'
     qualifiedAt?: string | null
     convertedAt?: string | null
+    hasClickId: boolean
+    source: string
+    pageUrl: string
+    landingUrl: string
+    convertedValue?: number | null
+    suggestedValue: number
+    uploads: Partial<Record<Stage, Upload>>
 }
+
+type Stage = 'whatsapp_click' | 'message_received' | 'appointment_booked'
+type Upload = { status: 'pending' | 'retry' | 'succeeded' | 'failed' | 'skipped'; code?: string | null; message?: string | null; attempts: number }
+
+const STAGE_LABEL: Record<Stage, string> = { whatsapp_click: 'Clique', message_received: 'Mensagem', appointment_booked: 'Consulta' }
+const UPLOAD_LABEL: Record<Upload['status'], string> = {
+    pending: 'na fila', retry: 'tentando de novo', succeeded: 'enviado', failed: 'falhou', skipped: 'não enviado',
+}
+const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
 const STATUS_LABEL: Record<Lead['status'], string> = {
     clicked: 'Clicou no WhatsApp',
@@ -40,24 +56,32 @@ export function Leads() {
     const { data, error, loading, reload } = useResource<{ leads: Lead[] }>(
         `/leads?limit=500${filter === 'all' ? '' : `&status=${filter}`}`,
     )
-    const [pending, setPending] = useState<{ lead: Lead; status: Lead['status']; when: string } | null>(null)
+    const [pending, setPending] = useState<{ lead: Lead; status: Lead['status']; when: string; value: string } | null>(null)
     const [saving, setSaving] = useState(false)
 
     function ask(lead: Lead, status: Lead['status']) {
         if (lead.status === status) return
         // The qualified time defaults to the click time; other events default to now.
         const base = status === 'qualified' ? new Date(lead.clickedAt) : new Date()
-        setPending({ lead, status, when: toLocalInput(base) })
+        setPending({ lead, status, when: toLocalInput(base), value: String(lead.convertedValue ?? lead.suggestedValue) })
     }
 
     async function confirm() {
         if (!pending) return
-        const { lead, status, when } = pending
+        const { lead, status, when, value } = pending
         const at = new Date(when)
         if (Number.isNaN(at.getTime())) return toast.error('Data inválida')
         setSaving(true)
         try {
-            const body: Record<string, string> = { status }
+            const body: Record<string, string | number> = { status }
+            if (status === 'converted') {
+                const v = Number(value.replace(',', '.'))
+                if (value.trim() === '' || !Number.isFinite(v) || v < 0) {
+                    setSaving(false)
+                    return toast.error('Valor inválido')
+                }
+                body.value = v
+            }
             if (status === 'qualified') body.qualifiedAt = at.toISOString()
             if (status === 'converted') body.convertedAt = at.toISOString()
             await api(`/leads/${lead.id}/status`, { method: 'PATCH', json: body })
@@ -75,6 +99,16 @@ export function Leads() {
         }
     }
 
+    async function resend(lead: Lead) {
+        try {
+            await api(`/leads/${lead.id}/resend`, { method: 'POST' })
+            toast.success('Reenvio agendado')
+            await reload()
+        } catch (e) {
+            toast.error(errorMessage(e))
+        }
+    }
+
     const leads = data?.leads ?? []
     return (
         <>
@@ -82,6 +116,7 @@ export function Leads() {
                 title="Leads"
                 description="Cliques no WhatsApp vindos de anúncios. Marque o andamento para enviar a conversão ao Google Ads."
             />
+            <AdsPanel />
             <div className="mb-4">
                 <FilterTabs
                     value={filter}
@@ -104,7 +139,8 @@ export function Leads() {
                                 <TableHead>Status</TableHead>
                                 <TableHead>Qualificado</TableHead>
                                 <TableHead>Consulta</TableHead>
-                                <TableHead>GCLID</TableHead>
+                                <TableHead>Origem</TableHead>
+                                <TableHead>Envio ao Google Ads</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -118,8 +154,31 @@ export function Leads() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">{fmtDate(l.qualifiedAt)}</TableCell>
-                                    <TableCell className="whitespace-nowrap">{fmtDate(l.convertedAt)}</TableCell>
-                                    <TableCell className="max-w-[10rem] truncate font-mono text-xs" title={l.gclid}>{l.gclid}</TableCell>
+                                    <TableCell className="whitespace-nowrap">
+                                        {fmtDate(l.convertedAt)}
+                                        {l.status === 'converted' && l.convertedValue != null && <div className="text-xs text-muted-foreground">{brl(l.convertedValue)}</div>}
+                                    </TableCell>
+                                    <TableCell className="max-w-[14rem] text-xs" title={`${l.pageUrl}\n${l.landingUrl}`}>
+                                        <div className="truncate font-medium">{l.source || '—'}</div>
+                                        <div className="truncate text-muted-foreground">{l.gclid || (l.hasClickId ? 'gbraid/wbraid' : 'sem identificador')}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-wrap gap-1">
+                                            {(Object.keys(STAGE_LABEL) as Stage[]).map((s) => {
+                                                const u = l.uploads[s]
+                                                if (!u) return null
+                                                return (
+                                                    <Badge
+                                                        key={s}
+                                                        variant={u.status === 'failed' ? 'destructive' : u.status === 'succeeded' ? 'default' : 'outline'}
+                                                        title={[u.code, u.message].filter(Boolean).join(': ')}
+                                                    >
+                                                        {STAGE_LABEL[s]}: {UPLOAD_LABEL[u.status]}
+                                                    </Badge>
+                                                )
+                                            })}
+                                        </div>
+                                    </TableCell>
                                     <TableCell>
                                         <div className="flex justify-end gap-1">
                                             {(['clicked', 'qualified', 'converted'] as const).map((s) => (
@@ -133,6 +192,9 @@ export function Leads() {
                                                     {s === 'clicked' ? 'Clicou' : s === 'qualified' ? 'Qualificado' : 'Marcada'}
                                                 </Button>
                                             ))}
+                                            {Object.values(l.uploads).some((u) => u?.status === 'failed') && (
+                                                <Button size="sm" variant="outline" onClick={() => resend(l)}>Reenviar</Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -159,6 +221,22 @@ export function Leads() {
                             )}
                         </DialogDescription>
                     </DialogHeader>
+                    {pending && pending.status === 'converted' && (
+                        <label className="grid gap-1 text-sm">
+                            Valor da consulta (R$)
+                            <Input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                inputMode="decimal"
+                                value={pending.value}
+                                onChange={(e) => setPending({ ...pending, value: e.target.value })}
+                            />
+                            <span className="text-xs text-muted-foreground">
+                                Sugestão: {brl(pending.lead.suggestedValue)}. Altere se este paciente tem outro valor. É o valor enviado ao Google Ads.
+                            </span>
+                        </label>
+                    )}
                     {pending && pending.status !== 'clicked' && (
                         <label className="grid gap-1 text-sm">
                             Horário do evento
@@ -231,8 +309,39 @@ function ExportPanel() {
                     <Download /> {busy === 'contato' ? 'Gerando…' : 'Contato WhatsApp (valor R$ 0)'}
                 </Button>
                 <Button disabled={busy !== null} onClick={() => run('consulta')}>
-                    <Download /> {busy === 'consulta' ? 'Gerando…' : 'Consulta marcada (R$ 350)'}
+                    <Download /> {busy === 'consulta' ? 'Gerando…' : 'Consulta marcada'}
                 </Button>
+            </div>
+        </section>
+    )
+}
+
+type AdsStats = {
+    enabled: boolean
+    counts: Partial<Record<Upload['status'], number>>
+    medianSeconds?: number | null
+    p95Seconds?: number | null
+    authError?: { error: string; at: string } | null
+}
+
+function AdsPanel() {
+    const { data } = useResource<AdsStats>('/ads/stats')
+    if (!data) return null
+    if (!data.enabled) {
+        return <p className="mb-4 rounded-lg border bg-card p-3 text-sm text-muted-foreground">Envio automático ao Google Ads desligado (credenciais GADS_* não configuradas).</p>
+    }
+    const secs = (n?: number | null) => (n == null ? '—' : n < 90 ? `${Math.round(n)} s` : `${Math.round(n / 60)} min`)
+    return (
+        <section className="mb-4 rounded-lg border bg-card p-3 text-sm">
+            {data.authError && (
+                <p className="mb-2 font-medium text-destructive">Erro de autenticação no Google Ads: envios parados. {data.authError.error}</p>
+            )}
+            <div className="flex flex-wrap gap-x-6 gap-y-1">
+                <span className="font-semibold">Últimos 7 dias</span>
+                {(Object.keys(UPLOAD_LABEL) as Upload['status'][]).map((s) => (
+                    <span key={s}>{UPLOAD_LABEL[s]}: <strong>{data.counts[s] ?? 0}</strong></span>
+                ))}
+                <span>tempo até o envio (mediana / p95): <strong>{secs(data.medianSeconds)} / {secs(data.p95Seconds)}</strong></span>
             </div>
         </section>
     )

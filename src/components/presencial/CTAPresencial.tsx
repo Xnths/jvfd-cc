@@ -1,5 +1,6 @@
 "use client";
 
+import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import { useState, useEffect } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import { sendGAEvent } from "@next/third-parties/google";
@@ -38,21 +39,7 @@ export function CTAPresencial() {
       time_to_click_ms: elapsedTime,
       ...(gclid ? { gclid } : {}),
     });
-
-    if (gclid) {
-      const data = JSON.stringify({ gclid });
-      const sent = navigator.sendBeacon
-        ? navigator.sendBeacon("/api/leads", new Blob([data], { type: "application/json" }))
-        : false;
-      if (!sent) {
-        fetch("/api/leads", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: data,
-          keepalive: true,
-        }).catch(() => {});
-      }
-    }
+    trackWhatsappClick("presencial_cta");
   };
 
   return (

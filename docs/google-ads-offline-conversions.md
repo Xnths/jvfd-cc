@@ -278,6 +278,25 @@ This is the only conversion the Smart Bidding algorithm optimizes toward.
 
 ---
 
+## 7a. Automatic upload (replaces the weekly CSV)
+
+Every WhatsApp click is a row in `leads` (source, page, landing URL, gclid/gbraid/wbraid, utm_*). `conversion_uploads` has one row per
+(lead, stage): `whatsapp_click`, `message_received` ("Qualificado"), `appointment_booked` ("Marcada"). The Go API uploads them through
+`UploadClickConversions` within seconds (60 s sweep as a safety net, job `ads.upload`), with `order_id = <lead id>:<stage>` so retries
+never double count. Clicks without a Google click id are kept but `skipped` (`NO_CLICK_ID`). No hashed phone/e-mail is ever sent.
+
+- The WhatsApp message carries no identifier (João's requirement): in /admin/leads, find the lead by click time, page and button, then press
+  "Qualificado" (message received) or "Marcada" (appointment). "Marcada" asks for the value, which João can change per patient; the suggestion
+  comes from the backend (avaliação neuropsicológica leads get a different suggestion than therapy). Never put a price on the public site.
+- Env vars (`.env.example`, `GADS_*`): without them the feature is off. First production test with `GADS_VALIDATE_ONLY=true`.
+- Conversion actions to create (Goals → Conversions → Import → CRM/files → "Track conversions from clicks"): click = Primary, message and
+  appointment = Secondary at first. Set any gtag WhatsApp conversion to Secondary so it is not counted twice. The GA4 events `contacted` /
+  `scheduled` fired from the Leads screen are a separate import: do not mark them Primary together with these.
+- Errors: "too recent" codes retry after 1 h; transient ones back off up to 6 h; `EXPIRED_CLICK`, `UNPARSEABLE_GCLID`, `INVALID_CONVERSION_ACTION`,
+  `CONVERSION_PRECEDES_CLICK` fail at once (button "Reenviar" in the admin); auth errors stop the worker and show a red banner on /admin/leads.
+- Job `ads.reconcile` stores Google's own upload summary (shown next to ours).
+- Cut-over: run both for 7 days, then stop the CSV. The CSV export still exists and now uses the per-lead value.
+
 ## 7. Offline Conversion Import — Weekly Workflow
 
 The system captures the GCLID (Google Click ID) at the moment the visitor clicks the WhatsApp button. João updates the lead status in the Payload admin panel. A CSV is exported and uploaded to Google Ads weekly.

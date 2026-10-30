@@ -1,5 +1,6 @@
 "use client";
 
+import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -28,6 +29,7 @@ export function SiteHeader() {
         const props = { source: "header", time_to_click_ms: getElapsedTime() || 0 };
         sendGAEvent("event", "schedule_click", props);
         posthog.capture("schedule_click", props);
+        trackWhatsappClick("header");
     };
 
     return (

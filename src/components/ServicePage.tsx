@@ -1,5 +1,6 @@
 "use client";
 
+import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Editable } from "@/edit/Editable";
 import dynamic from "next/dynamic";
@@ -837,20 +838,7 @@ function ServicePageInner({ slug, title, subtitle, content, service }: ServicePa
     sendGAEvent("event", "schedule_click", params);
     posthog.capture("schedule_click", params);
 
-    if (gclid) {
-      const data = JSON.stringify({ gclid });
-      const sent = navigator.sendBeacon
-        ? navigator.sendBeacon("/api/leads", new Blob([data], { type: "application/json" }))
-        : false;
-      if (!sent) {
-        fetch("/api/leads", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: data,
-          keepalive: true,
-        }).catch(() => {});
-      }
-    }
+    trackWhatsappClick(source);
   };
 
   if (!config) {

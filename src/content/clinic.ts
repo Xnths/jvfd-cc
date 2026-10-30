@@ -196,6 +196,12 @@ export const faq = [
             "O atendimento é particular, mas forneço recibos para reembolso no seu plano de saúde.",
     },
     {
+        id: "item-8",
+        question: "É possível parcelar o pagamento?",
+        answer:
+            "Sim. A avaliação neuropsicológica pode ser parcelada em até 6 vezes. Valores e condições são informados diretamente pelo WhatsApp.",
+    },
+    {
         id: "item-5",
         question: "O que é a Análise do Comportamento?",
         answer:

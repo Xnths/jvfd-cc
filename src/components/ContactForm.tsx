@@ -1,5 +1,6 @@
 "use client";
 
+import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { sendGAEvent } from "@next/third-parties/google";
@@ -40,21 +41,7 @@ export function ContactForm() {
             ...(gclid ? { gclid } : {}),
         });
 
-        // Fire GCLID lead — only for paid traffic, server deduplicates
-        if (gclid) {
-            const data = JSON.stringify({ gclid });
-            const sent = navigator.sendBeacon
-                ? navigator.sendBeacon('/api/leads', new Blob([data], { type: 'application/json' }))
-                : false;
-            if (!sent) {
-                fetch('/api/leads', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: data,
-                    keepalive: true,
-                }).catch(() => { });
-            }
-        }
+        trackWhatsappClick("hero_qr_cta");
     };
 
     return (

@@ -7,6 +7,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/Xnths/jvfd-cc/backend/internal/ads"
+	"github.com/jackc/pgx/v5/pgconn"
 	"html"
 	"io"
 	"net/http"
@@ -53,30 +55,124 @@ func readBody(w http.ResponseWriter, r *http.Request, max int64) ([]byte, bool) 
 
 // ── leads ───────────────────────────────────────────────────────────────────
 
+type leadIn struct {
+	ID         string `json:"id"`
+	ClickedAt  string `json:"clicked_at"`
+	Source     string `json:"source"`
+	PageURL    string `json:"page_url"`
+	LandingURL string `json:"landing_url"`
+	Gclid      string `json:"gclid"`
+	Gbraid     string `json:"gbraid"`
+	Wbraid     string `json:"wbraid"`
+	UTMSource  string `json:"utm_source"`
+	UTMMedium  string `json:"utm_medium"`
+	UTMCamp    string `json:"utm_campaign"`
+	UTMTerm    string `json:"utm_term"`
+	UTMContent string `json:"utm_content"`
+}
+
+var uuidPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+
+func clip(s string, n int) string {
+	if len(s) > n {
+		return s[:n]
+	}
+	return s
+}
+
+func validClickID(s string) bool {
+	return s == "" || (len(s) <= 512 && gclidPattern.MatchString(s))
+}
+
+// createLead records one WhatsApp click. Old pages send only {"gclid"}; those keep the former behavior (one lead
+// per gclid). New pages send a client-generated id, so a repeated beacon is a no-op.
 func (s *Server) createLead(w http.ResponseWriter, r *http.Request) {
-	raw, ok := readBody(w, r, 2048)
+	raw, ok := readBody(w, r, 4096)
 	if !ok {
 		return
 	}
-	var in struct {
-		Gclid string `json:"gclid"`
-	}
-	if json.Unmarshal(raw, &in) != nil || in.Gclid == "" || len(in.Gclid) > 512 || !gclidPattern.MatchString(in.Gclid) {
+	var in leadIn
+	if json.Unmarshal(raw, &in) != nil || !validClickID(in.Gclid) || !validClickID(in.Gbraid) || !validClickID(in.Wbraid) ||
+		(in.ID != "" && !uuidPattern.MatchString(in.ID)) || (in.ID == "" && in.Gclid == "") {
 		httpx.JSON(w, http.StatusBadRequest, map[string]bool{"ok": false})
 		return
 	}
-	tag, err := s.Pool.Exec(r.Context(),
-		`INSERT INTO leads (gclid, clicked_at, status) VALUES ($1, now(), 'clicked') ON CONFLICT (gclid) DO NOTHING`, in.Gclid)
+	now := s.Now()
+	clicked := now
+	if in.ClickedAt != "" {
+		t, err := time.Parse(time.RFC3339, in.ClickedAt)
+		if err != nil || t.After(now.Add(5*time.Minute)) {
+			httpx.JSON(w, http.StatusBadRequest, map[string]bool{"ok": false})
+			return
+		}
+		// A replay from the edge queue keeps the real click time; anything older than 14 days is not trusted.
+		if t.After(now.Add(-14 * 24 * time.Hour)) {
+			clicked = t
+		}
+	}
+	if clicked.After(now) {
+		clicked = now
+	}
+	tx, err := s.Pool.Begin(r.Context())
 	if err != nil {
 		s.Log.Error("create lead", "err", err)
 		httpx.JSON(w, http.StatusInternalServerError, map[string]bool{"ok": false})
 		return
 	}
-	status := http.StatusOK // already known: succeed silently
-	if tag.RowsAffected() == 1 {
-		status = http.StatusCreated
+	defer tx.Rollback(r.Context())
+	var leadID string
+	nz := func(v string, n int) any {
+		if v == "" {
+			return nil
+		}
+		return clip(v, n)
 	}
-	httpx.JSON(w, status, map[string]bool{"ok": true})
+	err = tx.QueryRow(r.Context(), `INSERT INTO leads (id, clicked_at, status, gclid, gbraid, wbraid, source, page_url, landing_url,
+		utm_source, utm_medium, utm_campaign, utm_term, utm_content, user_agent)
+		SELECT coalesce(nullif($1,'')::uuid, gen_random_uuid()), $2, 'clicked', nullif($3,''), nullif($4,''), nullif($5,''), $6, $7, $8, $9, $10, $11, $12, $13, $14
+		WHERE NOT ($1 = '' AND EXISTS (SELECT 1 FROM leads WHERE gclid = $3))
+		ON CONFLICT (id) DO NOTHING RETURNING id::text`,
+		in.ID, clicked, in.Gclid, in.Gbraid, in.Wbraid, clip(in.Source, 80), clip(in.PageURL, 500), clip(in.LandingURL, 500),
+		nz(in.UTMSource, 200), nz(in.UTMMedium, 200), nz(in.UTMCamp, 200), nz(in.UTMTerm, 200), nz(in.UTMContent, 200),
+		clip(r.UserAgent(), 300)).Scan(&leadID)
+	if isNoRows(err) { // already known: succeed silently
+		httpx.JSON(w, http.StatusOK, map[string]bool{"ok": true})
+		return
+	}
+	if err != nil {
+		s.Log.Error("create lead", "err", err)
+		httpx.JSON(w, http.StatusInternalServerError, map[string]bool{"ok": false})
+		return
+	}
+	if err := insertUpload(r.Context(), tx, leadID, ads.StageClick, clicked, nil, in.Gclid != "" || in.Gbraid != "" || in.Wbraid != ""); err != nil {
+		s.Log.Error("create lead upload", "err", err)
+		httpx.JSON(w, http.StatusInternalServerError, map[string]bool{"ok": false})
+		return
+	}
+	if err := tx.Commit(r.Context()); err != nil {
+		httpx.JSON(w, http.StatusInternalServerError, map[string]bool{"ok": false})
+		return
+	}
+	s.Ads.Kick()
+	httpx.JSON(w, http.StatusCreated, map[string]bool{"ok": true})
+}
+
+// insertUpload queues one conversion (or marks it skipped when the click carries no Google click id). Re-queuing a
+// stage that already succeeded is a no-op; one that failed or was skipped is queued again.
+func insertUpload(ctx context.Context, q interface {
+	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
+}, leadID, stage string, at time.Time, value *float64, hasClickID bool) error {
+	status, code := "pending", ""
+	if !hasClickID {
+		status, code = "skipped", "NO_CLICK_ID"
+	}
+	_, err := q.Exec(ctx, `INSERT INTO conversion_uploads (lead_id, stage, conversion_time, value, status, last_error_code)
+		VALUES ($1::uuid,$2,$3,$4,$5,nullif($6,''))
+		ON CONFLICT (lead_id, stage) DO UPDATE SET conversion_time = EXCLUDED.conversion_time, value = EXCLUDED.value,
+		  status = EXCLUDED.status, last_error_code = EXCLUDED.last_error_code, last_error_message = NULL, attempts = 0,
+		  next_attempt_at = now(), updated_at = now()
+		WHERE conversion_uploads.status <> 'succeeded'`, leadID, stage, at, value, status, code)
+	return err
 }
 
 // ── newsletter ──────────────────────────────────────────────────────────────

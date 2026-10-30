@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/Xnths/jvfd-cc/backend/internal/ads"
 	"log/slog"
 	"net/http"
 	"os"
@@ -45,6 +46,14 @@ func run(log *slog.Logger) error {
 		Turnstile: api.CFTurnstile{Secret: cfg.TurnstileSecret},
 		Notify: &api.HTTPNotifier{RevalidateURL: cfg.RevalidateURL, Secret: cfg.RevalidateSecret,
 			IndexNowKey: cfg.IndexNowKey, SiteURL: cfg.PublicBaseURL, Log: log},
+	}
+
+	if gcfg := ads.ConfigFromEnv(os.Getenv); gcfg.Enabled() {
+		srv.Ads = ads.NewWorker(pool, ads.NewClient(gcfg), gcfg, log)
+		go srv.Ads.Run(ctx, 60*time.Second)
+		srv.Ads.Kick()
+	} else {
+		log.Warn("GADS_* not set: Google Ads conversion upload disabled")
 	}
 
 	if cfg.ResendAPIKey != "" {

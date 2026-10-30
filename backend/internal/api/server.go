@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/Xnths/jvfd-cc/backend/internal/ads"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -45,6 +46,7 @@ type Server struct {
 	Notify    Notifier
 	Turnstile TurnstileVerifier
 	Now       func() time.Time
+	Ads       *ads.Worker // nil when Google Ads credentials are not configured
 }
 
 // Context keys / helpers for the authenticated principal.

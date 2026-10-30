@@ -1,5 +1,6 @@
 "use client";
 
+import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import { FaWhatsapp } from "react-icons/fa";
 import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
@@ -21,6 +22,7 @@ export function FloatingCatButton() {
             source: 'floating_button',
             time_to_click_ms: elapsedTime,
         });
+        trackWhatsappClick('floating_button');
     };
 
     return (

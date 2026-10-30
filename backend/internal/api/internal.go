@@ -166,7 +166,8 @@ func jobRetentionCleanup(ctx context.Context, s *Server) (map[string]any, error)
 	// Deleting leads is irreversible, so it only runs once the clinic has confirmed the period (the privacy
 	// policy says 90 days): set RETENTION_LEADS_DAYS in .env. Until then the job reports what it would remove.
 	if days, _ := strconv.Atoi(os.Getenv("RETENTION_LEADS_DAYS")); days >= 30 {
-		queries["leads_deleted"] = fmt.Sprintf(`DELETE FROM leads WHERE clicked_at < now() - interval '%d days'`, days)
+		queries["leads_deleted"] = fmt.Sprintf(`DELETE FROM leads WHERE clicked_at < now() - interval '%d days'
+			AND NOT EXISTS (SELECT 1 FROM conversion_uploads cu WHERE cu.lead_id = leads.id AND cu.status IN ('pending','retry'))`, days)
 	} else {
 		var n int64
 		if err := s.Pool.QueryRow(ctx, `SELECT count(*) FROM leads WHERE clicked_at < now() - interval '90 days'`).Scan(&n); err != nil {

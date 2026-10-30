@@ -1,5 +1,6 @@
 "use client"
 
+import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import {
   Brain,
   Users,
@@ -71,6 +72,7 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
       source: 'services_cta',
       time_to_click_ms: elapsedTime,
     });
+    trackWhatsappClick('services_cta');
   };
 
   return (

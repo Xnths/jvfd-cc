@@ -28,12 +28,13 @@ export default function PrivacyPolicyPage() {
                 <p className="mb-4">
                     Este site oferece contato exclusivamente via <strong>WhatsApp</strong>, por meio de botão flutuante e QR code disponíveis na página inicial.
                     Ao clicar no botão ou escanear o QR code, você é redirecionado diretamente para o aplicativo WhatsApp.
-                    Nenhum dado pessoal é coletado ou armazenado em nossos servidores por meio dessa interação.
+                    Seu nome, e-mail e telefone não são coletados nem armazenados em nossos servidores por meio dessa interação.
+                    Registramos apenas que houve um clique no botão: data e hora, a página e o botão clicados, o navegador utilizado e, se houver, os dados do anúncio descritos abaixo.
                 </p>
                 <p className="mb-4">
-                    Se você chegar ao site por meio de um anúncio do Google Ads, o <strong>identificador de clique do Google (GCLID)</strong> presente na URL é capturado e armazenado em um cookie no seu navegador por até 30 dias.
-                    Caso você clique no botão do WhatsApp durante essa sessão, o GCLID é enviado aos nossos servidores exclusivamente para fins de mensuração de conversão de anúncios.
-                    Esse identificador é pseudônimo — não é vinculado ao seu nome, e-mail ou telefone.
+                    Se você chegar ao site por meio de um anúncio do Google Ads, os <strong>identificadores de clique do Google (GCLID, GBRAID ou WBRAID)</strong> e os parâmetros de campanha (UTM) presentes na URL são capturados e armazenados em cookies no seu navegador por até 30 dias.
+                    Caso você clique no botão do WhatsApp durante essa sessão, esses dados são enviados aos nossos servidores e ao Google Ads exclusivamente para fins de mensuração de conversão de anúncios.
+                    Esses identificadores são pseudônimos — não são vinculados ao seu nome, e-mail ou telefone, e não enviamos ao Google o seu telefone nem o conteúdo da conversa.
                     Os dados são mantidos por até 90 dias e utilizados apenas para relatórios de conversão junto ao Google Ads.
                     Você pode desativar o rastreamento de anúncios personalizados nas{" "}
                     <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">configurações de anúncios do Google</a>.

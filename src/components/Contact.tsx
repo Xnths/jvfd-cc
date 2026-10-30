@@ -1,5 +1,6 @@
 "use client"
 
+import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import { MapPin } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
@@ -51,6 +52,7 @@ export function Contact() {
         source: 'contact_card',
         time_to_click_ms: elapsedTime,
       });
+      trackWhatsappClick('contact_card');
     }
   };
 

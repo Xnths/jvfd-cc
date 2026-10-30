@@ -1,5 +1,6 @@
 "use client"
 
+import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
@@ -30,21 +31,7 @@ export function Hero({ showLgbt = false }: { showLgbt?: boolean }) {
       ...(gclid ? { gclid } : {}),
     });
 
-    // Fire GCLID lead — only for paid traffic (organic has no cookie)
-    if (gclid) {
-      const data = JSON.stringify({ gclid });
-      const sent = navigator.sendBeacon
-        ? navigator.sendBeacon('/api/leads', new Blob([data], { type: 'application/json' }))
-        : false;
-      if (!sent) {
-        fetch('/api/leads', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: data,
-          keepalive: true,
-        }).catch(() => { });
-      }
-    }
+    trackWhatsappClick('hero_cta');
   };
 
 

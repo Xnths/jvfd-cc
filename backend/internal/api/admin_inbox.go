@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/Xnths/jvfd-cc/backend/internal/ads"
 	"github.com/Xnths/jvfd-cc/backend/internal/copylint"
 	"net/http"
 	"strconv"
@@ -25,6 +26,8 @@ func (s *Server) adminInboxRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/v1/admin/leads", a(s.adminListLeads))
 	mux.Handle("PATCH /api/v1/admin/leads/{id}/status", a(s.adminLeadStatus))
 	mux.Handle("GET /api/v1/admin/leads/export", a(s.adminExportLeads))
+	mux.Handle("POST /api/v1/admin/leads/{id}/resend", a(s.adminResendLead))
+	mux.Handle("GET /api/v1/admin/ads/stats", a(s.adminAdsStats))
 
 	// Patient-related data: João (clinical) only. Jonathas (tech) never sees it.
 	mux.Handle("GET /api/v1/admin/contatos", a(s.adminListContatos, onlyClinical...))
@@ -139,13 +142,29 @@ func (s *Server) adminDeleteComment(w http.ResponseWriter, r *http.Request) {
 
 // ── leads ────────────────────────────────────────────────────────────────────
 
+const (
+	defaultAppointmentValue    = 350.0
+	evaluationAppointmentValue = 3000.0 // never exposed outside the admin API: no prices on the public site
+)
+
+// suggestedValue is what the "Marcada" dialog proposes; João edits it per patient.
+func suggestedValue(source, pageURL string) float64 {
+	if strings.Contains(source, "avaliacao-neuropsicologica") || strings.Contains(pageURL, "/avaliacao-neuropsicologica") {
+		return evaluationAppointmentValue
+	}
+	return defaultAppointmentValue
+}
+
 func (s *Server) adminListLeads(w http.ResponseWriter, r *http.Request) {
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 	if limit <= 0 || limit > 1000 {
 		limit = 200
 	}
-	rows, err := s.Pool.Query(r.Context(), `SELECT id::text, gclid, clicked_at, status, qualified_at, converted_at FROM leads
-		WHERE ($1 = '' OR status = $1) ORDER BY created_at DESC LIMIT $2`, r.URL.Query().Get("status"), limit)
+	rows, err := s.Pool.Query(r.Context(), `SELECT l.id::text, coalesce(l.gclid, ''), l.gbraid IS NOT NULL OR l.wbraid IS NOT NULL, l.clicked_at,
+		l.status, l.qualified_at, l.converted_at, l.source, l.page_url, l.landing_url, l.converted_value::float8,
+		coalesce((SELECT jsonb_object_agg(cu.stage, jsonb_build_object('status', cu.status, 'code', cu.last_error_code, 'message', cu.last_error_message, 'attempts', cu.attempts))
+		  FROM conversion_uploads cu WHERE cu.lead_id = l.id), '{}'::jsonb)
+		FROM leads l WHERE ($1 = '' OR l.status = $1) ORDER BY l.clicked_at DESC LIMIT $2`, r.URL.Query().Get("status"), limit)
 	if err != nil {
 		serverError(w, s.Log, r, err)
 		return
@@ -153,29 +172,39 @@ func (s *Server) adminListLeads(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 	out := []map[string]any{}
 	for rows.Next() {
-		var id, gclid, status string
+		var id, gclid, status, source, pageURL, landing string
+		var app bool
 		var clicked time.Time
 		var q, c *time.Time
-		if err := rows.Scan(&id, &gclid, &clicked, &status, &q, &c); err != nil {
+		var val *float64
+		var uploads json.RawMessage
+		if err := rows.Scan(&id, &gclid, &app, &clicked, &status, &q, &c, &source, &pageURL, &landing, &val, &uploads); err != nil {
 			serverError(w, s.Log, r, err)
 			return
 		}
-		out = append(out, map[string]any{"id": id, "gclid": gclid, "clickedAt": clicked, "status": status, "qualifiedAt": q, "convertedAt": c})
+		out = append(out, map[string]any{"id": id, "gclid": gclid, "hasClickId": app, "clickedAt": clicked, "status": status,
+			"qualifiedAt": q, "convertedAt": c, "source": source, "pageUrl": pageURL, "landingUrl": landing,
+			"convertedValue": val, "suggestedValue": suggestedValue(source, pageURL), "uploads": uploads})
 	}
 	httpx.JSON(w, 200, map[string]any{"leads": out})
 }
 
 func (s *Server) adminLeadStatus(w http.ResponseWriter, r *http.Request) {
 	var in struct {
-		Status      string  `json:"status"`
-		ConvertedAt *string `json:"convertedAt"`
-		QualifiedAt *string `json:"qualifiedAt"`
+		Status      string   `json:"status"`
+		ConvertedAt *string  `json:"convertedAt"`
+		QualifiedAt *string  `json:"qualifiedAt"`
+		Value       *float64 `json:"value"`
 	}
 	if !decode(w, r, &in, 1024) {
 		return
 	}
 	if in.Status != "clicked" && in.Status != "qualified" && in.Status != "converted" {
 		badRequest(w, "Status inválido.")
+		return
+	}
+	if in.Value != nil && (*in.Value < 0 || *in.Value > 100000) {
+		badRequest(w, "Valor inválido.")
 		return
 	}
 	parse := func(p *string) (*time.Time, bool) {
@@ -194,12 +223,24 @@ func (s *Server) adminLeadStatus(w http.ResponseWriter, r *http.Request) {
 		badRequest(w, "invalid date")
 		return
 	}
+	tx, err := s.Pool.Begin(r.Context())
+	if err != nil {
+		serverError(w, s.Log, r, err)
+		return
+	}
+	defer tx.Rollback(r.Context())
 	// Same semantics as the old route: converting sets convertedAt (given, or now if still empty).
-	var gclid string
-	err := s.Pool.QueryRow(r.Context(), `UPDATE leads SET status = $2,
+	var qAt, cAt *time.Time
+	var source, pageURL string
+	var hasID bool
+	var stored *float64
+	err = tx.QueryRow(r.Context(), `UPDATE leads SET status = $2,
 		converted_at = CASE WHEN $2 = 'converted' THEN coalesce($3, converted_at, now()) ELSE converted_at END,
-		qualified_at = CASE WHEN $2 = 'qualified' THEN coalesce($4, qualified_at, now()) ELSE qualified_at END
-		WHERE id::text = $1 RETURNING gclid`, r.PathValue("id"), in.Status, conv, qual).Scan(&gclid)
+		qualified_at = CASE WHEN $2 = 'qualified' THEN coalesce($4, qualified_at, now()) ELSE qualified_at END,
+		converted_value = CASE WHEN $2 = 'converted' THEN coalesce($5::numeric, converted_value) ELSE converted_value END
+		WHERE id::text = $1 RETURNING qualified_at, converted_at, source, page_url, converted_value::float8,
+		  gclid IS NOT NULL OR gbraid IS NOT NULL OR wbraid IS NOT NULL`,
+		r.PathValue("id"), in.Status, conv, qual, in.Value).Scan(&qAt, &cAt, &source, &pageURL, &stored, &hasID)
 	if isNoRows(err) {
 		notFound(w)
 		return
@@ -208,8 +249,88 @@ func (s *Server) adminLeadStatus(w http.ResponseWriter, r *http.Request) {
 		serverError(w, s.Log, r, err)
 		return
 	}
+	switch {
+	case in.Status == "qualified" && qAt != nil:
+		err = insertUpload(r.Context(), tx, r.PathValue("id"), ads.StageMessage, *qAt, nil, hasID)
+	case in.Status == "converted" && cAt != nil:
+		v := suggestedValue(source, pageURL)
+		if stored != nil {
+			v = *stored
+		}
+		err = insertUpload(r.Context(), tx, r.PathValue("id"), ads.StageAppointment, *cAt, &v, hasID)
+	}
+	if err == nil {
+		err = tx.Commit(r.Context())
+	}
+	if err != nil {
+		serverError(w, s.Log, r, err)
+		return
+	}
+	s.Ads.Kick()
 	s.audit(r, "lead.status", "lead", r.PathValue("id"), map[string]any{"status": in.Status})
 	httpx.JSON(w, 200, map[string]any{"ok": true})
+}
+
+// adminResendLead requeues the failed or skipped uploads of one lead.
+func (s *Server) adminResendLead(w http.ResponseWriter, r *http.Request) {
+	tag, err := s.Pool.Exec(r.Context(), `UPDATE conversion_uploads cu SET status = 'pending', attempts = 0, next_attempt_at = now(),
+		last_error_code = NULL, last_error_message = NULL, updated_at = now()
+		FROM leads l WHERE l.id = cu.lead_id AND l.id::text = $1 AND cu.status = 'failed'
+		  AND (l.gclid IS NOT NULL OR l.gbraid IS NOT NULL OR l.wbraid IS NOT NULL)`, r.PathValue("id"))
+	if err != nil {
+		serverError(w, s.Log, r, err)
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		notFound(w)
+		return
+	}
+	s.Ads.Kick()
+	s.audit(r, "lead.resend", "lead", r.PathValue("id"), nil)
+	httpx.JSON(w, 200, map[string]any{"ok": true})
+}
+
+// adminAdsStats feeds the panel on /admin/leads: upload counts and latency of the last 7 days, plus the last
+// authentication error and Google's own summary when the reconcile job has stored one.
+func (s *Server) adminAdsStats(w http.ResponseWriter, r *http.Request) {
+	counts := map[string]int{}
+	rows, err := s.Pool.Query(r.Context(), `SELECT status, count(*) FROM conversion_uploads WHERE updated_at > now() - interval '7 days' GROUP BY status`)
+	if err != nil {
+		serverError(w, s.Log, r, err)
+		return
+	}
+	for rows.Next() {
+		var st string
+		var n int
+		if err := rows.Scan(&st, &n); err != nil {
+			rows.Close()
+			serverError(w, s.Log, r, err)
+			return
+		}
+		counts[st] = n
+	}
+	rows.Close()
+	var median, p95 *float64
+	if err := s.Pool.QueryRow(r.Context(), `SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY extract(epoch FROM updated_at - conversion_time)),
+		percentile_cont(0.95) WITHIN GROUP (ORDER BY extract(epoch FROM updated_at - conversion_time))
+		FROM conversion_uploads WHERE status = 'succeeded' AND stage = 'whatsapp_click' AND updated_at > now() - interval '7 days'`).Scan(&median, &p95); err != nil {
+		serverError(w, s.Log, r, err)
+		return
+	}
+	state := map[string]json.RawMessage{}
+	srows, err := s.Pool.Query(r.Context(), `SELECT key, value FROM job_state WHERE key IN ('ads.auth_error','ads.reconcile')`)
+	if err == nil {
+		for srows.Next() {
+			var k string
+			var v json.RawMessage
+			if srows.Scan(&k, &v) == nil {
+				state[k] = v
+			}
+		}
+		srows.Close()
+	}
+	httpx.JSON(w, 200, map[string]any{"enabled": s.Ads != nil, "counts": counts, "medianSeconds": median, "p95Seconds": p95,
+		"authError": state["ads.auth_error"], "google": state["ads.reconcile"]})
 }
 
 // Google Ads offline conversion export — same contract as the old /api/leads/export route.
@@ -243,7 +364,7 @@ func (s *Server) adminExportLeads(w http.ResponseWriter, r *http.Request) {
 		args = append(args, t)
 		where = append(where, fmt.Sprintf("%s <= $%d", act.col, len(args)))
 	}
-	rows, err := s.Pool.Query(r.Context(), `SELECT gclid, `+act.col+` FROM leads WHERE `+strings.Join(where, " AND ")+` ORDER BY created_at DESC LIMIT 10000`, args...)
+	rows, err := s.Pool.Query(r.Context(), `SELECT gclid, `+act.col+`, source, page_url, converted_value::float8 FROM leads WHERE gclid IS NOT NULL AND `+strings.Join(where, " AND ")+` ORDER BY created_at DESC LIMIT 10000`, args...)
 	if err != nil {
 		httpx.JSON(w, 500, map[string]string{"error": "Erro ao exportar."})
 		return
@@ -253,9 +374,10 @@ func (s *Server) adminExportLeads(w http.ResponseWriter, r *http.Request) {
 	b.WriteString("Google Click ID,Conversion Name,Conversion Time,Conversion Value,Conversion Currency\n")
 	n := 0
 	for rows.Next() {
-		var gclid string
+		var gclid, source, pageURL string
 		var at *time.Time
-		if err := rows.Scan(&gclid, &at); err != nil {
+		var stored *float64
+		if err := rows.Scan(&gclid, &at, &source, &pageURL, &stored); err != nil {
 			httpx.JSON(w, 500, map[string]string{"error": "Erro ao exportar."})
 			return
 		}
@@ -263,7 +385,15 @@ func (s *Server) adminExportLeads(w http.ResponseWriter, r *http.Request) {
 		if at != nil {
 			ts = at.UTC().Format("2006-01-02 15:04:05") + "+0000"
 		}
-		b.WriteString(strings.Join([]string{gclid, act.name, ts, act.value, "BRL"}, ",") + "\n")
+		value := act.value
+		if key == "consulta" {
+			v := suggestedValue(source, pageURL)
+			if stored != nil {
+				v = *stored
+			}
+			value = strconv.FormatFloat(v, 'f', -1, 64)
+		}
+		b.WriteString(strings.Join([]string{gclid, act.name, ts, value, "BRL"}, ",") + "\n")
 		n++
 	}
 	if n == 0 {

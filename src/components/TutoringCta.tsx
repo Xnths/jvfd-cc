@@ -1,5 +1,6 @@
 "use client";
 
+import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import { FaWhatsapp } from "react-icons/fa";
 import posthog from "posthog-js";
 import { sendGAEvent } from "@next/third-parties/google";
@@ -23,6 +24,7 @@ export function TutoringCta({ location }: { location: string }) {
         const props = { source: "aulas_cta", location, time_to_click_ms: elapsed };
         sendGAEvent("event", "schedule_click", props);
         posthog.capture("schedule_click", props);
+        trackWhatsappClick("aulas_cta");
     };
 
     return (

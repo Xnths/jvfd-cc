@@ -5,6 +5,7 @@
 
 const COOKIE_NAME = 'gclid'
 const AD_PARAMS_COOKIE = 'ad_params'
+const LANDING_COOKIE = 'jf_landing'
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days in seconds
 const AD_PARAM_KEYS = ['gbraid', 'wbraid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']
 const SAFE_VALUE = /^[A-Za-z0-9+/=_.~%-]{1,200}$/
@@ -23,16 +24,39 @@ export function captureGclid(): void {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
     const gclid = params.get('gclid')
-    if (gclid && /^[A-Za-z0-9+/=_-]+$/.test(gclid)) {
-        document.cookie = `${COOKIE_NAME}=${gclid}${cookieAttrs()}`
-    }
+    const validGclid = !!gclid && /^[A-Za-z0-9+/=_-]+$/.test(gclid)
     const found: Record<string, string> = {}
     for (const key of AD_PARAM_KEYS) {
         const value = params.get(key)
         if (value && SAFE_VALUE.test(encodeURIComponent(value))) found[key] = value
     }
-    if (Object.keys(found).length > 0) {
+    const hasClickId = validGclid || !!found.gbraid || !!found.wbraid
+    if (hasClickId) {
+        // Last click wins: a new click id replaces everything the previous one left behind.
+        document.cookie = validGclid
+            ? `${COOKIE_NAME}=${gclid}${cookieAttrs()}`
+            : `${COOKIE_NAME}=;max-age=0;path=/`
+        const landing = { url: window.location.href.slice(0, 500), ts: new Date().toISOString() }
+        document.cookie = `${LANDING_COOKIE}=${encodeURIComponent(JSON.stringify(landing))}${cookieAttrs()}`
+        document.cookie = Object.keys(found).length > 0
+            ? `${AD_PARAMS_COOKIE}=${encodeURIComponent(JSON.stringify(found))}${cookieAttrs()}`
+            : `${AD_PARAMS_COOKIE}=;max-age=0;path=/`
+    } else if (Object.keys(found).length > 0) {
         document.cookie = `${AD_PARAMS_COOKIE}=${encodeURIComponent(JSON.stringify(found))}${cookieAttrs()}`
+    }
+}
+
+/**
+ * Returns the URL of the page where the current ad click landed, or an empty string.
+ */
+export function getLandingUrlFromCookie(): string {
+    if (typeof document === 'undefined') return ''
+    const match = document.cookie.match(/(?:^|;\s*)jf_landing=([^;]+)/)
+    if (!match) return ''
+    try {
+        return JSON.parse(decodeURIComponent(match[1])).url ?? ''
+    } catch {
+        return ''
     }
 }
 
