@@ -16,9 +16,8 @@ type Params = {
 }
 
 export async function generateStaticParams() {
-    // If DATABASE_URI is not set, we are likely building in an environment without DB access
-    // Skip static generation to allow build to succeed. Pages will be generated on demand.
-    if (!process.env.DATABASE_URI && !process.env.API_INTERNAL_URL) {
+    // Without the API (Docker build, plain `pnpm build`) pages are generated on demand.
+    if (!process.env.API_INTERNAL_URL) {
         return []
     }
 

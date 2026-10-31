@@ -28,6 +28,7 @@ func (s *Server) adminInboxRoutes(mux *http.ServeMux) {
 	mux.Handle("GET /api/v1/admin/leads/export", a(s.adminExportLeads))
 	mux.Handle("POST /api/v1/admin/leads/{id}/resend", a(s.adminResendLead))
 	mux.Handle("GET /api/v1/admin/ads/stats", a(s.adminAdsStats))
+	s.funnelRoutes(mux)
 
 	// Patient-related data: João (clinical) only. Jonathas (tech) never sees it.
 	mux.Handle("GET /api/v1/admin/contatos", a(s.adminListContatos, onlyClinical...))
@@ -162,6 +163,9 @@ func (s *Server) adminListLeads(w http.ResponseWriter, r *http.Request) {
 	}
 	rows, err := s.Pool.Query(r.Context(), `SELECT l.id::text, coalesce(l.gclid, ''), l.gbraid IS NOT NULL OR l.wbraid IS NOT NULL, l.clicked_at,
 		l.status, l.qualified_at, l.converted_at, l.source, l.page_url, l.landing_url, l.converted_value::float8,
+		l.message_at, l.paid_value::float8, l.payment_status,
+		(SELECT jsonb_build_object('type', ca.adjustment_type, 'status', ca.status, 'code', ca.last_error_code, 'value', ca.value::float8)
+		  FROM conversion_adjustments ca WHERE ca.lead_id = l.id),
 		coalesce((SELECT jsonb_object_agg(cu.stage, jsonb_build_object('status', cu.status, 'code', cu.last_error_code, 'message', cu.last_error_message, 'attempts', cu.attempts))
 		  FROM conversion_uploads cu WHERE cu.lead_id = l.id), '{}'::jsonb)
 		FROM leads l WHERE ($1 = '' OR l.status = $1) ORDER BY l.clicked_at DESC LIMIT $2`, r.URL.Query().Get("status"), limit)
@@ -175,16 +179,19 @@ func (s *Server) adminListLeads(w http.ResponseWriter, r *http.Request) {
 		var id, gclid, status, source, pageURL, landing string
 		var app bool
 		var clicked time.Time
-		var q, c *time.Time
-		var val *float64
-		var uploads json.RawMessage
-		if err := rows.Scan(&id, &gclid, &app, &clicked, &status, &q, &c, &source, &pageURL, &landing, &val, &uploads); err != nil {
+		var q, c, msgAt *time.Time
+		var val, paid *float64
+		var payStatus *string
+		var adjustment, uploads json.RawMessage
+		if err := rows.Scan(&id, &gclid, &app, &clicked, &status, &q, &c, &source, &pageURL, &landing, &val,
+			&msgAt, &paid, &payStatus, &adjustment, &uploads); err != nil {
 			serverError(w, s.Log, r, err)
 			return
 		}
 		out = append(out, map[string]any{"id": id, "gclid": gclid, "hasClickId": app, "clickedAt": clicked, "status": status,
 			"qualifiedAt": q, "convertedAt": c, "source": source, "pageUrl": pageURL, "landingUrl": landing,
-			"convertedValue": val, "suggestedValue": suggestedValue(source, pageURL), "uploads": uploads})
+			"convertedValue": val, "suggestedValue": suggestedValue(source, pageURL), "uploads": uploads,
+			"messageAt": msgAt, "paidValue": paid, "paymentStatus": payStatus, "adjustment": adjustment})
 	}
 	httpx.JSON(w, 200, map[string]any{"leads": out})
 }
@@ -237,6 +244,7 @@ func (s *Server) adminLeadStatus(w http.ResponseWriter, r *http.Request) {
 	err = tx.QueryRow(r.Context(), `UPDATE leads SET status = $2,
 		converted_at = CASE WHEN $2 = 'converted' THEN coalesce($3, converted_at, now()) ELSE converted_at END,
 		qualified_at = CASE WHEN $2 = 'qualified' THEN coalesce($4, qualified_at, now()) ELSE qualified_at END,
+		message_at = CASE WHEN $2 = 'qualified' THEN coalesce($4, qualified_at, now()) ELSE message_at END,
 		converted_value = CASE WHEN $2 = 'converted' THEN coalesce($5::numeric, converted_value) ELSE converted_value END
 		WHERE id::text = $1 RETURNING qualified_at, converted_at, source, page_url, converted_value::float8,
 		  gclid IS NOT NULL OR gbraid IS NOT NULL OR wbraid IS NOT NULL`,
@@ -258,6 +266,10 @@ func (s *Server) adminLeadStatus(w http.ResponseWriter, r *http.Request) {
 			v = *stored
 		}
 		err = insertUpload(r.Context(), tx, r.PathValue("id"), ads.StageAppointment, *cAt, &v, hasID)
+		// A value edited after Google already has the booking is corrected with an adjustment.
+		if err == nil && hasID {
+			err = syncRestatement(r.Context(), tx, r.PathValue("id"), v, s.Now())
+		}
 	}
 	if err == nil {
 		err = tx.Commit(r.Context())

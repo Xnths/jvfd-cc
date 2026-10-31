@@ -281,12 +281,12 @@ This is the only conversion the Smart Bidding algorithm optimizes toward.
 ## 7a. Automatic upload (replaces the weekly CSV)
 
 Every WhatsApp click is a row in `leads` (source, page, landing URL, gclid/gbraid/wbraid, utm_*). `conversion_uploads` has one row per
-(lead, stage): `whatsapp_click`, `message_received` ("Qualificado"), `appointment_booked` ("Marcada"). The Go API uploads them through
+(lead, stage): `whatsapp_click`, `message_received` ("Mensagem recebida"), `appointment_booked` ("Marcada"). The Go API uploads them through
 `UploadClickConversions` within seconds (60 s sweep as a safety net, job `ads.upload`), with `order_id = <lead id>:<stage>` so retries
 never double count. Clicks without a Google click id are kept but `skipped` (`NO_CLICK_ID`). No hashed phone/e-mail is ever sent.
 
 - The WhatsApp message carries no identifier (João's requirement): in /admin/leads, find the lead by click time, page and button, then press
-  "Qualificado" (message received) or "Marcada" (appointment). "Marcada" asks for the value, which João can change per patient; the suggestion
+  "Mensagem recebida" or "Marcada" (appointment). "Marcada" asks for the value, which João can change per patient; the suggestion
   comes from the backend (avaliação neuropsicológica leads get a different suggestion than therapy). Never put a price on the public site.
 - Env vars (`.env.example`, `GADS_*`): without them the feature is off. First production test with `GADS_VALIDATE_ONLY=true`.
 - Conversion actions to create (Goals → Conversions → Import → CRM/files → "Track conversions from clicks"): click = Primary, message and
@@ -294,7 +294,21 @@ never double count. Clicks without a Google click id are kept but `skipped` (`NO
   `scheduled` fired from the Leads screen are a separate import: do not mark them Primary together with these.
 - Errors: "too recent" codes retry after 1 h; transient ones back off up to 6 h; `EXPIRED_CLICK`, `UNPARSEABLE_GCLID`, `INVALID_CONVERSION_ACTION`,
   `CONVERSION_PRECEDES_CLICK` fail at once (button "Reenviar" in the admin); auth errors stop the worker and show a red banner on /admin/leads.
-- Job `ads.reconcile` stores Google's own upload summary (shown next to ours).
+- Job `ads.reconcile` stores Google's own upload summary and the impressions/clicks per campaign (30 and 3 days) for the funnel.
+- **Message matching** ("Registrar mensagem" on /admin/leads): João reports when a new person wrote (t_msg). The panel lists the clicks in the
+  30 minutes before. Exactly one candidate: mark it (uploads `message_received` with conversion time = t_msg). None or several: record
+  "Sem correspondência" / "Ambígua" (table `messages_unmatched`, counted in n_3, never uploaded: a wrong match teaches Google the wrong pattern).
+- **Payment** ("Pago (R$)" / "Não pagou" on booked leads with a click id): the paid amount is sent as a `RESTATEMENT` of the booking when it
+  differs from the booked value; "Não pagou" sends a `RETRACTION`. Both go through `ConversionAdjustmentUploadService` (job `ads.adjust`,
+  `conversion_adjustments`, one row per lead, latest decision wins) with `order_id = <lead id>:appointment_booked`, and wait until the booking
+  itself was accepted. Editing the value of an already-uploaded "Marcada" queues a restatement too. Nothing is retracted automatically:
+  bookings older than 60 days without a decision are listed on /admin/funil and in the Monday alert email. A retracted conversion cannot be restated.
+- **Funnel** (/admin/funil): n_2..n_5 and rates for 7/30/90 days, the stage to optimize (deepest of B, M, Q with at least 30 conversions that
+  carry a click id; P is never primary), the registered primary stage with the 21-day rule between switches (a record only: the switch itself is
+  made in Google Ads), per-campaign counts.
+- **Alerts** (job `ads.alerts`, DAG `ads_daily`, email through Resend to the `tech` admins from `ADMIN_ROLES`, at most one a day): more than
+  10 % of the last 24 h of uploads failed; no WhatsApp click lead for 72 h while Google reports ad clicks; Google rejected the credentials;
+  on Mondays, unpaid bookings older than 60 days. Without `RESEND_API_KEY` the job skips. New DAG file: `docker restart clinic-airflow-dag-processor`.
 - Cut-over: run both for 7 days, then stop the CSV. The CSV export still exists and now uses the per-lead value.
 
 ## 7. Offline Conversion Import — Weekly Workflow

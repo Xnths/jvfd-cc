@@ -57,6 +57,7 @@ func run(log *slog.Logger) error {
 	}
 
 	if cfg.ResendAPIKey != "" {
+		srv.Mailer = newsletter.Resend{APIKey: cfg.ResendAPIKey}
 		w := newsletter.NewWorker(pool, newsletter.Resend{APIKey: cfg.ResendAPIKey}, log, cfg.PublicBaseURL, srv.UnsubscribeToken)
 		go w.Run(ctx, 30*time.Second)
 	} else {

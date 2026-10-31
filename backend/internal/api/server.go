@@ -14,6 +14,7 @@ import (
 	"github.com/Xnths/jvfd-cc/backend/internal/authn"
 	"github.com/Xnths/jvfd-cc/backend/internal/config"
 	"github.com/Xnths/jvfd-cc/backend/internal/httpx"
+	"github.com/Xnths/jvfd-cc/backend/internal/newsletter"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -46,7 +47,8 @@ type Server struct {
 	Notify    Notifier
 	Turnstile TurnstileVerifier
 	Now       func() time.Time
-	Ads       *ads.Worker // nil when Google Ads credentials are not configured
+	Ads       *ads.Worker       // nil when Google Ads credentials are not configured
+	Mailer    newsletter.Sender // alert emails; nil without RESEND_API_KEY
 }
 
 // Context keys / helpers for the authenticated principal.

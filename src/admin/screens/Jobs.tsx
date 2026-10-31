@@ -15,6 +15,10 @@ type Run = { id: string; job: string; key: string; status: 'running' | 'ok' | 'f
 const DESCRIPTION: Record<string, string> = {
     'retention.cleanup': 'Apaga comentários recusados, sessões vencidas e perguntas recusadas. Os leads antigos só são apagados depois que o João confirma o prazo (RETENTION_LEADS_DAYS no servidor).',
     'newsletter.reconcile': 'Recoloca na fila campanhas de e-mail que ficaram travadas.',
+    'ads.upload': 'Envia ao Google Ads as conversões que estão na fila (o envio normal já acontece em segundos; esta tarefa é a varredura).',
+    'ads.adjust': 'Envia ao Google Ads as correções de valor (pago diferente do marcado) e as conversões retiradas (não pagou).',
+    'ads.reconcile': 'Busca no Google Ads o resumo dos envios e as impressões e cliques por campanha (alimenta o Funil).',
+    'ads.alerts': 'Avisa por e-mail o perfil técnico quando os envios falham (mais de 10% em 24 h), não há clique no WhatsApp há 72 h apesar de cliques no anúncio, ou o Google recusa as credenciais.',
     'gsc.sync': 'Busca os dados do Google Search Console.',
     'seo.opportunities': 'Procura oportunidades de SEO nos dados do Search Console.',
     'trends.radar': 'Monta a fila de pautas (datas de conscientização e buscas em alta).',

@@ -26,7 +26,14 @@ type Lead = {
     convertedValue?: number | null
     suggestedValue: number
     uploads: Partial<Record<Stage, Upload>>
+    messageAt?: string | null
+    paidValue?: number | null
+    paymentStatus?: 'paid' | 'not_paid' | null
+    adjustment?: { type: 'RESTATEMENT' | 'RETRACTION'; status: Upload['status']; code?: string | null; value?: number | null } | null
 }
+
+type Candidate = { id: string; clickedAt: string; source: string; pageUrl: string; utmSource?: string | null; utmCampaign?: string | null; hasClickId: boolean }
+type Unmatched = { id: string; messageAt: string; reason: 'no_match' | 'ambiguous'; candidates: number; note: string }
 
 type Stage = 'whatsapp_click' | 'message_received' | 'appointment_booked'
 type Upload = { status: 'pending' | 'retry' | 'succeeded' | 'failed' | 'skipped'; code?: string | null; message?: string | null; attempts: number }
@@ -39,10 +46,11 @@ const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', curren
 
 const STATUS_LABEL: Record<Lead['status'], string> = {
     clicked: 'Clicou no WhatsApp',
-    qualified: 'Lead qualificado',
+    qualified: 'Mensagem recebida',
     converted: 'Consulta marcada',
 }
 // Only these statuses fire a GA4 event (Google Ads imports them as conversions).
+const ADJUSTMENT_LABEL = { RESTATEMENT: 'valor corrigido', RETRACTION: 'conversão retirada' } as const
 const GA4_EVENT: Partial<Record<Lead['status'], string>> = { qualified: 'contacted', converted: 'scheduled' }
 
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -58,6 +66,25 @@ export function Leads() {
     )
     const [pending, setPending] = useState<{ lead: Lead; status: Lead['status']; when: string; value: string } | null>(null)
     const [saving, setSaving] = useState(false)
+    const [paying, setPaying] = useState<{ lead: Lead; value: string } | null>(null)
+
+    function askPaid(lead: Lead) {
+        setPaying({ lead, value: String(lead.paidValue ?? lead.convertedValue ?? lead.suggestedValue) })
+    }
+
+    async function pay(lead: Lead, status: 'paid' | 'not_paid', value?: number) {
+        setSaving(true)
+        try {
+            await api(`/leads/${lead.id}/payment`, { method: 'PATCH', json: status === 'paid' ? { status, value } : { status } })
+            toast.success(status === 'paid' ? 'Pagamento registrado' : 'Marcada como não paga')
+            setPaying(null)
+            await reload()
+        } catch (e) {
+            toast.error(errorMessage(e))
+        } finally {
+            setSaving(false)
+        }
+    }
 
     function ask(lead: Lead, status: Lead['status']) {
         if (lead.status === status) return
@@ -117,6 +144,7 @@ export function Leads() {
                 description="Cliques no WhatsApp vindos de anúncios. Marque o andamento para enviar a conversão ao Google Ads."
             />
             <AdsPanel />
+            <MessagePanel onDone={reload} />
             <div className="mb-4">
                 <FilterTabs
                     value={filter}
@@ -124,7 +152,7 @@ export function Leads() {
                     options={[
                         { value: 'all', label: 'Todos' },
                         { value: 'clicked', label: 'Clicaram' },
-                        { value: 'qualified', label: 'Qualificados' },
+                        { value: 'qualified', label: 'Mensagem recebida' },
                         { value: 'converted', label: 'Consulta marcada' },
                     ]}
                 />
@@ -137,7 +165,7 @@ export function Leads() {
                             <TableRow>
                                 <TableHead>Clique</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead>Qualificado</TableHead>
+                                <TableHead>Mensagem</TableHead>
                                 <TableHead>Consulta</TableHead>
                                 <TableHead>Origem</TableHead>
                                 <TableHead>Envio ao Google Ads</TableHead>
@@ -153,10 +181,12 @@ export function Leads() {
                                             {STATUS_LABEL[l.status]}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="whitespace-nowrap">{fmtDate(l.qualifiedAt)}</TableCell>
+                                    <TableCell className="whitespace-nowrap">{fmtDate(l.messageAt ?? l.qualifiedAt)}</TableCell>
                                     <TableCell className="whitespace-nowrap">
                                         {fmtDate(l.convertedAt)}
                                         {l.status === 'converted' && l.convertedValue != null && <div className="text-xs text-muted-foreground">{brl(l.convertedValue)}</div>}
+                                        {l.paymentStatus === 'paid' && <div className="text-xs font-medium">Pago{l.paidValue != null ? `: ${brl(l.paidValue)}` : ''}</div>}
+                                        {l.paymentStatus === 'not_paid' && <div className="text-xs font-medium text-destructive">Não pagou</div>}
                                     </TableCell>
                                     <TableCell className="max-w-[14rem] text-xs" title={`${l.pageUrl}\n${l.landingUrl}`}>
                                         <div className="truncate font-medium">{l.source || '—'}</div>
@@ -177,6 +207,14 @@ export function Leads() {
                                                     </Badge>
                                                 )
                                             })}
+                                            {l.adjustment && (
+                                                <Badge
+                                                    variant={l.adjustment.status === 'failed' ? 'destructive' : l.adjustment.status === 'succeeded' ? 'default' : 'outline'}
+                                                    title={l.adjustment.code ?? ''}
+                                                >
+                                                    Consulta, {ADJUSTMENT_LABEL[l.adjustment.type]}: {UPLOAD_LABEL[l.adjustment.status]}
+                                                </Badge>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -189,9 +227,24 @@ export function Leads() {
                                                     disabled={l.status === s}
                                                     onClick={() => ask(l, s)}
                                                 >
-                                                    {s === 'clicked' ? 'Clicou' : s === 'qualified' ? 'Qualificado' : 'Marcada'}
+                                                    {s === 'clicked' ? 'Clicou' : s === 'qualified' ? 'Mensagem' : 'Marcada'}
                                                 </Button>
                                             ))}
+                                            {l.status === 'converted' && l.hasClickId && (
+                                                <>
+                                                    <Button size="sm" variant={l.paymentStatus === 'paid' ? 'default' : 'outline'} onClick={() => askPaid(l)}>Pago (R$)</Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant={l.paymentStatus === 'not_paid' ? 'destructive' : 'outline'}
+                                                        disabled={l.paymentStatus === 'not_paid' || saving}
+                                                        onClick={() => {
+                                                            if (window.confirm('Marcar como não paga? A conversão será retirada do Google Ads.')) void pay(l, 'not_paid')
+                                                        }}
+                                                    >
+                                                        Não pagou
+                                                    </Button>
+                                                </>
+                                            )}
                                             {Object.values(l.uploads).some((u) => u?.status === 'failed') && (
                                                 <Button size="sm" variant="outline" onClick={() => resend(l)}>Reenviar</Button>
                                             )}
@@ -205,6 +258,47 @@ export function Leads() {
             )}
 
             <ExportPanel />
+
+            <Dialog open={!!paying} onOpenChange={(o) => !o && !saving && setPaying(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Registrar pagamento</DialogTitle>
+                        <DialogDescription>
+                            Se o valor pago for diferente do valor da consulta marcada, o Google Ads recebe a correção.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {paying && (
+                        <label className="grid gap-1 text-sm">
+                            Valor pago (R$)
+                            <Input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                inputMode="decimal"
+                                value={paying.value}
+                                onChange={(e) => setPaying({ ...paying, value: e.target.value })}
+                            />
+                            {paying.lead.convertedValue != null && (
+                                <span className="text-xs text-muted-foreground">Valor da consulta marcada: {brl(paying.lead.convertedValue)}.</span>
+                            )}
+                        </label>
+                    )}
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setPaying(null)} disabled={saving}>Cancelar</Button>
+                        <Button
+                            disabled={saving}
+                            onClick={() => {
+                                if (!paying) return
+                                const v = Number(paying.value.replace(',', '.'))
+                                if (paying.value.trim() === '' || !Number.isFinite(v) || v < 0) return toast.error('Valor inválido')
+                                void pay(paying.lead, 'paid', v)
+                            }}
+                        >
+                            {saving ? 'Salvando…' : 'Confirmar'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={!!pending} onOpenChange={(o) => !o && !saving && setPending(null)}>
                 <DialogContent>
@@ -239,7 +333,7 @@ export function Leads() {
                     )}
                     {pending && pending.status !== 'clicked' && (
                         <label className="grid gap-1 text-sm">
-                            Horário do evento
+                            {pending.status === 'qualified' ? 'Horário da mensagem' : 'Horário do evento'}
                             <Input
                                 type="datetime-local"
                                 value={pending.when}
@@ -343,6 +437,109 @@ function AdsPanel() {
                 ))}
                 <span>tempo até o envio (mediana / p95): <strong>{secs(data.medianSeconds)} / {secs(data.p95Seconds)}</strong></span>
             </div>
+        </section>
+    )
+}
+
+// "Registrar mensagem": João reports when a new person wrote; the clicks in the 30 minutes before are the candidates.
+// Exactly one candidate is highlighted, but marking it is always a click; zero or several are recorded as unmatched.
+function MessagePanel({ onDone }: { onDone: () => Promise<void> | void }) {
+    const [when, setWhen] = useState('')
+    const [candidates, setCandidates] = useState<Candidate[] | null>(null)
+    const [busy, setBusy] = useState(false)
+    const unmatched = useResource<{ unmatched: Unmatched[] }>('/messages')
+
+    const iso = () => {
+        const d = new Date(when)
+        return Number.isNaN(d.getTime()) ? null : d.toISOString()
+    }
+
+    async function search() {
+        const at = iso()
+        if (!at) return toast.error('Informe o horário da mensagem')
+        setBusy(true)
+        try {
+            const r = await api<{ candidates: Candidate[] }>(`/leads/candidates?at=${encodeURIComponent(at)}&window=30`)
+            setCandidates(r.candidates)
+        } catch (e) {
+            toast.error(errorMessage(e))
+        } finally {
+            setBusy(false)
+        }
+    }
+
+    async function register(body: Record<string, string>, done: string) {
+        const at = iso()
+        if (!at) return
+        setBusy(true)
+        try {
+            await api('/messages', { method: 'POST', json: { at, ...body } })
+            toast.success(done)
+            setCandidates(null)
+            await Promise.all([onDone(), unmatched.reload()])
+        } catch (e) {
+            toast.error(errorMessage(e))
+        } finally {
+            setBusy(false)
+        }
+    }
+
+    return (
+        <section className="mb-4 rounded-lg border bg-card p-3 text-sm">
+            <h2 className="mb-2 font-semibold">Registrar mensagem</h2>
+            <p className="mb-3 text-xs text-muted-foreground">
+                Quando o João receber a primeira mensagem de uma pessoa nova, informe o horário. Mostramos os cliques dos 30 minutos anteriores.
+                Com mais de um candidato (ou nenhum), não marque: registre como ambígua ou sem correspondência.
+            </p>
+            <div className="flex flex-wrap items-end gap-2">
+                <label className="grid gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Horário da mensagem
+                    <Input type="datetime-local" value={when} onChange={(e) => { setWhen(e.target.value); setCandidates(null) }} />
+                </label>
+                <Button size="sm" disabled={busy || !when} onClick={search}>Buscar cliques</Button>
+            </div>
+            {candidates && (
+                <div className="mt-3 grid gap-2">
+                    <p className="text-xs text-muted-foreground">
+                        {candidates.length === 0 ? 'Nenhum clique no período: provavelmente não veio do site.' : `${candidates.length} clique(s) no período.`}
+                    </p>
+                    {candidates.map((c) => (
+                        <div
+                            key={c.id}
+                            className={`flex flex-wrap items-center justify-between gap-2 rounded-md border p-2 ${candidates.length === 1 ? 'border-primary' : ''}`}
+                        >
+                            <div className="text-xs">
+                                <div className="font-medium">{fmtDate(c.clickedAt)} · {c.source || '—'}</div>
+                                <div className="text-muted-foreground">
+                                    {c.pageUrl} · {c.utmCampaign || c.utmSource || (c.hasClickId ? 'Google (identificador)' : 'sem identificador')}
+                                </div>
+                            </div>
+                            <Button size="sm" disabled={busy} onClick={() => register({ leadId: c.id }, 'Mensagem marcada')}>Marcar</Button>
+                        </div>
+                    ))}
+                    <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" disabled={busy} onClick={() => register({ reason: 'no_match' }, 'Registrada sem correspondência')}>
+                            Sem correspondência
+                        </Button>
+                        <Button size="sm" variant="outline" disabled={busy || candidates.length < 2} onClick={() => register({ reason: 'ambiguous' }, 'Registrada como ambígua')}>
+                            Ambígua
+                        </Button>
+                    </div>
+                </div>
+            )}
+            {(unmatched.data?.unmatched.length ?? 0) > 0 && (
+                <details className="mt-3 text-xs">
+                    <summary className="cursor-pointer text-muted-foreground">Mensagens sem correspondência ({unmatched.data!.unmatched.length})</summary>
+                    <ul className="mt-2 grid gap-1">
+                        {unmatched.data!.unmatched.map((u) => (
+                            <li key={u.id}>
+                                {fmtDate(u.messageAt)} · {u.reason === 'ambiguous' ? `ambígua (${u.candidates} candidatos)` : 'sem correspondência'}
+                                {u.note ? ` · ${u.note}` : ''}
+                            </li>
+                        ))}
+                    </ul>
+                </details>
+            )}
         </section>
     )
 }

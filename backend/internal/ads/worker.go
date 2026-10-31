@@ -18,6 +18,7 @@ const maxAttempts = 10
 type Worker struct {
 	Pool  *pgxpool.Pool
 	Up    Uploader
+	Adj   Adjuster // nil when Up cannot adjust (tests)
 	Cfg   Config
 	Log   *slog.Logger
 	Now   func() time.Time
@@ -26,7 +27,11 @@ type Worker struct {
 }
 
 func NewWorker(pool *pgxpool.Pool, up Uploader, cfg Config, log *slog.Logger) *Worker {
-	return &Worker{Pool: pool, Up: up, Cfg: cfg, Log: log, Now: time.Now, kick: make(chan struct{}, 1), Batch: 100}
+	w := &Worker{Pool: pool, Up: up, Cfg: cfg, Log: log, Now: time.Now, kick: make(chan struct{}, 1), Batch: 100}
+	if adj, ok := up.(Adjuster); ok {
+		w.Adj = adj
+	}
+	return w
 }
 
 // Kick asks for an upload pass without blocking the caller. Safe on a nil Worker.
@@ -53,6 +58,9 @@ func (w *Worker) Run(ctx context.Context, every time.Duration) {
 		}
 		if _, err := w.UploadPending(ctx); err != nil {
 			w.Log.Error("ads upload", "err", err)
+		}
+		if _, err := w.AdjustPending(ctx); err != nil {
+			w.Log.Error("ads adjust", "err", err)
 		}
 	}
 }
@@ -133,6 +141,82 @@ func (w *Worker) UploadPending(ctx context.Context) (Result, error) {
 	return res, nil
 }
 
+type adjRow struct {
+	id, leadID, typ string
+	at              time.Time
+	value           *float64
+	attempts        int
+}
+
+// AdjustPending sends due RESTATEMENT/RETRACTION rows. An adjustment only goes out once the booking itself has
+// succeeded in Google (it is matched by order id); until then it waits without using up attempts.
+func (w *Worker) AdjustPending(ctx context.Context) (Result, error) {
+	var res Result
+	if w.Adj == nil {
+		return res, nil
+	}
+	tx, err := w.Pool.Begin(ctx)
+	if err != nil {
+		return res, err
+	}
+	defer tx.Rollback(ctx)
+	rs, err := tx.Query(ctx, `SELECT ca.id::text, ca.lead_id::text, ca.adjustment_type,
+		greatest(ca.adjustment_time, cu.conversion_time + interval '1 second'), ca.value::float8, ca.attempts
+		FROM conversion_adjustments ca
+		JOIN conversion_uploads cu ON cu.lead_id = ca.lead_id AND cu.stage = $2 AND cu.status = 'succeeded'
+		WHERE ca.status IN ('pending','retry') AND ca.next_attempt_at <= now()
+		ORDER BY ca.next_attempt_at LIMIT $1 FOR UPDATE OF ca SKIP LOCKED`, w.Batch, StageAppointment)
+	if err != nil {
+		return res, err
+	}
+	var rows []adjRow
+	for rs.Next() {
+		var r adjRow
+		if err := rs.Scan(&r.id, &r.leadID, &r.typ, &r.at, &r.value, &r.attempts); err != nil {
+			rs.Close()
+			return res, err
+		}
+		rows = append(rows, r)
+	}
+	rs.Close()
+	if len(rows) == 0 {
+		return res, nil
+	}
+	action := w.Cfg.action(StageAppointment)
+	adjs := make([]Adjustment, len(rows))
+	for i, r := range rows {
+		adjs[i] = Adjustment{Type: r.typ, Action: action, OrderID: r.leadID + ":" + StageAppointment, Time: r.at, Value: r.value}
+	}
+	out := w.Adj.Adjust(ctx, adjs)
+	if errors.Is(out.Err, ErrAuth) {
+		w.Log.Error("ads auth error: adjustments halted, rows stay pending", "err", out.Err)
+		w.recordAuthError(ctx, out.Err)
+		return res, out.Err
+	}
+	res.Sent = len(rows)
+	for i, r := range rows {
+		status, next, code, msg := w.classify(row{attempts: r.attempts}, i, out)
+		switch status {
+		case "succeeded":
+			res.Succeeded++
+		case "retry":
+			res.Retried++
+		case "failed":
+			res.Failed++
+		}
+		var resp any
+		if len(out.Raw) > 0 && json.Valid(out.Raw) {
+			resp = out.Raw
+		}
+		if _, err := tx.Exec(ctx, `UPDATE conversion_adjustments SET status = $2, attempts = attempts + 1, next_attempt_at = $3,
+			conversion_action = $4, last_error_code = nullif($5,''), last_error_message = nullif($6,''), response = $7, updated_at = now()
+			WHERE id::text = $1`, r.id, status, next, action, code, msg, resp); err != nil {
+			return res, err
+		}
+	}
+	return res, tx.Commit(ctx)
+}
+
 func (w *Worker) classify(r row, i int, out Outcome) (status string, next time.Time, code, msg string) {
 	now := w.Now()
 	attempts := r.attempts + 1
@@ -152,11 +236,12 @@ func (w *Worker) classify(r row, i int, out Outcome) (status string, next time.T
 		return "succeeded", now, "", ""
 	}
 	switch {
-	case strings.Contains(f.Code, "DUPLICATE"):
+	case strings.Contains(f.Code, "DUPLICATE") || f.Code == "CONVERSION_ALREADY_RETRACTED":
 		return "succeeded", now, f.Code, f.Message
-	case f.Code == "TOO_RECENT_CLICK" || f.Code == "TOO_RECENT_EVENT" || f.Code == "TOO_RECENT_CONVERSION_ACTION":
+	case f.Code == "TOO_RECENT_CLICK" || f.Code == "TOO_RECENT_EVENT" || f.Code == "TOO_RECENT_CONVERSION_ACTION" ||
+		f.Code == "TOO_RECENT_CONVERSION":
 		return retryOrFail(attempts, now, time.Hour, f.Code, f.Message)
-	case f.Code == "CLICK_NOT_FOUND" || f.Code == "EVENT_NOT_FOUND":
+	case f.Code == "CLICK_NOT_FOUND" || f.Code == "EVENT_NOT_FOUND" || f.Code == "CONVERSION_NOT_FOUND":
 		if attempts >= 3 {
 			return "failed", now, f.Code, f.Message
 		}

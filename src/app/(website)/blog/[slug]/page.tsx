@@ -11,6 +11,7 @@ import { CommentList } from "@/components/CommentList";
 import { CommentForm } from "@/components/CommentForm";
 import { ArticleEngagementTracker } from "@/components/ArticleEngagementTracker";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { contentFromApi } from "@/lib/api";
 import { getMedia, getPostBySlug, getPublishedPosts } from "@/lib/queries";
 import { buildMetadata } from "@/lib/seo";
 import { blogPostingNode, breadcrumbNode, graph } from "@/lib/jsonld";
@@ -27,7 +28,7 @@ interface PostPageProps {
 
 export async function generateStaticParams() {
     // The Docker build has no database access; pages render on demand instead.
-    if (!process.env.DATABASE_URI && !process.env.API_INTERNAL_URL) return [];
+    if (!contentFromApi()) return [];
     try {
         const posts = await getPublishedPosts();
         return posts.map((post) => ({ slug: post.slug }));
@@ -38,7 +39,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
     const { slug } = await params;
-    const post = await getPostBySlug(slug);
+    // No API (plain build): skip the fetch instead of hitting the clinic-api fallback host.
+    const post = contentFromApi() ? await getPostBySlug(slug) : null;
 
     if (!post) {
         return { title: "Post não encontrado", robots: { index: false } };
@@ -57,7 +59,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
 export default async function PostPage({ params }: PostPageProps) {
     const { slug } = await params;
-    const post = await getPostBySlug(slug);
+    const post = contentFromApi() ? await getPostBySlug(slug) : null;
 
     if (!post) {
         // Drafts have no public page: an admin who opened one through /edit/enter writes it here.
@@ -71,7 +73,7 @@ export default async function PostPage({ params }: PostPageProps) {
         notFound();
     }
 
-    const relatedPosts = (await getPublishedPosts())
+    const relatedPosts = (await getPublishedPosts().catch(() => []))
         .filter((p) => p.slug !== slug)
         .slice(0, 3)
         .map((p) => ({

@@ -73,3 +73,35 @@ func TestUploadErrorClasses(t *testing.T) {
 		t.Errorf("400: %+v", out)
 	}
 }
+
+func TestAdjustBodyRestatementAndRetraction(t *testing.T) {
+	var got map[string]any
+	c := fakeGoogle(t, 200, `{}`, &got)
+	v := 400.0
+	at := time.Date(2026, 10, 30, 15, 4, 5, 0, time.UTC)
+	out := c.Adjust(t.Context(), []Adjustment{
+		{Type: "RESTATEMENT", Action: "customers/123/conversionActions/9", OrderID: "L:appointment_booked", Time: at, Value: &v},
+		{Type: "RETRACTION", Action: "customers/123/conversionActions/9", OrderID: "M:appointment_booked", Time: at},
+	})
+	if out.Err != nil || len(out.Failures) != 0 {
+		t.Fatalf("outcome %+v", out)
+	}
+	items := got["conversionAdjustments"].([]any)
+	first, second := items[0].(map[string]any), items[1].(map[string]any)
+	rv := first["restatementValue"].(map[string]any)
+	if first["adjustmentType"] != "RESTATEMENT" || first["orderId"] != "L:appointment_booked" || first["adjustmentDateTime"] != "2026-10-30 12:04:05-03:00" ||
+		rv["adjustedValue"].(float64) != 400 || rv["currencyCode"] != "BRL" || got["partialFailure"] != true {
+		t.Fatalf("restatement body %+v", first)
+	}
+	if second["adjustmentType"] != "RETRACTION" || second["restatementValue"] != nil {
+		t.Fatalf("retraction body %+v", second)
+	}
+}
+
+func TestParseCampaigns(t *testing.T) {
+	rows, err := parseCampaigns([]byte(`{"results":[{"campaign":{"id":"7","name":"Avaliação"},"metrics":{"impressions":"12000","clicks":"340"}},
+	  {"campaign":{"id":"8","name":"Sem métricas"},"metrics":{}}]}`))
+	if err != nil || len(rows) != 2 || rows[0] != (CampaignRow{ID: "7", Name: "Avaliação", Impressions: 12000, Clicks: 340}) || rows[1].Clicks != 0 {
+		t.Fatalf("rows=%+v err=%v", rows, err)
+	}
+}

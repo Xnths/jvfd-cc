@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -74,6 +75,21 @@ type Outcome struct {
 // Uploader is what the worker needs from the API; tests replace it.
 type Uploader interface {
 	Upload(ctx context.Context, convs []Conversion) Outcome
+}
+
+// Adjustment corrects a click conversion that was uploaded before: RESTATEMENT replaces its value, RETRACTION
+// removes it. It is matched by order id (lead_id:appointment_booked), so no click id is sent.
+type Adjustment struct {
+	Type    string // RESTATEMENT | RETRACTION
+	Action  string
+	OrderID string
+	Time    time.Time
+	Value   *float64 // RESTATEMENT only
+}
+
+// Adjuster uploads conversion adjustments; tests replace it.
+type Adjuster interface {
+	Adjust(ctx context.Context, adjs []Adjustment) Outcome
 }
 
 // Client talks to the Google Ads REST API.
@@ -189,6 +205,42 @@ func (c *Client) Upload(ctx context.Context, convs []Conversion) Outcome {
 	status, body, err := c.post(ctx, ":uploadClickConversions", map[string]any{
 		"conversions": items, "partialFailure": true, "validateOnly": c.Cfg.ValidateOnly,
 	})
+	return c.outcome(status, body, err)
+}
+
+type conversionAdjustment struct {
+	ConversionAction   string `json:"conversionAction"`
+	AdjustmentType     string `json:"adjustmentType"`
+	AdjustmentDateTime string `json:"adjustmentDateTime"`
+	OrderID            string `json:"orderId"`
+	RestatementValue   *struct {
+		AdjustedValue float64 `json:"adjustedValue"`
+		CurrencyCode  string  `json:"currencyCode"`
+	} `json:"restatementValue,omitempty"`
+}
+
+// Adjust sends RESTATEMENT/RETRACTION adjustments with partial_failure, like Upload.
+func (c *Client) Adjust(ctx context.Context, adjs []Adjustment) Outcome {
+	items := make([]conversionAdjustment, len(adjs))
+	for i, a := range adjs {
+		it := conversionAdjustment{ConversionAction: a.Action, AdjustmentType: a.Type, OrderID: a.OrderID,
+			AdjustmentDateTime: a.Time.In(brt).Format("2006-01-02 15:04:05-07:00")}
+		if a.Type == "RESTATEMENT" && a.Value != nil {
+			it.RestatementValue = &struct {
+				AdjustedValue float64 `json:"adjustedValue"`
+				CurrencyCode  string  `json:"currencyCode"`
+			}{*a.Value, "BRL"}
+		}
+		items[i] = it
+	}
+	status, body, err := c.post(ctx, ":uploadConversionAdjustments", map[string]any{
+		"conversionAdjustments": items, "partialFailure": true, "validateOnly": c.Cfg.ValidateOnly,
+	})
+	return c.outcome(status, body, err)
+}
+
+// outcome maps an HTTP result to an Outcome; shared by Upload and Adjust.
+func (c *Client) outcome(status int, body []byte, err error) Outcome {
 	switch {
 	case errors.Is(err, ErrAuth):
 		return Outcome{Err: err}
@@ -278,6 +330,60 @@ FROM offline_conversion_upload_conversion_action_summary`
 		return nil, fmt.Errorf("google ads HTTP %d: %s", status, trim(body, 300))
 	}
 	return body, nil
+}
+
+// CampaignRow is the impressions and clicks Google reports for one campaign.
+type CampaignRow struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Impressions int64  `json:"impressions"`
+	Clicks      int64  `json:"clicks"`
+}
+
+// CampaignMetrics returns impressions and clicks per campaign between two days, inclusive (the funnel's n_0 and n_1).
+func (c *Client) CampaignMetrics(ctx context.Context, from, to time.Time) ([]CampaignRow, error) {
+	q := fmt.Sprintf(`SELECT campaign.id, campaign.name, metrics.impressions, metrics.clicks FROM campaign
+WHERE segments.date BETWEEN '%s' AND '%s' AND campaign.status != 'REMOVED'`,
+		from.In(brt).Format("2006-01-02"), to.In(brt).Format("2006-01-02"))
+	status, body, err := c.post(ctx, "/googleAds:search", map[string]string{"query": q})
+	if err != nil {
+		return nil, err
+	}
+	if status == http.StatusUnauthorized || status == http.StatusForbidden {
+		return nil, fmt.Errorf("%w: HTTP %d", ErrAuth, status)
+	}
+	if status != http.StatusOK {
+		return nil, fmt.Errorf("google ads HTTP %d: %s", status, trim(body, 300))
+	}
+	return parseCampaigns(body)
+}
+
+// parseCampaigns reads a googleAds:search response; Google serializes int64 metrics as strings.
+func parseCampaigns(body []byte) ([]CampaignRow, error) {
+	var r struct {
+		Results []struct {
+			Campaign struct {
+				ID   string `json:"id"`
+				Name string `json:"name"`
+			} `json:"campaign"`
+			Metrics struct {
+				Impressions json.Number `json:"impressions"`
+				Clicks      json.Number `json:"clicks"`
+			} `json:"metrics"`
+		} `json:"results"`
+	}
+	dec := json.NewDecoder(bytes.NewReader(body))
+	dec.UseNumber()
+	if err := dec.Decode(&r); err != nil {
+		return nil, err
+	}
+	out := make([]CampaignRow, 0, len(r.Results))
+	for _, x := range r.Results {
+		imp, _ := strconv.ParseInt(x.Metrics.Impressions.String(), 10, 64)
+		clk, _ := strconv.ParseInt(x.Metrics.Clicks.String(), 10, 64)
+		out = append(out, CampaignRow{ID: x.Campaign.ID, Name: x.Campaign.Name, Impressions: imp, Clicks: clk})
+	}
+	return out, nil
 }
 
 // ConfigFromEnv reads the GADS_* variables.
