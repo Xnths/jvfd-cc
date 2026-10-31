@@ -36,40 +36,87 @@ func fakeGoogle(t *testing.T, status int, resp string, got *map[string]any) *Cli
 	return c
 }
 
-func TestUploadBodyAndPartialFailure(t *testing.T) {
-	var got map[string]any
-	c := fakeGoogle(t, 200, `{"partialFailureError":{"details":[{"errors":[{"errorCode":{"conversionUploadError":"EXPIRED_CLICK"},"message":"old","location":{"fieldPathElements":[{"fieldName":"conversions","index":1}]}}]}]}}`, &got)
+func fakeDataManager(t *testing.T, handler func(body map[string]any) (int, string)) *Client {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/token") {
+			_, _ = w.Write([]byte(`{"access_token":"at","expires_in":3600}`))
+			return
+		}
+		if r.URL.Path != "/v1/events:ingest" || r.Header.Get("Authorization") != "Bearer at" {
+			t.Errorf("request: %s %v", r.URL.Path, r.Header)
+		}
+		var got map[string]any
+		b, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(b, &got)
+		st, resp := handler(got)
+		w.WriteHeader(st)
+		_, _ = w.Write([]byte(resp))
+	}))
+	t.Cleanup(srv.Close)
+	c := NewClient(Config{CustomerID: "123", ClientID: "i", ClientSecret: "s", RefreshToken: "r"})
+	c.DMBase, c.TokenURL = srv.URL, srv.URL+"/token"
+	return c
+}
+
+func TestUploadBody(t *testing.T) {
+	var bodies []map[string]any
+	c := fakeDataManager(t, func(b map[string]any) (int, string) { bodies = append(bodies, b); return 200, `{"requestId":"x"}` })
 	v := 350.0
 	at := time.Date(2026, 10, 30, 15, 4, 5, 0, time.UTC)
 	out := c.Upload(context.Background(), []Conversion{
 		{Gclid: "G1", Action: "customers/123/conversionActions/1", Time: at, OrderID: "l:whatsapp_click"},
 		{Gbraid: "B1", Action: "customers/123/conversionActions/3", Time: at, Value: &v, OrderID: "l:appointment_booked"},
 	})
-	if out.Err != nil || len(out.Failures) != 1 || out.Failures[1].Code != "EXPIRED_CLICK" {
-		t.Fatalf("outcome: %+v", out)
+	if out.Err != nil || len(out.Failures) != 0 || len(bodies) != 2 {
+		t.Fatalf("outcome: %+v bodies=%d", out, len(bodies))
 	}
-	convs := got["conversions"].([]any)
-	first, second := convs[0].(map[string]any), convs[1].(map[string]any)
-	if first["conversionDateTime"] != "2026-10-30 12:04:05-03:00" || first["gclid"] != "G1" || first["orderId"] != "l:whatsapp_click" {
+	d := bodies[0]["destinations"].([]any)[0].(map[string]any)
+	if d["productDestinationId"] != "1" || d["operatingAccount"].(map[string]any)["accountId"] != "123" {
+		t.Errorf("destination: %v", d)
+	}
+	first := bodies[0]["events"].([]any)[0].(map[string]any)
+	if first["eventTimestamp"] != "2026-10-30T12:04:05-03:00" || first["transactionId"] != "l:whatsapp_click" ||
+		first["adIdentifiers"].(map[string]any)["gclid"] != "G1" || first["conversionValue"] != nil {
 		t.Errorf("first: %v", first)
 	}
-	if second["gbraid"] != "B1" || second["conversionValue"] != 350.0 || second["currencyCode"] != "BRL" || second["gclid"] != nil {
+	second := bodies[1]["events"].([]any)[0].(map[string]any)
+	if second["adIdentifiers"].(map[string]any)["gbraid"] != "B1" || second["conversionValue"] != 350.0 || second["currency"] != "BRL" {
 		t.Errorf("second: %v", second)
 	}
-	if got["partialFailure"] != true {
-		t.Errorf("partialFailure not set: %v", got)
+}
+
+func TestUploadBadBatchIsSplit(t *testing.T) {
+	c := fakeDataManager(t, func(b map[string]any) (int, string) {
+		ev := b["events"].([]any)
+		if len(ev) > 1 || ev[0].(map[string]any)["adIdentifiers"].(map[string]any)["gclid"] == "BAD" {
+			return 400, `{"error":{"status":"INVALID_ARGUMENT","details":[{"reason":"INVALID_GCLID"}]}}`
+		}
+		return 200, `{}`
+	})
+	at := time.Now()
+	out := c.Upload(context.Background(), []Conversion{
+		{Gclid: "OK", Action: "customers/123/conversionActions/1", Time: at, OrderID: "a"},
+		{Gclid: "BAD", Action: "customers/123/conversionActions/1", Time: at, OrderID: "b"},
+	})
+	if out.Err != nil || len(out.Failures) != 1 || out.Failures[1].Code != "INVALID_GCLID" {
+		t.Fatalf("outcome: %+v", out)
 	}
 }
 
 func TestUploadErrorClasses(t *testing.T) {
-	conv := []Conversion{{Gclid: "G", Time: time.Now()}}
-	if out := fakeGoogle(t, 401, `{}`, nil).Upload(context.Background(), conv); !errors.Is(out.Err, ErrAuth) {
-		t.Errorf("401: %+v", out)
+	conv := []Conversion{{Gclid: "G", Action: "customers/1/conversionActions/1", Time: time.Now()}}
+	for st, check := range map[int]func(Outcome) bool{
+		401: func(o Outcome) bool { return errors.Is(o.Err, ErrAuth) },
+		503: func(o Outcome) bool { return o.Err != nil && o.Transient },
+	} {
+		c := fakeDataManager(t, func(map[string]any) (int, string) { return st, `{}` })
+		if out := c.Upload(context.Background(), conv); !check(out) {
+			t.Errorf("%d: %+v", st, out)
+		}
 	}
-	if out := fakeGoogle(t, 503, `{}`, nil).Upload(context.Background(), conv); out.Err == nil || !out.Transient {
-		t.Errorf("503: %+v", out)
-	}
-	if out := fakeGoogle(t, 400, `{"error":"bad"}`, nil).Upload(context.Background(), conv); out.Err == nil || out.Transient {
+	c := fakeDataManager(t, func(map[string]any) (int, string) { return 400, `{"error":{"status":"INVALID_ARGUMENT"}}` })
+	if out := c.Upload(context.Background(), conv); out.Err != nil || out.Failures[0].Code != "INVALID_ARGUMENT" {
 		t.Errorf("400: %+v", out)
 	}
 }

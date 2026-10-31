@@ -97,6 +97,7 @@ type Client struct {
 	Cfg      Config
 	HTTP     *http.Client
 	Base     string // https://googleads.googleapis.com
+	DMBase   string // https://datamanager.googleapis.com
 	TokenURL string // https://oauth2.googleapis.com/token
 
 	mu      sync.Mutex
@@ -106,7 +107,7 @@ type Client struct {
 
 func NewClient(cfg Config) *Client {
 	return &Client{Cfg: cfg, HTTP: &http.Client{Timeout: 30 * time.Second},
-		Base: "https://googleads.googleapis.com", TokenURL: "https://oauth2.googleapis.com/token"}
+		Base: "https://googleads.googleapis.com", DMBase: "https://datamanager.googleapis.com", TokenURL: "https://oauth2.googleapis.com/token"}
 }
 
 var brt = time.FixedZone("-03:00", -3*60*60)
@@ -173,39 +174,133 @@ func (c *Client) post(ctx context.Context, path string, body any) (int, []byte, 
 	return resp.StatusCode, b, nil
 }
 
-type clickConversion struct {
-	Gclid              string   `json:"gclid,omitempty"`
-	Gbraid             string   `json:"gbraid,omitempty"`
-	Wbraid             string   `json:"wbraid,omitempty"`
-	ConversionAction   string   `json:"conversionAction"`
-	ConversionDateTime string   `json:"conversionDateTime"`
-	ConversionValue    *float64 `json:"conversionValue,omitempty"`
-	CurrencyCode       string   `json:"currencyCode,omitempty"`
-	OrderID            string   `json:"orderId"`
+// dmEvent is one Data Manager API event: the click id, the time, the value and the order id (transactionId).
+type dmEvent struct {
+	AdIdentifiers   map[string]string `json:"adIdentifiers"`
+	EventTimestamp  string            `json:"eventTimestamp"`
+	TransactionID   string            `json:"transactionId"`
+	ConversionValue *float64          `json:"conversionValue,omitempty"`
+	Currency        string            `json:"currency,omitempty"`
+	EventSource     string            `json:"eventSource"`
 }
 
-// Upload sends one batch with partial_failure so a bad click id does not sink the others.
+// Upload sends the click conversions through the Data Manager API (Google Ads' UploadClickConversions is closed to
+// new integrations). One request per conversion action. Ingestion is asynchronous: a 200 means "accepted for
+// processing"; Google's own result per event shows up in the reconcile summary. If a batch is rejected as a whole
+// (400), each event is sent alone so one bad click id does not sink the others.
 func (c *Client) Upload(ctx context.Context, convs []Conversion) Outcome {
-	items := make([]clickConversion, len(convs))
+	out := Outcome{Failures: map[int]Failure{}}
+	byAction := map[string][]int{}
+	var order []string
 	for i, v := range convs {
-		it := clickConversion{ConversionAction: v.Action, ConversionDateTime: v.Time.In(brt).Format("2006-01-02 15:04:05-07:00"), OrderID: v.OrderID}
-		switch {
-		case v.Gclid != "":
-			it.Gclid = v.Gclid
-		case v.Gbraid != "":
-			it.Gbraid = v.Gbraid
-		default:
-			it.Wbraid = v.Wbraid
+		if _, ok := byAction[v.Action]; !ok {
+			order = append(order, v.Action)
 		}
-		if v.Value != nil {
-			it.ConversionValue, it.CurrencyCode = v.Value, "BRL"
-		}
-		items[i] = it
+		byAction[v.Action] = append(byAction[v.Action], i)
 	}
-	status, body, err := c.post(ctx, ":uploadClickConversions", map[string]any{
-		"conversions": items, "partialFailure": true, "validateOnly": c.Cfg.ValidateOnly,
-	})
-	return c.outcome(status, body, err)
+	for _, action := range order {
+		idx := byAction[action]
+		events := make([]dmEvent, len(idx))
+		for k, i := range idx {
+			events[k] = c.dmEvent(convs[i])
+		}
+		status, body, err := c.ingest(ctx, action, events)
+		if status == http.StatusBadRequest && len(idx) > 1 {
+			for k, i := range idx {
+				st, bd, er := c.ingest(ctx, action, events[k:k+1])
+				if o := c.outcome(st, bd, er); o.Err != nil {
+					if o.Transient || errors.Is(o.Err, ErrAuth) {
+						return o
+					}
+					out.Failures[i] = Failure{Code: dmReason(bd), Message: trim(bd, 300)}
+				}
+			}
+			continue
+		}
+		o := c.outcome(status, body, err)
+		if o.Err != nil {
+			if o.Transient || errors.Is(o.Err, ErrAuth) {
+				return o
+			}
+			for _, i := range idx {
+				out.Failures[i] = Failure{Code: dmReason(body), Message: trim(body, 300)}
+			}
+			continue
+		}
+		out.Raw = o.Raw
+	}
+	return out
+}
+
+func (c *Client) dmEvent(v Conversion) dmEvent {
+	e := dmEvent{AdIdentifiers: map[string]string{}, EventTimestamp: v.Time.In(brt).Format(time.RFC3339), TransactionID: v.OrderID, EventSource: "WEB"}
+	switch {
+	case v.Gclid != "":
+		e.AdIdentifiers["gclid"] = v.Gclid
+	case v.Gbraid != "":
+		e.AdIdentifiers["gbraid"] = v.Gbraid
+	default:
+		e.AdIdentifiers["wbraid"] = v.Wbraid
+	}
+	if v.Value != nil {
+		e.ConversionValue, e.Currency = v.Value, "BRL"
+	}
+	return e
+}
+
+// ingest posts events to events:ingest; the destination is the conversion action id (last segment of its resource name).
+func (c *Client) ingest(ctx context.Context, action string, events []dmEvent) (int, []byte, error) {
+	tok, err := c.accessToken(ctx)
+	if err != nil {
+		return 0, nil, err
+	}
+	dest := map[string]any{
+		"operatingAccount":     map[string]string{"accountType": "GOOGLE_ADS", "accountId": c.Cfg.CustomerID},
+		"productDestinationId": action[strings.LastIndex(action, "/")+1:],
+	}
+	if c.Cfg.LoginCustomerID != "" {
+		dest["loginAccount"] = map[string]string{"accountType": "GOOGLE_ADS", "accountId": c.Cfg.LoginCustomerID}
+	} else {
+		dest["loginAccount"] = map[string]string{"accountType": "GOOGLE_ADS", "accountId": c.Cfg.CustomerID}
+	}
+	raw, _ := json.Marshal(map[string]any{"destinations": []any{dest}, "events": events, "validateOnly": c.Cfg.ValidateOnly})
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.DMBase+"/v1/events:ingest", bytes.NewReader(raw))
+	if err != nil {
+		return 0, nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+tok)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+	b, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	return resp.StatusCode, b, nil
+}
+
+// dmReason extracts error.details[].reason (or error.status) from a Google error body.
+func dmReason(body []byte) string {
+	var r struct {
+		Error struct {
+			Status  string `json:"status"`
+			Details []struct {
+				Reason string `json:"reason"`
+			} `json:"details"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(body, &r) != nil {
+		return "UNKNOWN"
+	}
+	for _, d := range r.Error.Details {
+		if d.Reason != "" {
+			return d.Reason
+		}
+	}
+	if r.Error.Status != "" {
+		return r.Error.Status
+	}
+	return "UNKNOWN"
 }
 
 type conversionAdjustment struct {
