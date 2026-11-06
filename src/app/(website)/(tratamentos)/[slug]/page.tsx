@@ -6,7 +6,10 @@ import type { Metadata } from 'next'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { getTreatmentBySlug, getTreatments } from '@/lib/queries'
 import { buildMetadata } from '@/lib/seo'
-import { breadcrumbNode, graph, therapyNode, webPageNode } from '@/lib/jsonld'
+import { breadcrumbNode, faqNode, graph, therapyNode, webPageNode } from '@/lib/jsonld'
+import { getTexts } from '@/lib/texts'
+import { resolvedAvaliacaoFaq } from '@/content/resolve'
+import { AVALIACAO_SLUG } from '@/content/avaliacao'
 
 // ISR: cached until the Go API invalidates the "services"/"pages" tags on publish.
 export const revalidate = 86400
@@ -68,6 +71,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
     const path = `/${treatment.slug}`
     const description = treatment.metaDescription || treatment.subtitle
+    const faq = slug === AVALIACAO_SLUG ? faqNode(resolvedAvaliacaoFaq(await getTexts().catch(() => ({}))), path) : null
 
     return (
         <>
@@ -76,6 +80,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                     webPageNode({ path, name: treatment.title, description }),
                     therapyNode({ path, name: treatment.title, description }),
                     breadcrumbNode([{ name: treatment.title, path }]),
+                    ...(faq ? [faq] : []),
                 )}
             />
             <ServicePage

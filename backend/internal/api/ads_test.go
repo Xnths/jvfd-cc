@@ -191,11 +191,14 @@ func TestStatusQueuesStagesWithEditableValue(t *testing.T) {
 	}
 }
 
-func TestAvaliacaoPageMentionsInstallmentsWithoutPrice(t *testing.T) {
+func TestAvaliacaoPageHasNoInstallmentsOrPrice(t *testing.T) {
 	e := newTestEnv(t)
-	var body string
-	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT published_body::text FROM services s JOIN pages p ON p.id = s.page_id WHERE p.slug='avaliacao-neuropsicologica'`).Scan(&body)
-	if !strings.Contains(body, "parcelado em até 6 vezes") || strings.Contains(body, "3000") || strings.Contains(body, "3.000") {
-		t.Fatalf("avaliação body: installments=%v", strings.Contains(body, "parcelado"))
+	var body, msg string
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT s.published_body::text, s.whatsapp_message FROM services s JOIN pages p ON p.id = s.page_id WHERE p.slug='avaliacao-neuropsicologica'`).Scan(&body, &msg)
+	if body == "" || strings.Contains(strings.ToLower(body), "parcel") || strings.Contains(body, "3000") || strings.Contains(body, "3.000") || strings.Contains(body, "R$") {
+		t.Fatalf("avaliação body must have content and no installments or price: %q", body)
+	}
+	if msg != "Olá, gostaria de informações sobre a avaliação neuropsicológica." {
+		t.Fatalf("whatsapp text changed (the ad upload depends on it): %q", msg)
 	}
 }

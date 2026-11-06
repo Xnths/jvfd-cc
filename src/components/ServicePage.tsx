@@ -4,6 +4,8 @@ import { trackWhatsappClick } from "@/lib/whatsapp-lead";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Editable } from "@/edit/Editable";
 import dynamic from "next/dynamic";
+import Image from "next/image";
+import { avaliacao, AVALIACAO_SLUG } from "@/content/avaliacao";
 import { useEdit } from "@/edit/EditContext";
 import type { ServiceInfo } from "@/lib/queries";
 import { SERVICE_THEMES, type ServiceTheme } from "@/lib/service-themes";
@@ -770,6 +772,180 @@ function GenericLayout({
   );
 }
 
+// ─── Layout: Avaliação neuropsicológica (Google Ads landing page) ───────────
+// Built to convert: credential and payment terms above the fold, the clinical reasons to look for an
+// evaluation, what the literature says (with the limits), the process, FAQ (convênio first) and references.
+// Copy defaults live in src/content/avaliacao.ts; every text is editable in place. No prices, no parcelamento.
+
+const ASSESS_CTA = "bg-green-700 hover:bg-green-800 text-white focus-visible:ring-green-500";
+
+function AssessmentLayout({ title, subtitle, content, whatsappUrl, onCTAClick }: Omit<LayoutProps, "config">) {
+  const a = avaliacao;
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Hero */}
+      <section className="pt-20 pb-16 px-4 bg-gradient-to-b from-slate-50 to-white">
+        <div className="container mx-auto max-w-6xl grid md:grid-cols-5 gap-10 items-center">
+          <div className="md:col-span-3">
+            <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-green-700 mb-5">
+              <SE k="badge">{a.hero.badge}</SE>
+            </span>
+            <h1 className="font-serif text-4xl md:text-5xl font-semibold text-slate-900 leading-tight mb-5">
+              <SE k="title">{title || a.hero.title}</SE>
+            </h1>
+            <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-xl mb-8">
+              <SE k="subtitle" multiline>{subtitle || a.hero.subtitle}</SE>
+            </p>
+            <CTAButton href={whatsappUrl} btnClass={ASSESS_CTA} text={a.hero.cta} onClick={onCTAClick} size="large" />
+            <p className="mt-4 text-sm text-slate-600 max-w-md">
+              <SE k="hero_note" multiline>{a.hero.note}</SE>
+            </p>
+          </div>
+          <div className="md:col-span-2">
+            <div className="aspect-[4/4] rounded-lg overflow-hidden shadow-xl">
+              <Image src="/jv.jpeg" alt="Psicólogo João Fernandes" width={747} height={665} sizes="(max-width: 768px) 100vw, 40vw" priority className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Credentials */}
+      <div className="border-y border-slate-200 bg-white py-5 px-4">
+        <ul className="container mx-auto max-w-6xl flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm font-medium text-slate-700">
+          {a.strip.map((t, i) => (
+            <li key={i} className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-600" aria-hidden />
+              <SE k={`strip_${i}`}>{t}</SE>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* When to look for it */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700 mb-3"><SE k="when_eyebrow">{a.when.eyebrow}</SE></p>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-4 max-w-2xl"><SE k="when_title">{a.when.title}</SE></h2>
+          <p className="text-lg text-slate-600 leading-relaxed max-w-3xl mb-12"><SE k="when_intro" multiline>{a.when.intro}</SE></p>
+          <div className="grid md:grid-cols-3 gap-6">
+            {a.when.groups.map((g, gi) => (
+              <div key={gi} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                <h3 className="font-serif text-xl font-semibold text-slate-900 mb-2"><SE k={`when_${gi}_title`}>{g.title}</SE></h3>
+                <p className="text-sm text-slate-600 leading-relaxed mb-4"><SE k={`when_${gi}_text`} multiline>{g.text}</SE></p>
+                <ul className="space-y-2 text-slate-800">
+                  {g.items.map((it, ii) => (
+                    <li key={ii} className="flex gap-2"><span className="mt-2 w-1.5 h-1.5 rounded-full bg-green-600 shrink-0" aria-hidden /><SE k={`when_${gi}_item_${ii}`}>{it}</SE></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What it is (rich text, edited in place) */}
+      <section className="pb-20 px-4">
+        <div className="container mx-auto max-w-3xl text-lg text-slate-700 leading-relaxed">
+          <ServiceBody content={content} />
+        </div>
+      </section>
+
+      {/* Research */}
+      <section className="py-20 px-4 bg-slate-900 text-white">
+        <div className="container mx-auto max-w-4xl">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-400 mb-3"><SE k="research_eyebrow">{a.research.eyebrow}</SE></p>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-10"><SE k="research_title">{a.research.title}</SE></h2>
+          <ol className="space-y-6">
+            {a.research.findings.map((f, i) => (
+              <li key={i} className="flex gap-5">
+                <span className="font-serif text-3xl text-green-400 leading-none w-8 shrink-0">{i + 1}</span>
+                <p className="text-lg text-slate-200 leading-relaxed">
+                  <SE k={`research_${i}`} multiline>{f.text}</SE>
+                  <sup className="ml-1 text-green-400"><a href="#referencias" className="underline">[{f.ref}]</a></sup>
+                </p>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-10 text-sm text-slate-400 leading-relaxed border-t border-slate-700 pt-6"><SE k="research_caveat" multiline>{a.research.caveat}</SE></p>
+        </div>
+      </section>
+
+      {/* Process */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700 mb-3"><SE k="steps_eyebrow">{a.steps.eyebrow}</SE></p>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-10"><SE k="steps_title">{a.steps.title}</SE></h2>
+          <ol className="relative border-l-2 border-green-200 ml-4 space-y-8">
+            {a.steps.items.map((s, i) => (
+              <li key={i} className="pl-8 relative">
+                <span className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-green-700 text-white text-sm font-semibold flex items-center justify-center">{i + 1}</span>
+                <h3 className="font-semibold text-slate-900 text-lg"><SE k={`steps_${i}_title`}>{s.title}</SE></h3>
+                <p className="text-slate-600 leading-relaxed"><SE k={`steps_${i}_text`} multiline>{s.text}</SE></p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* Professional + office */}
+      <section className="py-20 px-4 bg-slate-50">
+        <div className="container mx-auto max-w-6xl grid md:grid-cols-2 gap-10 items-center">
+          <div className="aspect-[3/2] rounded-lg overflow-hidden shadow-lg">
+            <Image src="/consultorio.jpg" alt="Consultório na Vila Madalena, São Paulo" width={1200} height={800} sizes="(max-width: 768px) 100vw, 50vw" className="w-full h-full object-cover" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700 mb-3"><SE k="about_eyebrow">{a.about.eyebrow}</SE></p>
+            <h2 className="font-serif text-3xl font-semibold text-slate-900 mb-4"><SE k="about_title">{a.about.title}</SE></h2>
+            <p className="text-lg text-slate-700 leading-relaxed"><SE k="about_text" multiline>{a.about.text}</SE></p>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-20 px-4" id="faq">
+        <div className="container mx-auto max-w-3xl">
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-10 text-center"><SE k="faq_title">{a.faqTitle}</SE></h2>
+          <ul className="space-y-6">
+            {a.faq.map((f, i) => (
+              <li key={i} className="border-b border-slate-200 pb-5">
+                <h3 className="text-lg font-semibold text-slate-900 mb-2"><SE k={`faq_${i}_q`}>{f.question}</SE></h3>
+                <p className="text-slate-600 leading-relaxed"><SE k={`faq_${i}_a`} multiline>{f.answer}</SE></p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="py-16 px-4 bg-green-50">
+        <div className="container mx-auto max-w-2xl text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700 mb-3"><SE k="closing_eyebrow">{a.closing.eyebrow}</SE></p>
+          <h2 className="font-serif text-2xl md:text-3xl font-semibold text-slate-900 mb-6"><SE k="closing_heading">{a.closing.title}</SE></h2>
+          <CTAButton href={whatsappUrl} btnClass={ASSESS_CTA} text={a.closing.cta} onClick={onCTAClick} size="large" />
+        </div>
+      </section>
+
+      {/* References */}
+      <section className="py-12 px-4" id="referencias">
+        <div className="container mx-auto max-w-3xl">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4"><SE k="refs_title">{a.referencesTitle}</SE></h2>
+          <ol className="space-y-2 text-xs text-slate-500 leading-relaxed">
+            {a.references.map((r) => (
+              <li key={r.n}>
+                [{r.n}] {r.text}{" "}
+                <a href={`https://doi.org/${r.doi}`} target="_blank" rel="noopener noreferrer" className="underline">doi:{r.doi}</a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <ServiceContact />
+      <Footer />
+    </div>
+  );
+}
+
 // ─── Shared layout prop type ─────────────────────────────────────────────────
 
 interface LayoutProps {
@@ -840,6 +1016,18 @@ function ServicePageInner({ slug, title, subtitle, content, service }: ServicePa
 
     trackWhatsappClick(source);
   };
+
+  if (slug === AVALIACAO_SLUG) {
+    return (
+      <AssessmentLayout
+        title={title}
+        subtitle={subtitle}
+        content={content}
+        whatsappUrl={whatsappUrl}
+        onCTAClick={handleCTAClick}
+      />
+    );
+  }
 
   if (!config) {
     return (

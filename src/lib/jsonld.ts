@@ -125,10 +125,10 @@ export function clinicNode(list: { name: string; description: string; href: stri
     };
 }
 
-export function faqNode(items: { question: string; answer: string }[] = faq): Node {
+export function faqNode(items: { question: string; answer: string }[] = faq, path = ""): Node {
     return {
         "@type": "FAQPage",
-        "@id": `${SITE_URL}/#faq`,
+        "@id": `${SITE_URL}${path}/#faq`,
         mainEntity: items.map((item) => ({
             "@type": "Question",
             name: item.question,

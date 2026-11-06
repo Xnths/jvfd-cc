@@ -1,5 +1,6 @@
 import { faq } from "@/content/clinic";
 import { tutoring } from "@/content/tutoring";
+import { avaliacao, AVALIACAO_SLUG } from "@/content/avaliacao";
 import { pickText, type TextMap } from "@/lib/texts";
 
 // Copies of the structured content with João's inline edits applied, so JSON-LD matches what
@@ -16,5 +17,12 @@ export function resolvedTutoringFaq(texts: TextMap) {
     return tutoring.faq.map((item, i) => ({
         question: pickText(texts, `aulas.faq.${i}.question`, item.question),
         answer: pickText(texts, `aulas.faq.${i}.answer`, item.answer),
+    }));
+}
+
+export function resolvedAvaliacaoFaq(texts: TextMap) {
+    return avaliacao.faq.map((item, i) => ({
+        question: pickText(texts, `service.${AVALIACAO_SLUG}.faq_${i}_q`, item.question),
+        answer: pickText(texts, `service.${AVALIACAO_SLUG}.faq_${i}_a`, item.answer),
     }));
 }
