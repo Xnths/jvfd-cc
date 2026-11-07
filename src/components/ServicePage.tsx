@@ -5,10 +5,10 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Editable } from "@/edit/Editable";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { avaliacao, AVALIACAO_SLUG } from "@/content/avaliacao";
+import { serviceLandings, type LandingImage, type ServiceLanding } from "@/content/service-landings";
 import { useEdit } from "@/edit/EditContext";
 import type { ServiceInfo } from "@/lib/queries";
-import { SERVICE_THEMES, type ServiceTheme } from "@/lib/service-themes";
+import { LANDING_THEMES, SERVICE_THEMES, type ServiceTheme } from "@/lib/service-themes";
 import { FaWhatsapp } from "react-icons/fa";
 import posthog from "posthog-js";
 import { sendGAEvent } from "@next/third-parties/google";
@@ -772,50 +772,76 @@ function GenericLayout({
   );
 }
 
-// ─── Layout: Avaliação neuropsicológica (Google Ads landing page) ───────────
-// Built to convert: credential and payment terms above the fold, the clinical reasons to look for an
-// evaluation, what the literature says (with the limits), the process, FAQ (convênio first) and references.
-// Copy defaults live in src/content/avaliacao.ts; every text is editable in place. No prices, no parcelamento.
+// ─── Layout: Landing (service pages with copy in src/content/service-landings.ts) ─────────
+// One order for every service, because it answers what stops people from asking for help: what this is for, whether
+// it applies to me, what the evidence says (with its limits), what will happen, who does it, what about convênio.
+// Pictures sit next to the text they support, with a caption (Houts et al., 2006). Crisis pages open with the
+// emergency numbers. See CLAUDE.md for the copy rules.
 
-const ASSESS_CTA = "bg-green-700 hover:bg-green-800 text-white focus-visible:ring-green-500";
+function LandingPicture({ image, k, className = "", priority = false }: { image: LandingImage; k: string; className?: string; priority?: boolean }) {
+  return (
+    <figure className={className}>
+      <Image src={image.src} alt={image.alt} width={image.width} height={image.height} sizes="(max-width: 768px) 100vw, 45vw" priority={priority} className="w-full h-auto rounded-lg shadow-lg" />
+      {image.caption && <figcaption className="mt-2 text-xs text-slate-500"><SE k={`${k}_caption`}>{image.caption}</SE></figcaption>}
+    </figure>
+  );
+}
 
-function AssessmentLayout({ title, subtitle, content, whatsappUrl, onCTAClick }: Omit<LayoutProps, "config">) {
-  const a = avaliacao;
+function LandingEyebrow({ k, className, children }: { k: string; className: string; children: string }) {
+  return <p className={`text-xs font-bold uppercase tracking-[0.2em] mb-3 ${className}`}><SE k={k}>{children}</SE></p>;
+}
+
+function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick }: Omit<LayoutProps, "config"> & { data: ServiceLanding }) {
+  const t = LANDING_THEMES[data.theme];
+  const groupCols = data.when.groups.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2";
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero */}
-      <section className="pt-20 pb-16 px-4 bg-gradient-to-b from-slate-50 to-white">
-        <div className="container mx-auto max-w-6xl grid md:grid-cols-5 gap-10 items-center">
-          <div className="md:col-span-3">
-            <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-green-700 mb-5">
-              <SE k="badge">{a.hero.badge}</SE>
-            </span>
-            <h1 className="font-serif text-4xl md:text-5xl font-semibold text-slate-900 leading-tight mb-5">
-              <SE k="title">{title || a.hero.title}</SE>
-            </h1>
-            <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-xl mb-8">
-              <SE k="subtitle" multiline>{subtitle || a.hero.subtitle}</SE>
-            </p>
-            <CTAButton href={whatsappUrl} btnClass={ASSESS_CTA} text={a.hero.cta} onClick={onCTAClick} size="large" />
-            <p className="mt-4 text-sm text-slate-600 max-w-md">
-              <SE k="hero_note" multiline>{a.hero.note}</SE>
-            </p>
-          </div>
-          <div className="md:col-span-2">
-            <div className="aspect-[4/4] rounded-lg overflow-hidden shadow-xl">
-              <Image src="/jv.jpeg" alt="Psicólogo João Fernandes" width={747} height={665} sizes="(max-width: 768px) 100vw, 40vw" priority className="w-full h-full object-cover" />
+      {data.safety && (
+        <section className="px-4 py-6 bg-red-50 border-b-2 border-red-200" aria-label="Contatos de emergência">
+          <div className="container mx-auto max-w-4xl">
+            <h2 className="text-lg md:text-xl font-bold text-red-900 mb-1"><SE k="safety_title">{data.safety.title}</SE></h2>
+            <p className="text-red-900 leading-relaxed mb-4"><SE k="safety_text" multiline>{data.safety.text}</SE></p>
+            <div className="flex flex-wrap gap-3">
+              {data.safety.actions.map((a, i) => (
+                <a key={a.href} href={a.href} className="inline-flex flex-col rounded-xl bg-red-800 hover:bg-red-900 text-white px-5 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500">
+                  <span className="text-lg font-bold"><SE k={`safety_action_${i}`}>{a.label}</SE></span>
+                  <span className="text-sm"><SE k={`safety_action_${i}_detail`}>{a.detail}</SE></span>
+                </a>
+              ))}
             </div>
           </div>
+        </section>
+      )}
+
+      {/* Hero */}
+      <section className={`pt-16 md:pt-20 pb-16 px-4 ${t.heroBg}`}>
+        <div className={`container mx-auto ${data.hero.image ? "max-w-6xl grid md:grid-cols-5 gap-10 items-center" : "max-w-4xl"}`}>
+          <div className={data.hero.image ? "md:col-span-3" : ""}>
+            <span className={`inline-block text-xs font-bold uppercase tracking-[0.2em] mb-5 ${t.heroEyebrow}`}>
+              <SE k="badge">{data.hero.badge}</SE>
+            </span>
+            <h1 className={`font-serif text-4xl md:text-5xl font-semibold leading-tight mb-5 ${t.heroHeading}`}>
+              <SE k="title">{title || data.hero.title}</SE>
+            </h1>
+            <p className={`text-lg md:text-xl leading-relaxed max-w-xl mb-8 ${t.heroText}`}>
+              <SE k="subtitle" multiline>{subtitle || data.hero.subtitle}</SE>
+            </p>
+            <CTAButton href={whatsappUrl} btnClass={t.cta} text={data.hero.cta} onClick={onCTAClick} size="large" />
+            <p className={`mt-4 text-sm max-w-md ${t.heroNote}`}>
+              <SE k="hero_note" multiline>{data.hero.note}</SE>
+            </p>
+          </div>
+          {data.hero.image && <LandingPicture image={data.hero.image} k="hero_image" className="md:col-span-2" priority />}
         </div>
       </section>
 
       {/* Credentials */}
       <div className="border-y border-slate-200 bg-white py-5 px-4">
         <ul className="container mx-auto max-w-6xl flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm font-medium text-slate-700">
-          {a.strip.map((t, i) => (
+          {data.strip.map((text, i) => (
             <li key={i} className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-600" aria-hidden />
-              <SE k={`strip_${i}`}>{t}</SE>
+              <span className={`w-1.5 h-1.5 rounded-full ${t.dot}`} aria-hidden />
+              <SE k={`strip_${i}`}>{text}</SE>
             </li>
           ))}
         </ul>
@@ -824,17 +850,17 @@ function AssessmentLayout({ title, subtitle, content, whatsappUrl, onCTAClick }:
       {/* When to look for it */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700 mb-3"><SE k="when_eyebrow">{a.when.eyebrow}</SE></p>
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-4 max-w-2xl"><SE k="when_title">{a.when.title}</SE></h2>
-          <p className="text-lg text-slate-600 leading-relaxed max-w-3xl mb-12"><SE k="when_intro" multiline>{a.when.intro}</SE></p>
-          <div className="grid md:grid-cols-3 gap-6">
-            {a.when.groups.map((g, gi) => (
+          <LandingEyebrow k="when_eyebrow" className={t.eyebrow}>{data.when.eyebrow}</LandingEyebrow>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-4 max-w-3xl"><SE k="when_title">{data.when.title}</SE></h2>
+          <p className="text-lg text-slate-600 leading-relaxed max-w-3xl mb-12"><SE k="when_intro" multiline>{data.when.intro}</SE></p>
+          <div className={`grid gap-6 ${groupCols}`}>
+            {data.when.groups.map((g, gi) => (
               <div key={gi} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
                 <h3 className="font-serif text-xl font-semibold text-slate-900 mb-2"><SE k={`when_${gi}_title`}>{g.title}</SE></h3>
                 <p className="text-sm text-slate-600 leading-relaxed mb-4"><SE k={`when_${gi}_text`} multiline>{g.text}</SE></p>
                 <ul className="space-y-2 text-slate-800">
-                  {g.items.map((it, ii) => (
-                    <li key={ii} className="flex gap-2"><span className="mt-2 w-1.5 h-1.5 rounded-full bg-green-600 shrink-0" aria-hidden /><SE k={`when_${gi}_item_${ii}`}>{it}</SE></li>
+                  {g.items.map((item, ii) => (
+                    <li key={ii} className="flex gap-2"><span className={`mt-2 w-1.5 h-1.5 rounded-full shrink-0 ${t.dot}`} aria-hidden /><SE k={`when_${gi}_item_${ii}`}>{item}</SE></li>
                   ))}
                 </ul>
               </div>
@@ -845,40 +871,23 @@ function AssessmentLayout({ title, subtitle, content, whatsappUrl, onCTAClick }:
 
       {/* What it is (rich text, edited in place) */}
       <section className="pb-20 px-4">
-        <div className="container mx-auto max-w-3xl text-lg text-slate-700 leading-relaxed">
-          <ServiceBody content={content} />
-        </div>
-      </section>
-
-      {/* Research */}
-      <section className="py-20 px-4 bg-slate-900 text-white">
-        <div className="container mx-auto max-w-4xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-400 mb-3"><SE k="research_eyebrow">{a.research.eyebrow}</SE></p>
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-10"><SE k="research_title">{a.research.title}</SE></h2>
-          <ol className="space-y-6">
-            {a.research.findings.map((f, i) => (
-              <li key={i} className="flex gap-5">
-                <span className="font-serif text-3xl text-green-400 leading-none w-8 shrink-0">{i + 1}</span>
-                <p className="text-lg text-slate-200 leading-relaxed">
-                  <SE k={`research_${i}`} multiline>{f.text}</SE>
-                  <sup className="ml-1 text-green-400"><a href="#referencias" className="underline">[{f.ref}]</a></sup>
-                </p>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-10 text-sm text-slate-400 leading-relaxed border-t border-slate-700 pt-6"><SE k="research_caveat" multiline>{a.research.caveat}</SE></p>
+        <div className={`container mx-auto ${data.bodyImage ? "max-w-6xl grid md:grid-cols-2 gap-10 items-center" : "max-w-3xl"}`}>
+          <div className="text-lg text-slate-700 leading-relaxed">
+            <ServiceBody content={content} />
+          </div>
+          {data.bodyImage && <LandingPicture image={data.bodyImage} k="body_image" />}
         </div>
       </section>
 
       {/* Process */}
-      <section className="py-20 px-4">
+      <section className={`py-20 px-4 ${t.soft}`}>
         <div className="container mx-auto max-w-4xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700 mb-3"><SE k="steps_eyebrow">{a.steps.eyebrow}</SE></p>
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-10"><SE k="steps_title">{a.steps.title}</SE></h2>
-          <ol className="relative border-l-2 border-green-200 ml-4 space-y-8">
-            {a.steps.items.map((s, i) => (
+          <LandingEyebrow k="steps_eyebrow" className={t.eyebrow}>{data.steps.eyebrow}</LandingEyebrow>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-10"><SE k="steps_title">{data.steps.title}</SE></h2>
+          <ol className={`relative border-l-2 ml-4 space-y-8 ${t.line}`}>
+            {data.steps.items.map((s, i) => (
               <li key={i} className="pl-8 relative">
-                <span className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-green-700 text-white text-sm font-semibold flex items-center justify-center">{i + 1}</span>
+                <span className={`absolute -left-[17px] top-0 w-8 h-8 rounded-full text-white text-sm font-semibold flex items-center justify-center ${t.stepBg}`}>{i + 1}</span>
                 <h3 className="font-semibold text-slate-900 text-lg"><SE k={`steps_${i}_title`}>{s.title}</SE></h3>
                 <p className="text-slate-600 leading-relaxed"><SE k={`steps_${i}_text`} multiline>{s.text}</SE></p>
               </li>
@@ -887,26 +896,44 @@ function AssessmentLayout({ title, subtitle, content, whatsappUrl, onCTAClick }:
         </div>
       </section>
 
-      {/* Professional + office */}
-      <section className="py-20 px-4 bg-slate-50">
-        <div className="container mx-auto max-w-6xl grid md:grid-cols-2 gap-10 items-center">
-          <div className="aspect-[3/2] rounded-lg overflow-hidden shadow-lg">
-            <Image src="/consultorio.jpg" alt="Consultório na Vila Madalena, São Paulo" width={1200} height={800} sizes="(max-width: 768px) 100vw, 50vw" className="w-full h-full object-cover" />
-          </div>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700 mb-3"><SE k="about_eyebrow">{a.about.eyebrow}</SE></p>
-            <h2 className="font-serif text-3xl font-semibold text-slate-900 mb-4"><SE k="about_title">{a.about.title}</SE></h2>
-            <p className="text-lg text-slate-700 leading-relaxed"><SE k="about_text" multiline>{a.about.text}</SE></p>
+      {/* Research */}
+      <section className={`py-20 px-4 text-white ${t.band}`}>
+        <div className="container mx-auto max-w-4xl">
+          <p className={`text-xs font-bold uppercase tracking-[0.2em] mb-3 ${t.bandAccent}`}><SE k="research_eyebrow">{data.research.eyebrow}</SE></p>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-10"><SE k="research_title">{data.research.title}</SE></h2>
+          <ol className="space-y-6">
+            {data.research.findings.map((f, i) => (
+              <li key={i} className="flex gap-5">
+                <span className={`font-serif text-3xl leading-none w-8 shrink-0 ${t.bandAccent}`}>{i + 1}</span>
+                <p className="text-lg text-slate-100 leading-relaxed">
+                  <SE k={`research_${i}`} multiline>{f.text}</SE>
+                  <sup className={`ml-1 ${t.bandAccent}`}><a href="#referencias" className="underline">[{f.refs.join(", ")}]</a></sup>
+                </p>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-10 text-sm text-slate-300 leading-relaxed border-t border-white/20 pt-6"><SE k="research_caveat" multiline>{data.research.caveat}</SE></p>
+        </div>
+      </section>
+
+      {/* Professional */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-6xl grid md:grid-cols-5 gap-10 items-center">
+          <LandingPicture image={data.about.image} k="about_image" className="md:col-span-2" />
+          <div className="md:col-span-3">
+            <LandingEyebrow k="about_eyebrow" className={t.eyebrow}>{data.about.eyebrow}</LandingEyebrow>
+            <h2 className="font-serif text-3xl font-semibold text-slate-900 mb-4"><SE k="about_title">{data.about.title}</SE></h2>
+            <p className="text-lg text-slate-700 leading-relaxed"><SE k="about_text" multiline>{data.about.text}</SE></p>
           </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="py-20 px-4" id="faq">
+      <section className="py-20 px-4 bg-slate-50" id="faq">
         <div className="container mx-auto max-w-3xl">
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-10 text-center"><SE k="faq_title">{a.faqTitle}</SE></h2>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-10 text-center"><SE k="faq_title">{data.faqTitle}</SE></h2>
           <ul className="space-y-6">
-            {a.faq.map((f, i) => (
+            {data.faq.map((f, i) => (
               <li key={i} className="border-b border-slate-200 pb-5">
                 <h3 className="text-lg font-semibold text-slate-900 mb-2"><SE k={`faq_${i}_q`}>{f.question}</SE></h3>
                 <p className="text-slate-600 leading-relaxed"><SE k={`faq_${i}_a`} multiline>{f.answer}</SE></p>
@@ -917,23 +944,23 @@ function AssessmentLayout({ title, subtitle, content, whatsappUrl, onCTAClick }:
       </section>
 
       {/* Closing CTA */}
-      <section className="py-16 px-4 bg-green-50">
+      <section className={`py-16 px-4 ${t.soft}`}>
         <div className="container mx-auto max-w-2xl text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700 mb-3"><SE k="closing_eyebrow">{a.closing.eyebrow}</SE></p>
-          <h2 className="font-serif text-2xl md:text-3xl font-semibold text-slate-900 mb-6"><SE k="closing_heading">{a.closing.title}</SE></h2>
-          <CTAButton href={whatsappUrl} btnClass={ASSESS_CTA} text={a.closing.cta} onClick={onCTAClick} size="large" />
+          <LandingEyebrow k="closing_eyebrow" className={t.eyebrow}>{data.closing.eyebrow}</LandingEyebrow>
+          <h2 className="font-serif text-2xl md:text-3xl font-semibold text-slate-900 mb-6"><SE k="closing_heading">{data.closing.title}</SE></h2>
+          <CTAButton href={whatsappUrl} btnClass={t.cta} text={data.closing.cta} onClick={onCTAClick} size="large" />
         </div>
       </section>
 
       {/* References */}
       <section className="py-12 px-4" id="referencias">
         <div className="container mx-auto max-w-3xl">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4"><SE k="refs_title">{a.referencesTitle}</SE></h2>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4"><SE k="refs_title">{data.referencesTitle}</SE></h2>
           <ol className="space-y-2 text-xs text-slate-500 leading-relaxed">
-            {a.references.map((r) => (
+            {data.references.map((r) => (
               <li key={r.n}>
                 [{r.n}] {r.text}{" "}
-                <a href={`https://doi.org/${r.doi}`} target="_blank" rel="noopener noreferrer" className="underline">doi:{r.doi}</a>
+                {r.doi && <a href={`https://doi.org/${r.doi}`} target="_blank" rel="noopener noreferrer" className="underline">doi:{r.doi}</a>}
               </li>
             ))}
           </ol>
@@ -1017,9 +1044,11 @@ function ServicePageInner({ slug, title, subtitle, content, service }: ServicePa
     trackWhatsappClick(source);
   };
 
-  if (slug === AVALIACAO_SLUG) {
+  const landing = serviceLandings[slug];
+  if (landing) {
     return (
-      <AssessmentLayout
+      <LandingLayout
+        data={landing}
         title={title}
         subtitle={subtitle}
         content={content}

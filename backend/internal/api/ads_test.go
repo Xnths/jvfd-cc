@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"os"
 	"strings"
 	"sync"
 	"testing"
 
 	"github.com/Xnths/jvfd-cc/backend/internal/ads"
 	"github.com/Xnths/jvfd-cc/backend/internal/authn"
+	"github.com/Xnths/jvfd-cc/backend/internal/copylint"
 )
 
 type fakeUploader struct {
@@ -200,5 +202,34 @@ func TestAvaliacaoPageHasNoInstallmentsOrPrice(t *testing.T) {
 	}
 	if msg != "Olá, gostaria de informações sobre a avaliação neuropsicológica." {
 		t.Fatalf("whatsapp text changed (the ad upload depends on it): %q", msg)
+	}
+}
+
+// Service rows are imported in production and absent from a fresh test database, so this checks the migration itself:
+// it must not touch what the ad upload and analytics rely on, and its copy must pass the lint.
+func TestServicePagesRedesignMigration(t *testing.T) {
+	raw, err := os.ReadFile("../../migrations/0015_service_pages_redesign.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	up, _, _ := strings.Cut(string(raw), "-- +goose Down")
+	var sql strings.Builder
+	for _, line := range strings.Split(up, "\n") {
+		if !strings.HasPrefix(line, "--") {
+			sql.WriteString(line + "\n")
+		}
+	}
+	for _, column := range []string{"whatsapp_message", "analytics_key"} {
+		if strings.Contains(sql.String(), column) {
+			t.Errorf("migration must not touch %s", column)
+		}
+	}
+	if flags := copylint.Check(sql.String()); len(flags) > 0 {
+		t.Errorf("copy lint: %+v", flags)
+	}
+	for _, banned := range []string{"parcel", "R$", "resultados reais", "extrema qualidade", "Quando precisar/quiser"} {
+		if strings.Contains(sql.String(), banned) {
+			t.Errorf("migration contains %q", banned)
+		}
 	}
 }

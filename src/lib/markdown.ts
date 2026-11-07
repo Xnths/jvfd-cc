@@ -11,7 +11,7 @@ import {
     whatsappLink,
 } from "@/content/clinic";
 import { tutoring } from "@/content/tutoring";
-import { avaliacao, AVALIACAO_SLUG } from "@/content/avaliacao";
+import { serviceLandings } from "@/content/service-landings";
 import type { PostDoc, TreatmentDoc } from "@/lib/queries";
 import { absoluteUrl } from "@/lib/seo";
 
@@ -117,9 +117,10 @@ ${bookingFooter()}`;
 }
 
 export function treatmentMarkdown(t: TreatmentDoc) {
+    const landing = serviceLandings[t.slug];
     return `${header(t.title, `/${t.slug}`, t.updatedAt)}
 ${t.subtitle ? `**${t.subtitle}**\n\n` : ""}${lexicalToMarkdown(t.content)}
-${t.slug === AVALIACAO_SLUG ? `\n## ${avaliacao.faqTitle}\n\n${avaliacao.faq.map((f) => `**${f.question}**\n${f.answer}`).join("\n\n")}\n` : ""}
+${landing ? `\n## ${landing.faqTitle}\n\n${landing.faq.map((f) => `**${f.question}**\n${f.answer}`).join("\n\n")}\n` : ""}
 ${bookingFooter()}`;
 }
 

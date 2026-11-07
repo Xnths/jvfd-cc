@@ -8,8 +8,8 @@ import { getTreatmentBySlug, getTreatments } from '@/lib/queries'
 import { buildMetadata } from '@/lib/seo'
 import { breadcrumbNode, faqNode, graph, therapyNode, webPageNode } from '@/lib/jsonld'
 import { getTexts } from '@/lib/texts'
-import { resolvedAvaliacaoFaq } from '@/content/resolve'
-import { AVALIACAO_SLUG } from '@/content/avaliacao'
+import { resolvedServiceFaq } from '@/content/resolve'
+import { serviceLandings } from '@/content/service-landings'
 
 // ISR: cached until the Go API invalidates the "services"/"pages" tags on publish.
 export const revalidate = 86400
@@ -71,7 +71,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
 
     const path = `/${treatment.slug}`
     const description = treatment.metaDescription || treatment.subtitle
-    const faq = slug === AVALIACAO_SLUG ? faqNode(resolvedAvaliacaoFaq(await getTexts().catch(() => ({}))), path) : null
+    const faq = serviceLandings[slug] ? faqNode(resolvedServiceFaq(slug, await getTexts().catch(() => ({}))), path) : null
 
     return (
         <>
