@@ -49,8 +49,8 @@ type leadCandidate struct {
 func (s *Server) candidatesFor(ctx context.Context, at time.Time, window time.Duration) ([]leadCandidate, error) {
 	rows, err := s.Pool.Query(ctx, `SELECT id::text, clicked_at, status, source, page_url, utm_source, utm_campaign,
 		gclid IS NOT NULL OR gbraid IS NOT NULL OR wbraid IS NOT NULL
-		FROM leads WHERE clicked_at >= $1 AND clicked_at <= $2 AND message_at IS NULL AND status = 'clicked'
-		ORDER BY clicked_at DESC LIMIT 50`, at.Add(-window), at)
+		FROM leads WHERE clicked_at >= $1 AND clicked_at < $2 AND message_at IS NULL AND status = 'clicked'
+		ORDER BY clicked_at DESC LIMIT 50`, at.Add(-window), at.Add(time.Minute))
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,9 @@ func (s *Server) adminRegisterMessage(w http.ResponseWriter, r *http.Request) {
 
 	if in.LeadID != "" {
 		var hasID bool
-		err = tx.QueryRow(ctx, `UPDATE leads SET status = 'qualified', qualified_at = $2, message_at = $2
-			WHERE id::text = $1 AND status = 'clicked' AND message_at IS NULL AND clicked_at <= $2
+		err = tx.QueryRow(ctx, `UPDATE leads SET status = 'qualified', qualified_at = greatest($2::timestamptz, clicked_at + interval '1 second'),
+			  message_at = greatest($2::timestamptz, clicked_at + interval '1 second')
+			WHERE id::text = $1 AND status = 'clicked' AND message_at IS NULL AND clicked_at < $2::timestamptz + interval '1 minute'
 			RETURNING gclid IS NOT NULL OR gbraid IS NOT NULL OR wbraid IS NOT NULL`, in.LeadID, at).Scan(&hasID)
 		if isNoRows(err) {
 			httpx.Problem(w, http.StatusConflict, "Esse lead já tem mensagem registrada ou o clique é posterior ao horário.")

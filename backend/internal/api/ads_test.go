@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/Xnths/jvfd-cc/backend/internal/ads"
 	"github.com/Xnths/jvfd-cc/backend/internal/authn"
@@ -89,7 +90,7 @@ func TestLegacyBeaconStillDedupesByGclid(t *testing.T) {
 func TestEdgeReplayKeepsClickTime(t *testing.T) {
 	e := newTestEnv(t)
 	at := e.srv.Now().Add(-3 * 60 * 60 * 1e9).UTC().Format("2006-01-02T15:04:05Z")
-	e.do("POST", "/api/leads", `{"id":"`+leadA+`","clicked_at":"`+at+`","gclid":"R1"}`, "")
+	e.do("POST", "/api/leads", `{"id":"`+leadA+`","clicked_at":"`+at+`","gclid":"R1"}`, "", "X-Edge-Replay", "1")
 	var ok bool
 	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT clicked_at < now() - interval '2 hours' FROM leads`).Scan(&ok)
 	if !ok {
@@ -231,5 +232,82 @@ func TestServicePagesRedesignMigration(t *testing.T) {
 		if strings.Contains(sql.String(), banned) {
 			t.Errorf("migration contains %q", banned)
 		}
+	}
+}
+
+func TestLiveBeaconIgnoresClientClockButNonPatientSourcesAreNotUploaded(t *testing.T) {
+	e := newTestEnv(t)
+	at := e.srv.Now().Add(-90 * time.Second).UTC().Format("2006-01-02T15:04:05Z")
+	e.do("POST", "/api/leads", `{"id":"`+leadA+`","clicked_at":"`+at+`","gclid":"L1","source":"hero_cta"}`, "")
+	var skewed bool
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT clicked_at < now() - interval '60 seconds' FROM leads`).Scan(&skewed)
+	if skewed {
+		t.Fatal("live beacon must use server time")
+	}
+	other := "33333333-3333-4333-8333-333333333333"
+	e.do("POST", "/api/leads", `{"id":"`+other+`","gclid":"L2","source":"aulas_cta"}`, "")
+	if s := uploadStatus(e, other, "whatsapp_click"); s != "skipped" {
+		t.Fatalf("aulas click status %s", s)
+	}
+	var code string
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT last_error_code FROM conversion_uploads WHERE lead_id::text=$1`, other).Scan(&code)
+	if code != "NOT_PATIENT" {
+		t.Fatalf("code %s", code)
+	}
+}
+
+func TestMessageTimeNeverPrecedesClick(t *testing.T) {
+	e := newTestEnv(t)
+	tok := e.token(authn.RoleAdminClinical)
+	e.do("POST", "/api/leads", `{"id":"`+leadA+`","gclid":"G1","source":"hero_cta"}`, "")
+	var click time.Time
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT clicked_at FROM leads`).Scan(&click)
+	minute := click.Truncate(time.Minute).UTC().Format(time.RFC3339)
+	if c := e.do("PATCH", "/api/v1/admin/leads/"+leadA+"/status", `{"status":"qualified","qualifiedAt":"`+minute+`"}`, tok).Code; c != 200 {
+		t.Fatalf("status %d", c)
+	}
+	var ok bool
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT l.message_at > l.clicked_at AND cu.conversion_time >= l.clicked_at - interval '1 minute' FROM leads l JOIN conversion_uploads cu ON cu.lead_id = l.id AND cu.stage = 'message_received'`).Scan(&ok)
+	if !ok {
+		t.Fatal("message_at must be after clicked_at")
+	}
+}
+
+type statusUploader struct {
+	fakeUploader
+	verdict ads.RequestVerdict
+}
+
+func (f *statusUploader) Upload(ctx context.Context, c []ads.Conversion) ads.Outcome {
+	o := f.fakeUploader.Upload(ctx, c)
+	o.Requests = map[int]ads.RequestRef{}
+	for i := range c {
+		o.Requests[i] = ads.RequestRef{ID: "req-1", Index: i}
+	}
+	return o
+}
+
+func (f *statusUploader) RequestStatus(context.Context, string) (ads.RequestVerdict, error) {
+	return f.verdict, nil
+}
+
+func TestDiagnosticsStoreGoogleVerdictAndRequeueOnce(t *testing.T) {
+	e := newTestEnv(t)
+	e.do("POST", "/api/leads", `{"id":"`+leadA+`","gclid":"G1"}`, "")
+	e.do("POST", "/api/leads", `{"id":"22222222-2222-4222-8222-222222222222","gclid":"G2"}`, "")
+	up := &statusUploader{verdict: ads.RequestVerdict{Status: "PARTIAL_SUCCESS", Errors: []ads.VerdictError{{Reason: "CONVERSION_PRECEDES_CLICK", Indices: []int{1}}}}}
+	w := adsWorker(e, up)
+	if _, err := w.UploadPending(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	res, err := w.CheckDiagnostics(t.Context())
+	if err != nil || res.Checked != 1 || res.Failed != 1 || res.Requeued != 1 {
+		t.Fatalf("res=%+v err=%v", res, err)
+	}
+	var good, bad string
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT google_status FROM conversion_uploads WHERE lead_id::text=$1`, leadA).Scan(&good)
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT status || '/' || coalesce(google_status,'') FROM conversion_uploads WHERE lead_id::text='22222222-2222-4222-8222-222222222222'`).Scan(&bad)
+	if good != "SUCCESS" || bad != "pending/FAILURE" {
+		t.Fatalf("good=%s bad=%s", good, bad)
 	}
 }

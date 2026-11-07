@@ -15,7 +15,7 @@ const transitItems = [
   },
   {
     label: "Carro",
-    detail: "Não há estacionamento no local - recomendasse ir de app (Uber, 99, etc)",
+    detail: "Não há estacionamento no local - recomenda-se ir de app (Uber, 99, etc)",
     icon: <FaCar className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" aria-hidden="true" />,
   },
   {
@@ -59,7 +59,7 @@ export function ComoChegar() {
               </svg>
               <address className="not-italic text-slate-700 leading-relaxed">
                 <span className="font-semibold text-slate-900 block">Rua Harmonia, 1323</span>
-                Sumarezinho — Vila Madalena
+                Vila Madalena (Sumarezinho)
                 <br />
                 São Paulo, SP — CEP 05435-001
               </address>

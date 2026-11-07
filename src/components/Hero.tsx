@@ -77,6 +77,10 @@ export function Hero({ showLgbt = false }: { showLgbt?: boolean }) {
               <Editable k="home.hero.cta">Conversar com o João</Editable>
             </a>
 
+            <Editable as="p" k="home.hero.qualifier" multiline className="text-slate-300 text-sm leading-relaxed max-w-md">
+              Psicoterapia para adultos, online ou presencial. Atendimento particular, sem convênio, com recibo para reembolso. Menores de 18 anos: contato por um responsável.
+            </Editable>
+
             <div className="flex items-center gap-4">
               <div className="flex-1 h-px bg-slate-600"></div>
               <Editable k="home.hero.or" className="text-slate-400 text-sm">ou</Editable>

@@ -9,7 +9,7 @@ export type LandingImage = { src: string; alt: string; width: number; height: nu
 
 export type ServiceLanding = {
     theme: LandingTheme;
-    hero: { badge: string; title: string; subtitle: string; cta: string; note: string; image?: LandingImage };
+    hero: { badge: string; title: string; subtitle: string; facts?: string[]; cta: string; note: string; image?: LandingImage };
     /** Crisis pages: shown first, before anything else. */
     safety?: { title: string; text: string; actions: { label: string; detail: string; href: string }[] };
     strip: string[];
@@ -20,7 +20,7 @@ export type ServiceLanding = {
     about: { eyebrow: string; title: string; text: string; image: LandingImage };
     faqTitle: string;
     faq: { question: string; answer: string }[];
-    closing: { eyebrow: string; title: string; cta: string };
+    closing: { eyebrow: string; title: string; cta: string; note?: string };
     referencesTitle: string;
     references: { n: number; text: string; doi?: string }[];
 };
@@ -31,12 +31,13 @@ const OFFICE: LandingImage = { src: "/consultorio.jpg", alt: "Consultório na Vi
 const CRP = "CRP 06/157908";
 const WHO = `João Vitor Fernandes, psicólogo clínico, ${CRP}`;
 const FORMATION = "bacharel em Psicologia pela PUC-SP, com pós-graduação em Neuropsicologia pelo Hospital Israelita Albert Einstein e em Neurociências, Comportamento e Psicopatologia pela PUCPR";
-const PLACE = "Atende online e presencialmente, na Rua Harmonia, 1323, Vila Madalena, São Paulo, de segunda a sexta, das 8h às 21h.";
+const ADDRESS = "Rua Harmonia, 1323, Vila Madalena (Sumarezinho), São Paulo";
+const PLACE = `Atende online e presencialmente, na ${ADDRESS}, de segunda a sexta, das 8h às 21h.`;
 const NAME_STRIP = `João Vitor Fernandes · ${CRP}`;
 
 const FAQ_CONVENIO = {
     question: "Aceita convênio médico?",
-    answer: "Não. O atendimento é particular. João emite recibo para você solicitar o reembolso ao seu plano de saúde; a cobertura e os documentos exigidos dependem do seu contrato.",
+    answer: "Não. O atendimento é particular, sem convênio. João emite recibo para você solicitar o reembolso ao seu plano de saúde; a cobertura e os documentos exigidos dependem do seu contrato.",
 };
 const FAQ_VALOR = { question: "Quais são os valores?", answer: "Os valores são informados diretamente por João, pelo WhatsApp." };
 const FAQ_AGENDAR = { question: "Como agendo?", answer: "Pelo WhatsApp, com uma mensagem curta. Os horários são de segunda a sexta, das 8h às 21h." };
@@ -62,6 +63,13 @@ const REF = {
     clement: "Clement S et al. What is the impact of mental health-related stigma on help-seeking? A systematic review. Psychol Med. 2015;45(1):11-27.",
 };
 
+export function faqDisplay<T extends { question: string }>(faq: T[]): { item: T; i: number }[] {
+    const all = faq.map((item, i) => ({ item, i }));
+    const at = all.findIndex((x) => /conv[eê]nio/i.test(x.item.question));
+    if (at <= 0) return all;
+    return [all[at], ...all.slice(0, at), ...all.slice(at + 1)];
+}
+
 const COMMON = { faqTitle: "Perguntas frequentes", referencesTitle: "Referências" };
 
 export const serviceLandings: Record<string, ServiceLanding> = {
@@ -72,11 +80,11 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             badge: "Avaliação Neuropsicológica",
             title: "Avaliação neuropsicológica",
             subtitle: "Entenda como você ou seu filho prestam atenção, lembram, se organizam e se comunicam, com testes padronizados, laudo escrito e uma sessão de devolutiva.",
-            cta: "Agendar avaliação pelo WhatsApp",
-            note: "Consulta particular, com pedido médico. Emito recibo para reembolso.",
+            cta: "Agendar avaliação com pedido médico",
+            note: "Consulta particular, sem convênio; João emite recibo para reembolso. Presencial na Vila Madalena. Para crianças e adolescentes, o agendamento é feito por um responsável.",
             image: JV,
         },
-        strip: ["Pós-graduação em Neuropsicologia · Hospital Israelita Albert Einstein", CRP, "Adultos e crianças", "Presencial na Vila Madalena"],
+        strip: ["Pós-graduação em Neuropsicologia · Hospital Israelita Albert Einstein", "Psicologia pela PUC-SP", CRP, "Adultos, adolescentes e crianças", "Presencial na Vila Madalena"],
         when: {
             eyebrow: "Quando procurar",
             title: "Para que serve uma avaliação neuropsicológica",
@@ -112,7 +120,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
         about: {
             eyebrow: "Quem conduz",
             title: "João Vitor Fernandes",
-            text: `Psicólogo clínico, ${CRP}, com pós-graduação em Neuropsicologia pelo Hospital Israelita Albert Einstein. A avaliação é presencial, no consultório na Vila Madalena (Rua Harmonia, 1323, Sumarezinho, São Paulo), de segunda a sexta, das 8h às 21h.`,
+            text: `Psicólogo clínico, ${CRP}, bacharel em Psicologia pela PUC-SP, com pós-graduação em Neuropsicologia pelo Hospital Israelita Albert Einstein. A avaliação é presencial, no consultório na Vila Madalena (${ADDRESS}), de segunda a sexta, das 8h às 21h.`,
             image: OFFICE,
         },
         faq: [
@@ -122,7 +130,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             { question: "A avaliação dá um diagnóstico?", answer: "Os testes não fecham um diagnóstico sozinhos. Os resultados são analisados junto com a entrevista e a história de vida, e o laudo pode apoiar o trabalho do médico e de outros profissionais que acompanham você." },
             { question: "O que eu recebo ao final?", answer: "Um laudo escrito e uma sessão de devolutiva para conversar sobre os resultados." },
             { question: "Quanto tempo leva?", answer: "Em geral, de 4 a 6 sessões, de até 2 horas cada. O número exato de encontros depende do caso." },
-            { question: "Atende crianças?", answer: "Sim, a avaliação é feita com adultos e crianças." },
+            { question: "Atende crianças?", answer: "Sim, a avaliação é feita com adultos, adolescentes e crianças. Para menores de 18 anos, o contato, o agendamento e a autorização são feitos por um responsável." },
             { question: "A avaliação é online?", answer: "Não. A avaliação neuropsicológica é realizada somente de forma presencial, no consultório na Vila Madalena." },
             FAQ_VALOR,
             { question: "Como agendo?", answer: "Pelo WhatsApp, de segunda a sexta, das 8h às 21h." },
@@ -130,9 +138,9 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             { question: "O que é avaliação neuropsicológica?", answer: "É um processo estruturado que investiga o funcionamento cognitivo, como atenção, memória, linguagem e funções executivas, por meio de entrevista e testes padronizados. Os resultados são relacionados à história e à rotina da pessoa e registrados em um laudo." },
             { question: "Quem pode realizar a avaliação neuropsicológica?", answer: "No Brasil, o uso de testes psicológicos é privativo de psicólogas e psicólogos (Resolução CFP 31/2022). Aqui, a avaliação é conduzida por João Vitor Fernandes Domingues, psicólogo, CRP 06/157908, com pós-graduação em Neuropsicologia pelo Hospital Israelita Albert Einstein." },
             { question: "Qual a diferença entre avaliação psicológica e avaliação neuropsicológica?", answer: "A avaliação psicológica investiga fenômenos psicológicos de forma ampla, a partir de uma demanda específica. A avaliação neuropsicológica dá ênfase às funções cognitivas e à relação delas com o funcionamento do cérebro." },
-            { question: "Onde fazer avaliação neuropsicológica na Vila Madalena?", answer: "O consultório de João fica na Rua Harmonia, 1323, Sumarezinho, Vila Madalena, São Paulo. O atendimento é presencial, para adultos e crianças, de segunda a sexta, das 8h às 21h, com pedido médico." },
+            { question: "Onde fazer avaliação neuropsicológica na Vila Madalena?", answer: `O consultório de João fica na ${ADDRESS}. O atendimento é presencial, para adultos, adolescentes e crianças (menores de 18 anos com um responsável), de segunda a sexta, das 8h às 21h, com pedido médico.` },
         ],
-        closing: { eyebrow: "Próximo passo", title: "Tem um pedido médico e dúvidas sobre o processo?", cta: "Agendar avaliação pelo WhatsApp" },
+        closing: { eyebrow: "Próximo passo", title: "Tem um pedido médico e dúvidas sobre o processo?", cta: "Agendar avaliação com pedido médico", note: "Pedido médico necessário · particular, sem convênio · recibo para reembolso · presencial · em geral, 4 a 6 sessões de até 2 horas." },
         references: [
             { n: 1, text: "Donders J. The incremental value of neuropsychological assessment: a critical review. Clin Neuropsychol. 2020;34(1):56-87.", doi: "10.1080/13854046.2019.1575471" },
             { n: 2, text: "Watt S, Crowe SF. Examining the beneficial effect of neuropsychological assessment on adult patient outcomes: a systematic review. Clin Neuropsychol. 2018;32(3):368-390.", doi: "10.1080/13854046.2017.1414885" },
@@ -146,14 +154,20 @@ export const serviceLandings: Record<string, ServiceLanding> = {
         ...COMMON,
         theme: "teal",
         hero: {
-            badge: "Psicoterapia Individual",
-            title: "Psicoterapia individual",
-            subtitle: "Um espaço para entender o que mantém o seu sofrimento e construir, com apoio e método, outras formas de lidar com ele.",
-            cta: "Agendar uma primeira conversa",
-            note: "Sessões de cerca de 50 minutos, online ou presenciais. Atendimento particular, com recibo para reembolso.",
+            badge: "Psicoterapia online · Adultos",
+            title: "Psicoterapia individual online",
+            subtitle: "Para adultos que querem entender o que mantém o próprio sofrimento e construir outras formas de lidar com ele. Em português, no Brasil ou no exterior.",
+            facts: [
+                "Sessões individuais de cerca de 50 minutos, em geral semanais, por videochamada.",
+                "Atendimento particular: não atende convênio; emite recibo para reembolso.",
+                "Bacharel em Psicologia pela PUC-SP · Pós-graduação em Neuropsicologia, Hospital Israelita Albert Einstein · CRP 06/157908 · Atua desde 2019.",
+                "Primeiro contato pelo WhatsApp: João retorna com horários e valores. A primeira sessão serve para entender sua demanda.",
+            ],
+            cta: "Agendar sessão pelo WhatsApp",
+            note: "Particular, sem convênio, com recibo para reembolso. Valores informados por João no WhatsApp. Adolescentes de 13 a 17 anos: caso a caso, com contato e agendamento feitos por um responsável.",
             image: { src: "/servicos/sessao-terapia.jpg", alt: "Ilustração de uma sessão de psicoterapia em um consultório", width: 1408, height: 768, caption: "Ilustração de uma sessão de psicoterapia." },
         },
-        strip: [NAME_STRIP, "Análise do Comportamento", "Online e presencial", "Bacharel em Psicologia pela PUC-SP"],
+        strip: [NAME_STRIP, "Análise do Comportamento", "Online para o Brasil e o exterior", "Atendimento sigiloso"],
         when: {
             eyebrow: "Quando procurar",
             title: "Você não precisa estar no limite para começar",
@@ -169,7 +183,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             eyebrow: "O que a pesquisa mostra",
             title: "Psicoterapia é um tratamento estudado",
             findings: [
-                { text: "A maior meta-análise já feita sobre um tipo de psicoterapia reuniu 409 ensaios e 52.702 pacientes e documentou a eficácia da terapia cognitivo-comportamental na depressão, com efeitos ainda presentes de 6 a 12 meses depois.", refs: [1] },
+                { text: "Uma meta-análise reuniu 409 ensaios e 52.702 pacientes e documentou a eficácia da terapia cognitivo-comportamental na depressão, com efeitos ainda presentes de 6 a 12 meses depois.", refs: [1] },
                 { text: "A ativação comportamental, técnica de tradição comportamental, teve resultado superior ao de grupos de controle em 26 ensaios sobre depressão, embora a qualidade da maioria dos estudos fosse baixa.", refs: [2] },
                 { text: "Em 295 estudos com mais de 30 mil pacientes, uma boa relação entre paciente e terapeuta esteve associada a melhores resultados, em diferentes abordagens. Por isso, se sentir à vontade para falar conta.", refs: [3] },
                 { text: "Cerca de 1 em cada 5 pessoas interrompe a terapia antes do combinado. Conversar sobre o plano e as expectativas desde o início faz parte do processo.", refs: [4] },
@@ -196,8 +210,11 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             FAQ_CONVENIO,
             FAQ_VALOR,
             FAQ_AGENDAR,
+            { question: "Atende adolescentes?", answer: "A psicoterapia é voltada a adultos. Adolescentes de 13 a 17 anos são avaliados caso a caso, e o contato e o agendamento precisam ser feitos por um responsável, que autoriza o acompanhamento." },
+            { question: "Atende brasileiros que moram fora do Brasil?", answer: "Sim, por videochamada e em português. Combine o horário levando em conta o fuso entre o seu país e São Paulo." },
+            { question: "Também há atendimento presencial?", answer: "Sim, no consultório na Vila Madalena, em São Paulo. Veja a página de atendimento presencial para o endereço e como chegar." },
         ],
-        closing: { eyebrow: "Próximo passo", title: "Você não precisa ter certeza para começar.", cta: "Agendar uma primeira conversa" },
+        closing: { eyebrow: "Próximo passo", title: "Você não precisa ter certeza para começar.", cta: "Agendar sessão pelo WhatsApp", note: "Particular, sem convênio · recibo para reembolso · sessões online de cerca de 50 minutos · menores de 18 anos: contato por um responsável." },
         references: [
             { n: 1, text: REF.cuijpers, doi: "10.1002/wps.21069" },
             { n: 2, text: REF.ekers, doi: "10.1371/journal.pone.0100100" },
@@ -214,7 +231,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             title: "Foco e organização",
             subtitle: "Psicoterapia voltada ao comportamento de estudo e à rotina, para quem tem dificuldade de concentração, adia tarefas ou se prepara para provas.",
             cta: "Conversar sobre foco e estudo",
-            note: "Online ou presencial. Atendimento particular, com recibo para reembolso.",
+            note: "Online ou presencial. Atendimento particular, sem convênio, com recibo para reembolso. Para adultos e universitários; adolescentes caso a caso, com agendamento por um responsável.",
             image: { src: "/servicos/dificuldade-estudo.jpg", alt: "Ilustração de uma pessoa frustrada diante de livros, com a mente embaralhada", width: 2400, height: 1792, caption: "Ilustração: quando estudar deixa de render." },
         },
         strip: [NAME_STRIP, "Pós-graduação em Neurociências, Comportamento e Psicopatologia · PUCPR", "Pós-graduação em Neuropsicologia · Einstein", "Online e presencial"],
@@ -234,7 +251,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             title: "Estudar de um jeito diferente faz diferença",
             findings: [
                 { text: "Uma revisão de 10 técnicas de estudo classificou fazer testes de prática e distribuir o estudo no tempo como as de maior utilidade.", refs: [1] },
-                { text: "A mesma revisão classificou reler e grifar, técnicas muito usadas, como de baixa utilidade. Muitas vezes, o esforço está indo para o lugar errado.", refs: [1] },
+                { text: "A mesma revisão classificou reler e grifar, técnicas muito usadas, como de baixa utilidade. Às vezes, o que atrapalha é o jeito de estudar, e não a falta de esforço.", refs: [1] },
                 { text: "Em um ensaio com 92 universitários com procrastinação grave, cerca de um terço foi considerado melhor ao fim de 8 semanas de terapia cognitivo-comportamental, e perto da metade seis meses depois.", refs: [2] },
                 { text: "Uma revisão Cochrane encontrou evidência de baixa qualidade de que intervenções cognitivo-comportamentais podem beneficiar adultos com TDAH no curto prazo.", refs: [3] },
             ],
@@ -261,7 +278,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             FAQ_VALOR,
             FAQ_AGENDAR,
         ],
-        closing: { eyebrow: "Próximo passo", title: "Conte o que tem atrapalhado sua rotina.", cta: "Conversar sobre foco e estudo" },
+        closing: { eyebrow: "Próximo passo", title: "Conte o que tem atrapalhado sua rotina.", cta: "Conversar sobre foco e estudo", note: "Particular, sem convênio · recibo para reembolso · online ou presencial · menores de 18 anos: contato por um responsável." },
         references: [
             { n: 1, text: REF.dunlosky, doi: "10.1177/1529100612453266" },
             { n: 2, text: REF.rozental, doi: "10.1016/j.beth.2017.08.002" },
@@ -340,7 +357,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             title: "Terapia de casal",
             subtitle: "Para casais que querem entender seus conflitos, conversar de outra forma e tomar decisões com mais clareza.",
             cta: "Agendar uma sessão para vocês",
-            note: "Online ou presencial. Começa com uma sessão prévia para alinhar o processo. Atendimento particular, com recibo para reembolso.",
+            note: "Online ou presencial, para adultos. Começa com uma sessão prévia para alinhar o processo. Atendimento particular, sem convênio, com recibo para reembolso.",
             image: { src: "/servicos/casal-conversa.jpg", alt: "Ilustração de um casal de dois homens em casa: um tenta conversar enquanto o outro, de fones de ouvido, não presta atenção", width: 2914, height: 1440, caption: "Ilustração: quando a conversa deixa de acontecer." },
         },
         strip: [NAME_STRIP, "Análise do Comportamento", "Online e presencial", "Sessão prévia com o casal"],
@@ -385,7 +402,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             FAQ_VALOR,
             FAQ_AGENDAR,
         ],
-        closing: { eyebrow: "Próximo passo", title: "Comecem com uma sessão prévia para entender o processo.", cta: "Agendar uma sessão para vocês" },
+        closing: { eyebrow: "Próximo passo", title: "Comecem com uma sessão prévia para entender o processo.", cta: "Agendar uma sessão para vocês", note: "Particular, sem convênio · recibo para reembolso · online ou presencial · sessão prévia com o casal." },
         references: [
             { n: 1, text: REF.roddy, doi: "10.1037/ccp0000514" },
             { n: 2, text: REF.bradbury, doi: "10.1146/annurev-clinpsy-071519-020546" },
@@ -400,7 +417,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             title: "Autoconhecimento",
             subtitle: "Para quem sente que algo precisa mudar, mas ainda não sabe dar nome. Não é preciso ter uma questão específica para começar.",
             cta: "Agendar uma conversa",
-            note: "As sessões são guiadas, online ou presenciais. Atendimento particular, com recibo para reembolso.",
+            note: "Sessões guiadas de cerca de 50 minutos, online ou presenciais, para adultos. Atendimento particular, sem convênio, com recibo para reembolso. Adolescentes: caso a caso, com agendamento por um responsável.",
             image: { src: "/servicos/autoconhecimento.jpg", alt: "Ilustração com ícones de cérebro, coração, flor e duas pessoas conversando em um sofá", width: 1024, height: 1024, caption: "Ilustração: pensamentos, emoções e relações." },
         },
         strip: [NAME_STRIP, "Análise do Comportamento", "Online e presencial", "Sessões guiadas"],
@@ -445,7 +462,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             FAQ_VALOR,
             FAQ_AGENDAR,
         ],
-        closing: { eyebrow: "Quando fizer sentido", title: "Dar nome ao que se sente pode ser um primeiro passo.", cta: "Agendar uma conversa" },
+        closing: { eyebrow: "Quando fizer sentido", title: "Dar nome ao que se sente pode ser um primeiro passo.", cta: "Agendar uma conversa", note: "Particular, sem convênio · recibo para reembolso · sessões de cerca de 50 minutos · menores de 18 anos: contato por um responsável." },
         references: [
             { n: 1, text: REF.vanAgteren, doi: "10.1038/s41562-021-01093-w" },
             { n: 2, text: REF.gulliver, doi: "10.1186/1471-244X-10-113" },
@@ -516,14 +533,14 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             title: "Psicólogo LGBTQIA+",
             subtitle: "Você merece um espaço que te receba inteiro/a/e.",
             cta: "Agendar uma conversa",
-            note: "João é psicólogo gay. Atendimento afirmativo, online ou presencial. Particular, com recibo para reembolso.",
+            note: "João é psicólogo gay. Atendimento afirmativo, online ou presencial, para adultos. Particular, sem convênio, com recibo para reembolso. Menores de 18 anos: contato por um responsável.",
             image: JV,
         },
         strip: [NAME_STRIP, "Atendimento afirmativo", "Sigilo profissional", "Online e presencial"],
         when: {
             eyebrow: "Quando procurar",
             title: "Você não precisa explicar quem você é antes de falar do que importa",
-            intro: "Às vezes, boa parte do esforço de uma sessão vai para contextualizar a própria vida. Aqui, o trabalho pode começar pelo que está causando sofrimento e pelo que você quer construir.",
+            intro: "O trabalho pode começar pelo que está causando sofrimento e pelo que você quer construir.",
             groups: [
                 { title: "Identidade e aceitação", text: "A dificuldade de se aceitar costuma vir de anos de mensagens externas.", items: ["Sair do armário", "Autoaceitação", "Culpa e vergonha"] },
                 { title: "Família e relações", text: "Relações que pesam e relações que você quer construir.", items: ["Família que ainda não entendeu", "Relacionamentos", "Amizades e rede de apoio"] },
@@ -551,7 +568,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
         },
         about: { eyebrow: "Quem atende", title: "João Vitor Fernandes", text: `${WHO}, ${FORMATION}. João é gay e atende pessoas LGBTQIA+ de forma afirmativa. ${PLACE}`, image: OFFICE },
         faq: [
-            { question: "Por que procurar um psicólogo LGBTQIA+?", answer: "Porque você pode não precisar explicar do zero o que é sair do armário, o peso de uma família que ainda não entendeu ou o cansaço de certos espaços. O trabalho pode ir direto ao que importa para você." },
+            { question: "Por que procurar um psicólogo LGBTQIA+?", answer: "Porque é possível falar de sair do armário, do peso de uma família que ainda não entendeu ou do cansaço de certos espaços com um psicólogo que conhece esse contexto. O trabalho parte do que importa para você." },
             { question: "Sinto que preciso me aceitar, mas não sei por onde começar. E agora?", answer: "Essa é uma das coisas mais honestas que alguém pode trazer para a terapia. A terapia não vai dizer quem você deve ser. Ela ajuda a entender o que te ensinaram a sentir sobre si e a construir uma relação mais leve com quem você é. Isso leva tempo." },
             { question: "Tenho medo de julgamento. Como é aqui?", answer: "É um medo legítimo. Aqui não há julgamento sobre sua identidade, sua orientação, seus relacionamentos ou suas escolhas. Você pode ocupar esse espaço sem se explicar antes de se sentir seguro/a/e." },
             { question: "O que eu falar fica em sigilo?", answer: "Sim. O sigilo é um dever profissional do psicólogo. As únicas exceções são as previstas em lei e no Código de Ética, e João explica como isso funciona na primeira conversa." },
@@ -560,7 +577,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             FAQ_VALOR,
             FAQ_AGENDAR,
         ],
-        closing: { eyebrow: "Quando fizer sentido", title: "Aqui, você pode chegar como é.", cta: "Agendar uma conversa" },
+        closing: { eyebrow: "Quando fizer sentido", title: "Aqui, você pode chegar como é.", cta: "Agendar uma conversa", note: "Particular, sem convênio · recibo para reembolso · online ou presencial · menores de 18 anos: contato por um responsável." },
         references: [
             { n: 1, text: REF.meyer, doi: "10.1037/0033-2909.129.5.674" },
             { n: 2, text: REF.pachankis, doi: "10.1037/ccp0000037" },

@@ -11,7 +11,7 @@ import {
     whatsappLink,
 } from "@/content/clinic";
 import { tutoring } from "@/content/tutoring";
-import { serviceLandings } from "@/content/service-landings";
+import { serviceLandings, faqDisplay } from "@/content/service-landings";
 import type { AnsweredQuestion, GlossaryItem, GlossaryTerm, PostDoc, ProfileDoc, TreatmentDoc } from "@/lib/queries";
 import { absoluteUrl } from "@/lib/seo";
 
@@ -126,7 +126,7 @@ export function treatmentMarkdown(t: TreatmentDoc) {
         ? `**${landing.safety.title}** ${landing.safety.text} ${landing.safety.actions.map((a) => `${a.label} (${a.detail})`).join(" · ")}\n\n`
         : "";
     const before = landing
-        ? `${landing.hero.note}\n\n## ${landing.when.title}\n\n${landing.when.intro}\n\n${landing.when.groups
+        ? `${landing.hero.facts ? landing.hero.facts.map((f) => `- ${f}`).join("\n") + "\n\n" : ""}${landing.hero.note}\n\n## ${landing.when.title}\n\n${landing.when.intro}\n\n${landing.when.groups
               .map((g) => `### ${g.title}\n\n${g.text}\n\n${g.items.map((i) => `- ${i}`).join("\n")}`)
               .join("\n\n")}\n\n`
         : "";
@@ -145,7 +145,7 @@ ${landing.about.text}
 
 ## ${landing.faqTitle}
 
-${landing.faq.map((f) => `**${f.question}**\n${f.answer}`).join("\n\n")}
+${faqDisplay(landing.faq).map(({ item: f }) => `**${f.question}**\n${f.answer}`).join("\n\n")}
 
 ## ${landing.referencesTitle}
 

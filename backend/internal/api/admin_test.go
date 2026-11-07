@@ -353,7 +353,7 @@ func TestLeadsExportMatchesLegacyFormat(t *testing.T) {
 func TestLeadStatusSemantics(t *testing.T) {
 	e := newTestEnv(t)
 	tok := e.token(authn.RoleAdminClinical)
-	e.exec(`INSERT INTO leads (id, gclid, clicked_at) VALUES ('66666666-6666-6666-6666-666666666666','LLL',now())`)
+	e.exec(`INSERT INTO leads (id, gclid, clicked_at) VALUES ('66666666-6666-6666-6666-666666666666','LLL','2026-10-01T12:00:00Z')`)
 	if c := e.do("PATCH", "/api/v1/admin/leads/66666666-6666-6666-6666-666666666666/status", `{"status":"bogus"}`, tok).Code; c != 400 {
 		t.Fatalf("bad status: %d", c)
 	}

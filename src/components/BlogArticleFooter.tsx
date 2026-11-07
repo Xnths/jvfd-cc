@@ -62,6 +62,9 @@ export function BlogArticleFooter({ relatedPosts }: BlogArticleFooterProps) {
                         <FaWhatsapp className="w-6 h-6" />
                         <Editable k="blog.article.cta_button">Conversar com o João</Editable>
                     </a>
+                    <Editable as="p" k="blog.article.cta_note" className="text-sm text-slate-600">
+                        Psicoterapia particular para adultos, online ou presencial. Não atende convênio; emite recibo para reembolso.
+                    </Editable>
 
                     <div className="flex items-center gap-4">
                         <div className="flex-1 h-px bg-slate-300"></div>

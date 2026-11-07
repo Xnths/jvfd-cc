@@ -23,7 +23,7 @@ export default function Page() {
                 </div>
                 <ScreeningTool tool={tool} />
                 <Editable as="p" k="tools.phq-9.after" multiline className="mt-10 text-slate-600">
-                    Se os resultados chamaram sua atenção ou se você quer conversar sobre como tem se sentido, procure um psicólogo de confiança. Também é possível conversar com o João pelo WhatsApp, sem compromisso.
+                    Se os resultados chamaram sua atenção ou se você quer conversar sobre como tem se sentido, procure um psicólogo de confiança. Também é possível tirar dúvidas sobre o atendimento com o João pelo WhatsApp. O atendimento é particular.
                 </Editable>
                 <section className="mt-10 border-t pt-6">
                     <h2 className="mb-2 text-lg font-semibold text-slate-900">Referências</h2>

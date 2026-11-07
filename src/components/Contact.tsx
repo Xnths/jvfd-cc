@@ -35,7 +35,7 @@ export function Contact() {
     {
       icon: MapPin,
       title: "Endereço do consultório",
-      details: "Rua Harmonia, 1323 - Vila Madalena, São Paulo - SP, 05435-001",
+      details: "Rua Harmonia, 1323, Vila Madalena (Sumarezinho), São Paulo - SP, 05435-001",
       url: links.googleProfile,
       type: "map"
     },
@@ -66,6 +66,10 @@ export function Contact() {
             Entre em contato com o profissional
           </Editable>
         </div>
+
+        <Editable as="p" k="home.contact.qualifier" className="text-center text-slate-600 mb-8 max-w-xl mx-auto">
+          Atendimento particular, sem convênio, com recibo para reembolso. Valores informados pelo WhatsApp.
+        </Editable>
 
         <div className="gap-12 max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-center">
           <div className="space-y-6">

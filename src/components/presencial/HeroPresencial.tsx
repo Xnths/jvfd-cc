@@ -74,17 +74,19 @@ export function HeroPresencial() {
               Espaço dedicado ao equilíbrio emocional e autoconhecimento
             </Editable>
 
-            {/* Desktop CTA */}
             <a
               href={whatsappUrl}
               onClick={handleClick}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-md text-lg font-bold transition-all shadow-lg"
+              className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-md text-lg font-bold transition-all shadow-lg"
             >
               <FaWhatsapp className="w-6 h-6" />
               <Editable k="presencial.hero.cta">Entrar em contato pelo WhatsApp</Editable>
             </a>
+            <Editable as="p" k="presencial.hero.qualifier" multiline className="mt-4 max-w-md text-sm text-slate-200">
+              Psicoterapia particular para adultos, sem convênio, com recibo para reembolso. Menores de 18 anos: contato por um responsável.
+            </Editable>
           </div>
         </div>
       </section>

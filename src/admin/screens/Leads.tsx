@@ -36,7 +36,10 @@ type Candidate = { id: string; clickedAt: string; source: string; pageUrl: strin
 type Unmatched = { id: string; messageAt: string; reason: 'no_match' | 'ambiguous'; candidates: number; note: string }
 
 type Stage = 'whatsapp_click' | 'message_received' | 'appointment_booked'
-type Upload = { status: 'pending' | 'retry' | 'succeeded' | 'failed' | 'skipped'; code?: string | null; message?: string | null; attempts: number }
+type Upload = { status: 'pending' | 'retry' | 'succeeded' | 'failed' | 'skipped'; code?: string | null; message?: string | null; attempts: number
+    google?: 'PROCESSING' | 'SUCCESS' | 'FAILURE' | null
+    googleError?: string | null
+}
 
 const STAGE_LABEL: Record<Stage, string> = { whatsapp_click: 'Clique', message_received: 'Mensagem', appointment_booked: 'Consulta' }
 const UPLOAD_LABEL: Record<Upload['status'], string> = {
@@ -53,9 +56,13 @@ const STATUS_LABEL: Record<Lead['status'], string> = {
 const ADJUSTMENT_LABEL = { RESTATEMENT: 'valor corrigido', RETRACTION: 'conversão retirada' } as const
 const GA4_EVENT: Partial<Record<Lead['status'], string>> = { qualified: 'contacted', converted: 'scheduled' }
 
-const pad = (n: number) => String(n).padStart(2, '0')
-const toLocalInput = (d: Date) =>
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+const spFormat = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+})
+const toLocalInput = (d: Date) => spFormat.format(d).replace(' ', 'T')
+const fromLocalInput = (v: string) => new Date(`${v}:00-03:00`)
+const nextMinute = (d: Date) => new Date(Math.floor(d.getTime() / 60000) * 60000 + 60000)
 
 type Filter = 'all' | Lead['status']
 
@@ -89,14 +96,14 @@ export function Leads() {
     function ask(lead: Lead, status: Lead['status']) {
         if (lead.status === status) return
         // The qualified time defaults to the click time; other events default to now.
-        const base = status === 'qualified' ? new Date(lead.clickedAt) : new Date()
+        const base = status === 'qualified' ? nextMinute(new Date(lead.clickedAt)) : new Date()
         setPending({ lead, status, when: toLocalInput(base), value: String(lead.convertedValue ?? lead.suggestedValue) })
     }
 
     async function confirm() {
         if (!pending) return
         const { lead, status, when, value } = pending
-        const at = new Date(when)
+        const at = fromLocalInput(when)
         if (Number.isNaN(at.getTime())) return toast.error('Data inválida')
         setSaving(true)
         try {
@@ -200,10 +207,11 @@ export function Leads() {
                                                 return (
                                                     <Badge
                                                         key={s}
-                                                        variant={u.status === 'failed' ? 'destructive' : u.status === 'succeeded' ? 'default' : 'outline'}
-                                                        title={[u.code, u.message].filter(Boolean).join(': ')}
+                                                        variant={u.status === 'failed' || u.google === 'FAILURE' ? 'destructive' : u.status === 'succeeded' ? 'default' : 'outline'}
+                                                        title={[u.code, u.message, u.googleError].filter(Boolean).join(': ')}
                                                     >
                                                         {STAGE_LABEL[s]}: {UPLOAD_LABEL[u.status]}
+                                                        {u.google === 'FAILURE' ? ` · Google rejeitou (${u.googleError})` : u.google === 'SUCCESS' ? ' · Google aceitou' : ''}
                                                     </Badge>
                                                 )
                                             })}
@@ -450,7 +458,7 @@ function MessagePanel({ onDone }: { onDone: () => Promise<void> | void }) {
     const unmatched = useResource<{ unmatched: Unmatched[] }>('/messages')
 
     const iso = () => {
-        const d = new Date(when)
+        const d = fromLocalInput(when)
         return Number.isNaN(d.getTime()) ? null : d.toISOString()
     }
 

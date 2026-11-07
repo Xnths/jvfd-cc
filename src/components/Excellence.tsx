@@ -29,7 +29,7 @@ export function Excellence() {
                 <div className="text-center mb-16">
                     <Editable as="h2" k="home.excellence.title" className="text-slate-900 mb-4 text-3xl">Formações e qualificações</Editable>
                     <Editable as="p" k="home.excellence.subtitle" className="text-slate-600 max-w-2xl mx-auto text-lg">
-                        Compromisso com o aprendizado contínuo e a qualificação técnica para oferecer o melhor atendimento.
+                        Formação em Psicologia e Neuropsicologia, com atualização contínua.
                     </Editable>
                 </div>
 

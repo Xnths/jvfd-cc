@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Editable } from "@/edit/Editable";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { serviceLandings, type LandingImage, type ServiceLanding } from "@/content/service-landings";
+import { serviceLandings, faqDisplay, type LandingImage, type ServiceLanding } from "@/content/service-landings";
 import { useEdit } from "@/edit/EditContext";
 import type { ServiceInfo } from "@/lib/queries";
 import { LANDING_THEMES, SERVICE_THEMES, type ServiceTheme } from "@/lib/service-themes";
@@ -823,9 +823,16 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
             <h1 className={`font-serif text-4xl md:text-5xl font-semibold leading-tight mb-5 ${t.heroHeading}`}>
               <SE k="title">{title || data.hero.title}</SE>
             </h1>
-            <p className={`text-lg md:text-xl leading-relaxed max-w-xl mb-8 ${t.heroText}`}>
+            <p className={`text-base md:text-xl leading-relaxed max-w-xl mb-5 md:mb-8 ${t.heroText}`}>
               <SE k="subtitle" multiline>{subtitle || data.hero.subtitle}</SE>
             </p>
+            {data.hero.facts && (
+              <ul className={`mb-6 max-w-xl space-y-1.5 text-sm md:text-base leading-snug ${t.heroText}`}>
+                {data.hero.facts.map((f, i) => (
+                  <li key={i} className="flex gap-2"><span aria-hidden="true">•</span><span><SE k={`hero_fact_${i}`} multiline>{f}</SE></span></li>
+                ))}
+              </ul>
+            )}
             <CTAButton href={whatsappUrl} btnClass={t.cta} text={data.hero.cta} onClick={onCTAClick} size="large" />
             <p className={`mt-4 text-sm max-w-md ${t.heroNote}`}>
               <SE k="hero_note" multiline>{data.hero.note}</SE>
@@ -933,7 +940,7 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
         <div className="container mx-auto max-w-3xl">
           <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-10 text-center"><SE k="faq_title">{data.faqTitle}</SE></h2>
           <ul className="space-y-6">
-            {data.faq.map((f, i) => (
+            {faqDisplay(data.faq).map(({ item: f, i }) => (
               <li key={i} className="border-b border-slate-200 pb-5">
                 <h3 className="text-lg font-semibold text-slate-900 mb-2"><SE k={`faq_${i}_q`}>{f.question}</SE></h3>
                 <p className="text-slate-600 leading-relaxed"><SE k={`faq_${i}_a`} multiline>{f.answer}</SE></p>
@@ -949,6 +956,9 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
           <LandingEyebrow k="closing_eyebrow" className={t.eyebrow}>{data.closing.eyebrow}</LandingEyebrow>
           <h2 className="font-serif text-2xl md:text-3xl font-semibold text-slate-900 mb-6"><SE k="closing_heading">{data.closing.title}</SE></h2>
           <CTAButton href={whatsappUrl} btnClass={t.cta} text={data.closing.cta} onClick={onCTAClick} size="large" />
+          {data.closing.note && (
+            <p className="mt-4 text-sm text-slate-600 max-w-md mx-auto"><SE k="closing_note" multiline>{data.closing.note}</SE></p>
+          )}
         </div>
       </section>
 

@@ -64,8 +64,14 @@ type Failure struct {
 }
 
 // Outcome holds, per conversion index, either nil (accepted) or the failure; Err is set when the whole request failed.
+type RequestRef struct {
+	ID    string
+	Index int
+}
+
 type Outcome struct {
 	Failures map[int]Failure
+	Requests map[int]RequestRef
 	Raw      json.RawMessage
 	Err      error
 	// Transient is true when the whole request failed in a way worth retrying (5xx, 429, network).
@@ -189,7 +195,7 @@ type dmEvent struct {
 // processing"; Google's own result per event shows up in the reconcile summary. If a batch is rejected as a whole
 // (400), each event is sent alone so one bad click id does not sink the others.
 func (c *Client) Upload(ctx context.Context, convs []Conversion) Outcome {
-	out := Outcome{Failures: map[int]Failure{}}
+	out := Outcome{Failures: map[int]Failure{}, Requests: map[int]RequestRef{}}
 	byAction := map[string][]int{}
 	var order []string
 	for i, v := range convs {
@@ -208,6 +214,9 @@ func (c *Client) Upload(ctx context.Context, convs []Conversion) Outcome {
 		if status == http.StatusBadRequest && len(idx) > 1 {
 			for k, i := range idx {
 				st, bd, er := c.ingest(ctx, action, events[k:k+1])
+				if id := requestID(bd); id != "" {
+					out.Requests[i] = RequestRef{ID: id, Index: 0}
+				}
 				if o := c.outcome(st, bd, er); o.Err != nil {
 					if o.Transient || errors.Is(o.Err, ErrAuth) {
 						return o
@@ -216,6 +225,11 @@ func (c *Client) Upload(ctx context.Context, convs []Conversion) Outcome {
 				}
 			}
 			continue
+		}
+		if id := requestID(body); id != "" {
+			for k, i := range idx {
+				out.Requests[i] = RequestRef{ID: id, Index: k}
+			}
 		}
 		o := c.outcome(status, body, err)
 		if o.Err != nil {
@@ -489,4 +503,73 @@ func ConfigFromEnv(get func(string) string) Config {
 		APIVersion: get("GADS_API_VERSION"), ActionClick: get("GADS_CA_WHATSAPP_CLICK"), ActionMessage: get("GADS_CA_MESSAGE_RECEIVED"),
 		ActionAppointment: get("GADS_CA_APPOINTMENT_BOOKED"), ValidateOnly: get("GADS_VALIDATE_ONLY") == "true",
 	}
+}
+
+func requestID(body []byte) string {
+	var r struct {
+		RequestID string `json:"requestId"`
+	}
+	if json.Unmarshal(body, &r) != nil {
+		return ""
+	}
+	return r.RequestID
+}
+
+type RequestVerdict struct {
+	Status string
+	Errors []VerdictError
+}
+
+type VerdictError struct {
+	Reason  string
+	Indices []int
+}
+
+func (c *Client) RequestStatus(ctx context.Context, id string) (RequestVerdict, error) {
+	var v RequestVerdict
+	tok, err := c.accessToken(ctx)
+	if err != nil {
+		return v, err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.DMBase+"/v1/requestStatus:retrieve?requestId="+url.QueryEscape(id), nil)
+	if err != nil {
+		return v, err
+	}
+	req.Header.Set("Authorization", "Bearer "+tok)
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return v, err
+	}
+	defer resp.Body.Close()
+	b, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	if resp.StatusCode != http.StatusOK {
+		return v, fmt.Errorf("request status %d: %s", resp.StatusCode, trim(b, 200))
+	}
+	return ParseRequestStatus(b)
+}
+
+func ParseRequestStatus(b []byte) (RequestVerdict, error) {
+	var v RequestVerdict
+	var r struct {
+		Per []struct {
+			Status    string `json:"requestStatus"`
+			ErrorInfo struct {
+				Counts []struct {
+					Reason  string `json:"reason"`
+					Indices []int  `json:"recordIndices"`
+				} `json:"errorCounts"`
+			} `json:"errorInfo"`
+		} `json:"requestStatusPerDestination"`
+	}
+	if err := json.Unmarshal(b, &r); err != nil {
+		return v, err
+	}
+	if len(r.Per) == 0 {
+		return v, fmt.Errorf("no destination status")
+	}
+	v.Status = r.Per[0].Status
+	for _, e := range r.Per[0].ErrorInfo.Counts {
+		v.Errors = append(v.Errors, VerdictError{Reason: strings.TrimPrefix(strings.TrimPrefix(e.Reason, "PROCESSING_ERROR_REASON_"), "PROCESSING_ERROR_"), Indices: e.Indices})
+	}
+	return v, nil
 }

@@ -27,7 +27,7 @@ export function About() {
               Na prática, isso significa olhar com cuidado para o que acontece antes e depois do que te faz sofrer, e não apenas para o que você sente. A terapia é, antes de tudo, um encontro humano: ofereço escuta atenta, sem julgamentos, e um vínculo de confiança para você explorar suas questões com segurança e caminhar em direção ao que valoriza.
             </Editable>
             <Editable as="p" k="home.about.p3" multiline className="text-slate-600 mb-6 leading-relaxed">
-              Como psicólogo gay, conheço de perto as alegrias e os desafios da vida LGBTQIA+. Aqui, sua identidade é respeitada e a terapia é um espaço para construir relacionamentos que nutrem, viver com mais leveza e com autenticidade. Também dou aulas particulares de Química, Biologia e método de estudo.
+              Como psicólogo gay, conheço de perto as alegrias e os desafios da vida LGBTQIA+. Aqui, sua identidade é respeitada e a terapia é um espaço para construir relacionamentos que nutrem, viver com mais leveza e com autenticidade.
             </Editable>
             <Link href="/sobre/joao" className="font-medium text-green-800 underline underline-offset-2 hover:text-green-900">
               <Editable k="home.about.profile_link">Ver formação e perfil completo</Editable>

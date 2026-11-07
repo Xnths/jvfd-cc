@@ -40,6 +40,13 @@ func init() {
 		res, err := s.Ads.AdjustPending(ctx)
 		return map[string]any{"sent": res.Sent, "succeeded": res.Succeeded, "retried": res.Retried, "failed": res.Failed}, err
 	}
+	jobs["ads.diagnostics"] = func(ctx context.Context, s *Server) (map[string]any, error) {
+		if s.Ads == nil {
+			return map[string]any{"skipped": "GADS_* not set"}, nil
+		}
+		res, err := s.Ads.CheckDiagnostics(ctx)
+		return map[string]any{"checked": res.Checked, "failed": res.Failed, "requeued": res.Requeued}, err
+	}
 	// Stores Google's own success/error counts and the impressions/clicks per campaign (the funnel's n_0, n_1).
 	jobs["ads.reconcile"] = func(ctx context.Context, s *Server) (map[string]any, error) {
 		cfg := ads.ConfigFromEnv(os.Getenv)

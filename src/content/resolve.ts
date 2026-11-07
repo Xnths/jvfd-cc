@@ -1,6 +1,6 @@
 import { faq } from "@/content/clinic";
 import { tutoring } from "@/content/tutoring";
-import { serviceLandings } from "@/content/service-landings";
+import { serviceLandings, faqDisplay } from "@/content/service-landings";
 import { pickText, type TextMap } from "@/lib/texts";
 
 // Copies of the structured content with João's inline edits applied, so JSON-LD matches what
@@ -21,7 +21,7 @@ export function resolvedTutoringFaq(texts: TextMap) {
 }
 
 export function resolvedServiceFaq(slug: string, texts: TextMap) {
-    return (serviceLandings[slug]?.faq ?? []).map((item, i) => ({
+    return faqDisplay(serviceLandings[slug]?.faq ?? []).map(({ item, i }) => ({
         question: pickText(texts, `service.${slug}.faq_${i}_q`, item.question),
         answer: pickText(texts, `service.${slug}.faq_${i}_a`, item.answer),
     }));

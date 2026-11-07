@@ -49,6 +49,7 @@ func (w *Worker) Kick() {
 func (w *Worker) Run(ctx context.Context, every time.Duration) {
 	t := time.NewTicker(every)
 	defer t.Stop()
+	var lastDiag time.Time
 	for {
 		select {
 		case <-ctx.Done():
@@ -61,6 +62,12 @@ func (w *Worker) Run(ctx context.Context, every time.Duration) {
 		}
 		if _, err := w.AdjustPending(ctx); err != nil {
 			w.Log.Error("ads adjust", "err", err)
+		}
+		if w.Now().Sub(lastDiag) > 10*time.Minute {
+			lastDiag = w.Now()
+			if _, err := w.CheckDiagnostics(ctx); err != nil {
+				w.Log.Error("ads diagnostics", "err", err)
+			}
 		}
 	}
 }
@@ -76,6 +83,9 @@ type row struct {
 	value                 *float64
 	attempts              int
 	gclid, gbraid, wbraid *string
+	clickedAt             time.Time
+	req                   RequestRef
+	messageAt             *time.Time
 }
 
 // UploadPending locks due rows (SKIP LOCKED, so two workers never send the same conversion), uploads them in one
@@ -88,7 +98,7 @@ func (w *Worker) UploadPending(ctx context.Context) (Result, error) {
 	}
 	defer tx.Rollback(ctx)
 	rs, err := tx.Query(ctx, `SELECT cu.id::text, cu.lead_id::text, cu.stage, cu.conversion_time, cu.value::float8, cu.attempts,
-		l.gclid, l.gbraid, l.wbraid
+		l.gclid, l.gbraid, l.wbraid, l.clicked_at, l.message_at
 		FROM conversion_uploads cu JOIN leads l ON l.id = cu.lead_id
 		WHERE cu.status IN ('pending','retry') AND cu.next_attempt_at <= now()
 		ORDER BY cu.next_attempt_at LIMIT $1 FOR UPDATE OF cu SKIP LOCKED`, w.Batch)
@@ -98,7 +108,7 @@ func (w *Worker) UploadPending(ctx context.Context) (Result, error) {
 	var rows []row
 	for rs.Next() {
 		var r row
-		if err := rs.Scan(&r.id, &r.leadID, &r.stage, &r.at, &r.value, &r.attempts, &r.gclid, &r.gbraid, &r.wbraid); err != nil {
+		if err := rs.Scan(&r.id, &r.leadID, &r.stage, &r.at, &r.value, &r.attempts, &r.gclid, &r.gbraid, &r.wbraid, &r.clickedAt, &r.messageAt); err != nil {
 			rs.Close()
 			return res, err
 		}
@@ -108,8 +118,11 @@ func (w *Worker) UploadPending(ctx context.Context) (Result, error) {
 	if len(rows) == 0 {
 		return res, nil
 	}
+	now := w.Now()
 	convs := make([]Conversion, len(rows))
-	for i, r := range rows {
+	for i := range rows {
+		rows[i].at = ConversionTime(rows[i].stage, rows[i].at, rows[i].clickedAt, rows[i].messageAt, now)
+		r := rows[i]
 		convs[i] = Conversion{Gclid: deref(r.gclid), Gbraid: deref(r.gbraid), Wbraid: deref(r.wbraid),
 			Action: w.Cfg.action(r.stage), Time: r.at, Value: r.value, OrderID: r.leadID + ":" + r.stage}
 	}
@@ -130,7 +143,7 @@ func (w *Worker) UploadPending(ctx context.Context) (Result, error) {
 		case "failed":
 			res.Failed++
 		}
-		if err := w.save(ctx, tx, r, convs[i].Action, status, next, code, msg, out.Raw); err != nil {
+		if err := w.save(ctx, tx, r, convs[i].Action, status, next, code, msg, out.Raw, out.Requests[i]); err != nil {
 			return res, err
 		}
 	}
@@ -272,14 +285,14 @@ func backoff(attempts int) time.Duration {
 	return d
 }
 
-func (w *Worker) save(ctx context.Context, tx pgx.Tx, r row, action, status string, next time.Time, code, msg string, raw json.RawMessage) error {
+func (w *Worker) save(ctx context.Context, tx pgx.Tx, r row, action, status string, next time.Time, code, msg string, raw json.RawMessage, ref RequestRef) error {
 	var resp any
 	if len(raw) > 0 && json.Valid(raw) {
 		resp = raw
 	}
-	_, err := tx.Exec(ctx, `UPDATE conversion_uploads SET status = $2, attempts = attempts + 1, next_attempt_at = $3, conversion_action = $4,
+	_, err := tx.Exec(ctx, `UPDATE conversion_uploads SET status = $2, attempts = attempts + 1, next_attempt_at = $3, conversion_action = $4, conversion_time = $8, request_id = nullif($9,''), request_index = $10, google_status = NULL, google_error = NULL, checked_at = NULL,
 		last_error_code = nullif($5,''), last_error_message = nullif($6,''), response = $7, updated_at = now() WHERE id::text = $1`,
-		r.id, status, next, action, code, msg, resp)
+		r.id, status, next, action, code, msg, resp, r.at, ref.ID, ref.Index)
 	return err
 }
 
@@ -294,4 +307,113 @@ func deref(s *string) string {
 		return ""
 	}
 	return *s
+}
+
+type StatusChecker interface {
+	RequestStatus(ctx context.Context, id string) (RequestVerdict, error)
+}
+
+type DiagResult struct {
+	Checked, Failed, Requeued int
+}
+
+func (w *Worker) CheckDiagnostics(ctx context.Context) (DiagResult, error) {
+	var res DiagResult
+	sc, ok := w.Up.(StatusChecker)
+	if !ok {
+		return res, nil
+	}
+	rs, err := w.Pool.Query(ctx, `SELECT DISTINCT request_id FROM conversion_uploads
+		WHERE status = 'succeeded' AND request_id IS NOT NULL AND (google_status IS NULL OR google_status = 'PROCESSING')
+		  AND updated_at > now() - interval '3 days' LIMIT 50`)
+	if err != nil {
+		return res, err
+	}
+	var ids []string
+	for rs.Next() {
+		var id string
+		if err := rs.Scan(&id); err != nil {
+			rs.Close()
+			return res, err
+		}
+		ids = append(ids, id)
+	}
+	rs.Close()
+	for _, id := range ids {
+		v, err := sc.RequestStatus(ctx, id)
+		if err != nil {
+			if errors.Is(err, ErrAuth) {
+				return res, err
+			}
+			w.Log.Warn("ads request status", "err", err)
+			continue
+		}
+		res.Checked++
+		if err := w.applyVerdict(ctx, id, v, &res); err != nil {
+			return res, err
+		}
+	}
+	return res, nil
+}
+
+func (w *Worker) applyVerdict(ctx context.Context, id string, v RequestVerdict, res *DiagResult) error {
+	if v.Status == "PROCESSING" || v.Status == "" || v.Status == "REQUEST_STATUS_UNKNOWN" {
+		_, err := w.Pool.Exec(ctx, `UPDATE conversion_uploads SET google_status = 'PROCESSING', checked_at = now() WHERE request_id = $1`, id)
+		return err
+	}
+	rs, err := w.Pool.Query(ctx, `SELECT id::text, request_index FROM conversion_uploads WHERE request_id = $1`, id)
+	if err != nil {
+		return err
+	}
+	type item struct {
+		id  string
+		idx int
+	}
+	var items []item
+	for rs.Next() {
+		var it item
+		if err := rs.Scan(&it.id, &it.idx); err != nil {
+			rs.Close()
+			return err
+		}
+		items = append(items, it)
+	}
+	rs.Close()
+	for _, it := range items {
+		reason := ""
+		for _, e := range v.Errors {
+			if len(e.Indices) == 0 && v.Status == "FAILED" {
+				reason = e.Reason
+			}
+			for _, ix := range e.Indices {
+				if ix == it.idx {
+					reason = e.Reason
+				}
+			}
+		}
+		if reason == "" && v.Status == "FAILED" {
+			reason = "UNKNOWN"
+		}
+		if reason == "" || strings.Contains(reason, "DUPLICATE") {
+			if _, err := w.Pool.Exec(ctx, `UPDATE conversion_uploads SET google_status = 'SUCCESS', google_error = nullif($2,''), checked_at = now() WHERE id::text = $1`, it.id, reason); err != nil {
+				return err
+			}
+			continue
+		}
+		res.Failed++
+		requeue := strings.Contains(reason, "PRECEDES")
+		tag, err := w.Pool.Exec(ctx, `UPDATE conversion_uploads cu SET google_status = 'FAILURE', google_error = $2, checked_at = now(),
+			status = CASE WHEN $3 AND cu.diag_requeues < 2 AND l.clicked_at > now() - interval '85 days' THEN 'pending' ELSE cu.status END,
+			attempts = CASE WHEN $3 AND cu.diag_requeues < 2 THEN 0 ELSE cu.attempts END,
+			next_attempt_at = CASE WHEN $3 AND cu.diag_requeues < 2 THEN now() ELSE cu.next_attempt_at END,
+			diag_requeues = CASE WHEN $3 AND cu.diag_requeues < 2 THEN cu.diag_requeues + 1 ELSE cu.diag_requeues END
+			FROM leads l WHERE l.id = cu.lead_id AND cu.id::text = $1 AND cu.status = 'succeeded'`, it.id, reason, requeue)
+		if err != nil {
+			return err
+		}
+		if requeue && tag.RowsAffected() > 0 {
+			res.Requeued++
+		}
+	}
+	return nil
 }

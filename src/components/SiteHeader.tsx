@@ -14,7 +14,6 @@ import { Editable } from "@/edit/Editable";
 
 const NAV = [
     { key: "services", href: "/#services", label: "Atendimentos" },
-    { key: "tutoring", href: "/aulas-particulares", label: "Aulas" },
     { key: "about", href: "/#about", label: "Sobre" },
     { key: "blog", href: "/blog", label: "Blog" },
     { key: "contact", href: "/#contact", label: "Contato" },

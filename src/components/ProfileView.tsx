@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { RichText } from "@/components/RichText";
 import type { ProfileDoc } from "@/lib/queries";
+import { ProfileCta } from "@/components/ProfileCta";
+import { Editable } from "@/edit/Editable";
 
 const LABELS: Record<string, string> = { instagram: "Instagram", linkedin: "LinkedIn", lattes: "Currículo Lattes", oneliv: "Consultório Livance", site: "Site" };
 
@@ -24,6 +26,11 @@ export function ProfileView({ profile: p }: { profile: ProfileDoc }) {
                     <p className="mt-1 text-xl text-slate-600">{p.jobTitle}{p.isClinician && p.crp ? ` · CRP ${p.crp}` : ""}</p>
                     {p.approach && <p className="mt-1 text-slate-500">{p.approach}</p>}
                     {p.practicingSince && <p className="mt-1 text-sm text-slate-500">Em atuação desde {p.practicingSince}</p>}
+                    {p.isClinician && p.slug === "joao" && (
+                        <Editable as="p" k="profile.joao.formation" className="mt-1 text-sm text-slate-600">
+                            Bacharel em Psicologia (PUC-SP) · Pós-graduação em Neuropsicologia (Hospital Israelita Albert Einstein)
+                        </Editable>
+                    )}
                     <ul className="mt-4 flex flex-wrap justify-center gap-3 text-sm sm:justify-start">
                         {Object.entries(p.links ?? {}).filter(([, v]) => v).map(([k, v]) => (
                             <li key={k}><a href={v} target="_blank" rel="noopener noreferrer me" className="text-green-700 underline underline-offset-2">{LABELS[k] ?? k}</a></li>
@@ -34,6 +41,7 @@ export function ProfileView({ profile: p }: { profile: ProfileDoc }) {
             {p.bio && (
                 <section className="mb-10"><h2 className="mb-3 text-2xl font-semibold text-slate-900">Sobre</h2><div className="prose prose-lg prose-slate max-w-none"><RichText content={p.bio} /></div></section>
             )}
+            {p.isClinician && p.slug === "joao" && <ProfileCta />}
             {(p.sections ?? []).filter((s) => s.entries.length).map((s) => (
                 <section key={s.id} className="mb-10">
                     <h2 className="mb-4 text-2xl font-semibold text-slate-900">{s.title}</h2>

@@ -185,7 +185,7 @@ async function replayLeads(env) {
         try {
             const res = await fetch(`https://${HOST}/api/leads`, {
                 method: "POST",
-                headers: { "content-type": lead.type, "user-agent": lead.ua },
+                headers: { "content-type": lead.type, "user-agent": lead.ua, "x-edge-replay": "1" },
                 body: lead.body,
             });
             if (res.status < 500) await env.SNAPSHOTS.delete(name);

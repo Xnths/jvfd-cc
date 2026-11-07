@@ -10,7 +10,6 @@ import {
   NotebookPen,
   Heart,
   ArrowRight,
-  GraduationCap,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -42,26 +41,15 @@ const ICONS: Record<string, LucideIcon> = {
   "/supervisao": NotebookPen,
   "/lgbtqia": Heart,
   "/avaliacao-neuropsicologica": Brain,
-  [tutoring.path]: GraduationCap,
 };
 
-// Tutoring is a page in code, not a Postgres service, so its card is always appended.
-const tutoringCard = {
-  name: tutoring.shortName,
-  title: "Aulas de Química, Biologia e método de estudo",
-  description:
-    "Aulas particulares para ENEM e vestibular, método de estudo baseado em Análise do Comportamento e apoio a estudantes de Psicologia. Um serviço educacional, separado da terapia.",
-  href: tutoring.path,
-  pride: false,
-};
-
-const staticServices = [...baseServices, tutoringCard].map((s) => ({ ...s, showOnHome: ("pride" in s && s.pride ? "campaign" : "always") as "always" | "campaign" | "never" }));
+const staticServices = [...baseServices].map((s) => ({ ...s, showOnHome: ("pride" in s && s.pride ? "campaign" : "always") as "always" | "campaign" | "never" }));
 
 export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
   const whatsappUrl = useWhatsappUrl();
   const { getElapsedTime } = useTimeToAction();
   const { serviceCards } = useEdit();
-  const services = (serviceCards ? [...serviceCards, { ...tutoringCard, showOnHome: "always" as const }] : staticServices).map((service) => ({
+  const services = (serviceCards ? serviceCards : staticServices).filter((s) => s.href !== "/supervisao" && s.href !== tutoring.path).map((service) => ({
     ...service,
     icon: ("icon" in service && service.icon ? iconFor(service.icon as string) : ICONS[service.href]) ?? Brain,
   }));
@@ -179,6 +167,9 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
             </a>
           </Button>
         </div>
+        <Editable as="p" k="home.services.cta_note" className="mt-4 text-center text-sm text-slate-600">
+          Atendimento particular, sem convênio, com recibo para reembolso. Menores de 18 anos: contato por um responsável.
+        </Editable>
       </div>
     </section>
   );

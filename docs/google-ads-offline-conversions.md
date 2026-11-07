@@ -363,3 +363,11 @@ Processing takes up to 3 business days. Conversions are attributed retroactively
 Do not switch bidding strategy during the learning phase — it resets learning and doubles the data acquisition cost.
 
 ---
+
+## 7b. Conversion time rules (2026-11)
+
+- Uploads go through the Data Manager API (`events:ingest`), which is asynchronous: a 200 only means the request was accepted. Per-event rejections (for example `CONVERSION_PRECEDES_EVENT`) show in Google Ads, Conversions, Diagnostics, and are not stored here.
+- `ads.ConversionTime` (`backend/internal/ads/timing.go`) runs right before every send: click = the server-side click time; message = `min(max(t_message, t_click + 1s), now)`; booking = `min(max(t_booking, t_message + 1s, t_click + 1s), now)`. The effective time is saved to `conversion_uploads.conversion_time`.
+- The click time is the server's clock. The browser's `clicked_at` is only trusted on edge replays (`X-Edge-Replay: 1`).
+- The admin screens read and write times as America/Sao_Paulo (-03:00) and the default message time is the click rounded up to the next minute.
+- Clicks from `service_page_supervisao` and `aulas_cta` are stored as leads but never uploaded (`skipped`, `NOT_PATIENT`).

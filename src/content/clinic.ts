@@ -36,7 +36,7 @@ export const contact = {
     email: "joao@psicologojoaofernandes.com",
     address: {
         street: "Rua Harmonia, 1323",
-        neighborhood: "Sumarezinho — Vila Madalena",
+        neighborhood: "Vila Madalena (Sumarezinho)",
         locality: "São Paulo",
         region: "SP",
         postalCode: "05435-001",
@@ -130,28 +130,21 @@ export const services: Service[] = [
         name: "Foco e organização",
         title: "Dificuldade de concentração e organização",
         description:
-            "Se a rotina parece caótica ou o rendimento caiu, podemos desenvolver estratégias práticas e personalizadas para melhorar seu foco e gestão de tempo, respeitando seu ritmo.",
+            "Se a rotina parece caótica ou o rendimento caiu, podemos desenvolver estratégias práticas para foco e gestão de tempo, respeitando seu ritmo.",
         href: "/foco-organizacao",
-    },
-    {
-        name: "Plantão psicológico",
-        title: "Acolhimento imediato para momentos difíceis",
-        description:
-            "Em momentos de grande angústia — como perdas significativas, separações ou inquietações intensas — o mais importante é não passar por isso sozinho. Ofereço suporte para estabilizar suas emoções e encontrar segurança.",
-        href: "/plantao",
     },
     {
         name: "Terapia de casal",
         title: "Conflitos nos relacionamentos",
         description:
-            "Problemas com parceiros ou família são comuns, mas desgastantes. Vamos trabalhar para melhorar a comunicação, estabelecer limites saudáveis e entender a dinâmica dessas relações.",
+            "Problemas com parceiros ou família são comuns, mas desgastantes. Vamos trabalhar a comunicação, os limites e a dinâmica dessas relações.",
         href: "/terapia-de-casal",
     },
     {
-        name: "Autoconhecimento e avaliação psicológica",
+        name: "Autoconhecimento",
         title: "Autoconhecimento e entendimento",
         description:
-            "Muitas vezes, não sabemos explicar o que sentimos. A avaliação psicológica ajuda a dar nome e sentido para suas angústias, sendo o primeiro passo para a mudança.",
+            "Muitas vezes, não sabemos explicar o que sentimos. A terapia ajuda a dar nome ao que se sente, mesmo sem uma questão específica.",
         href: "/autoconhecimento",
     },
     {
@@ -180,10 +173,16 @@ export const services: Service[] = [
 
 export const faq = [
     {
+        id: "item-4",
+        question: "Aceita convênio?",
+        answer:
+            "Não. O atendimento é particular, sem convênio. João emite recibo para você solicitar reembolso ao seu plano de saúde; a cobertura depende do seu contrato.",
+    },
+    {
         id: "item-2",
         question: "O atendimento é presencial ou online?",
         answer:
-            "Como você preferir. O atendimento online acontece por videochamada segura, ideal para quem precisa de flexibilidade ou está longe. O presencial ocorre no consultório na Vila Madalena, SP. Ambos têm a mesma qualidade e eficácia.",
+            "Como você preferir. O atendimento online acontece por videochamada segura, ideal para quem precisa de flexibilidade ou está longe. O presencial ocorre no consultório na Vila Madalena, SP. O formato é combinado no primeiro contato.",
     },
     {
         id: "item-1",
@@ -196,12 +195,6 @@ export const faq = [
         question: "Qual a duração da terapia?",
         answer:
             "Cada processo é único. As sessões duram cerca de 50 minutos e geralmente são semanais. A duração total do acompanhamento varia conforme seus objetivos e necessidades, tudo alinhado com transparência entre nós.",
-    },
-    {
-        id: "item-4",
-        question: "Aceita convênios?",
-        answer:
-            "O atendimento é particular, mas forneço recibos para reembolso no seu plano de saúde.",
     },
     {
         id: "item-5",
@@ -220,6 +213,12 @@ export const faq = [
         question: "Você atende a comunidade LGBTQIA+?",
         answer:
             "Sim. João é psicólogo gay e atende pessoas LGBTQIA+ de forma afirmativa, com respeito à identidade, à orientação e às histórias de cada pessoa.",
+    },
+    {
+        id: "item-8",
+        question: "Atende adolescentes?",
+        answer:
+            "A psicoterapia é voltada a adultos. Adolescentes de 13 a 17 anos são avaliados caso a caso, e o contato e o agendamento precisam ser feitos por um responsável, que autoriza o acompanhamento.",
     },
 ];
 

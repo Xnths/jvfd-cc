@@ -62,3 +62,10 @@ func TestParseFailures(t *testing.T) {
 		t.Fatal("clean response must have no failures")
 	}
 }
+
+func TestParseRequestStatus(t *testing.T) {
+	v, err := ParseRequestStatus([]byte(`{"requestStatusPerDestination":[{"requestStatus":"PARTIAL_SUCCESS","errorInfo":{"errorCounts":[{"recordCount":"1","reason":"PROCESSING_ERROR_REASON_CONVERSION_PRECEDES_CLICK","recordIndices":[1]}]}}]}`))
+	if err != nil || v.Status != "PARTIAL_SUCCESS" || len(v.Errors) != 1 || v.Errors[0].Reason != "CONVERSION_PRECEDES_CLICK" || v.Errors[0].Indices[0] != 1 {
+		t.Fatalf("%+v %v", v, err)
+	}
+}

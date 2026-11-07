@@ -50,7 +50,7 @@ export function CTAPresencial() {
             Iniciar o processo terapêutico
           </Editable>
           <Editable as="p" k="presencial.cta.text" className="text-slate-300 mb-8 leading-relaxed">
-            O primeiro contato pode ser feito pelo WhatsApp. Respondemos em até 2h em dias úteis.
+            O primeiro contato pode ser feito pelo WhatsApp. João responde em dias úteis. Atendimento particular, sem convênio, com recibo para reembolso.
           </Editable>
 
           <a

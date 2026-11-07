@@ -43,7 +43,7 @@ export function FloatingCatButton() {
         hover:animate-none
       "
         >
-            <FaWhatsapp className="w-6 h-6" />
+            <FaWhatsapp className="w-6 h-6" aria-hidden="true" />
         </a>
     );
 }

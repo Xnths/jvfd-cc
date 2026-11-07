@@ -10,7 +10,7 @@ import { CTAPresencial } from "@/components/presencial/CTAPresencial";
 import { Footer } from "@/components/Footer";
 
 const description =
-  "Atendimento psicológico presencial no Sumarezinho, Vila Madalena (SP), a 4 min do metrô Vila Madalena. Psicoterapia em Análise do Comportamento com João Fernandes, CRP 06/157908.";
+  "Atendimento psicológico presencial na Vila Madalena (Sumarezinho), em São Paulo, a 4 min do metrô Vila Madalena. Psicoterapia em Análise do Comportamento com João Fernandes, CRP 06/157908.";
 
 export const metadata: Metadata = buildMetadata({
   absoluteTitle: "Psicólogo Presencial na Vila Madalena, SP | João Fernandes",

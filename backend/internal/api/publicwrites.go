@@ -105,8 +105,7 @@ func (s *Server) createLead(w http.ResponseWriter, r *http.Request) {
 			httpx.JSON(w, http.StatusBadRequest, map[string]bool{"ok": false})
 			return
 		}
-		// A replay from the edge queue keeps the real click time; anything older than 14 days is not trusted.
-		if t.After(now.Add(-14 * 24 * time.Hour)) {
+		if r.Header.Get("X-Edge-Replay") == "1" && t.After(now.Add(-14*24*time.Hour)) {
 			clicked = t
 		}
 	}
@@ -157,6 +156,8 @@ func (s *Server) createLead(w http.ResponseWriter, r *http.Request) {
 	httpx.JSON(w, http.StatusCreated, map[string]bool{"ok": true})
 }
 
+var nonPatientSources = []string{"service_page_supervisao", "aulas_cta"}
+
 // insertUpload queues one conversion (or marks it skipped when the click carries no Google click id). Re-queuing a
 // stage that already succeeded is a no-op; one that failed or was skipped is queued again.
 func insertUpload(ctx context.Context, q interface {
@@ -167,11 +168,14 @@ func insertUpload(ctx context.Context, q interface {
 		status, code = "skipped", "NO_CLICK_ID"
 	}
 	_, err := q.Exec(ctx, `INSERT INTO conversion_uploads (lead_id, stage, conversion_time, value, status, last_error_code)
-		VALUES ($1::uuid,$2,$3,$4,$5,nullif($6,''))
+		SELECT $1::uuid, $2, $3, $4,
+		  CASE WHEN l.source = ANY($7::text[]) THEN 'skipped' ELSE $5 END,
+		  CASE WHEN l.source = ANY($7::text[]) THEN 'NOT_PATIENT' ELSE nullif($6,'') END
+		FROM leads l WHERE l.id = $1::uuid
 		ON CONFLICT (lead_id, stage) DO UPDATE SET conversion_time = EXCLUDED.conversion_time, value = EXCLUDED.value,
 		  status = EXCLUDED.status, last_error_code = EXCLUDED.last_error_code, last_error_message = NULL, attempts = 0,
 		  next_attempt_at = now(), updated_at = now()
-		WHERE conversion_uploads.status <> 'succeeded'`, leadID, stage, at, value, status, code)
+		WHERE conversion_uploads.status <> 'succeeded'`, leadID, stage, at, value, status, code, nonPatientSources)
 	return err
 }
 

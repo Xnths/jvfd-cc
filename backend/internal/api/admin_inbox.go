@@ -166,7 +166,7 @@ func (s *Server) adminListLeads(w http.ResponseWriter, r *http.Request) {
 		l.message_at, l.paid_value::float8, l.payment_status,
 		(SELECT jsonb_build_object('type', ca.adjustment_type, 'status', ca.status, 'code', ca.last_error_code, 'value', ca.value::float8)
 		  FROM conversion_adjustments ca WHERE ca.lead_id = l.id),
-		coalesce((SELECT jsonb_object_agg(cu.stage, jsonb_build_object('status', cu.status, 'code', cu.last_error_code, 'message', cu.last_error_message, 'attempts', cu.attempts))
+		coalesce((SELECT jsonb_object_agg(cu.stage, jsonb_build_object('status', cu.status, 'code', cu.last_error_code, 'message', cu.last_error_message, 'attempts', cu.attempts, 'google', cu.google_status, 'googleError', cu.google_error))
 		  FROM conversion_uploads cu WHERE cu.lead_id = l.id), '{}'::jsonb)
 		FROM leads l WHERE ($1 = '' OR l.status = $1) ORDER BY l.clicked_at DESC LIMIT $2`, r.URL.Query().Get("status"), limit)
 	if err != nil {
@@ -242,9 +242,9 @@ func (s *Server) adminLeadStatus(w http.ResponseWriter, r *http.Request) {
 	var hasID bool
 	var stored *float64
 	err = tx.QueryRow(r.Context(), `UPDATE leads SET status = $2,
-		converted_at = CASE WHEN $2 = 'converted' THEN coalesce($3, converted_at, now()) ELSE converted_at END,
-		qualified_at = CASE WHEN $2 = 'qualified' THEN coalesce($4, qualified_at, now()) ELSE qualified_at END,
-		message_at = CASE WHEN $2 = 'qualified' THEN coalesce($4, qualified_at, now()) ELSE message_at END,
+		converted_at = CASE WHEN $2 = 'converted' THEN greatest(coalesce($3, converted_at, now()), clicked_at + interval '1 second') ELSE converted_at END,
+		qualified_at = CASE WHEN $2 = 'qualified' THEN greatest(coalesce($4, qualified_at, now()), clicked_at + interval '1 second') ELSE qualified_at END,
+		message_at = CASE WHEN $2 = 'qualified' THEN greatest(coalesce($4, qualified_at, now()), clicked_at + interval '1 second') ELSE message_at END,
 		converted_value = CASE WHEN $2 = 'converted' THEN coalesce($5::numeric, converted_value) ELSE converted_value END
 		WHERE id::text = $1 RETURNING qualified_at, converted_at, source, page_url, converted_value::float8,
 		  gclid IS NOT NULL OR gbraid IS NOT NULL OR wbraid IS NOT NULL`,
