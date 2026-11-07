@@ -63,10 +63,21 @@ test("530 from the origin serves the stored snapshot", async () => {
 test("a thrown fetch also falls back, and an unknown page gets the WhatsApp page", async () => {
     origin = () => { throw new Error("connection refused"); };
     const res = await handleRequest(get("/avaliacao-neuropsicologica"), env, ctx);
-    assert.equal(res.status, 200);
+    // Not the real page: crawlers must see a temporary outage, so an incident can't remove it from search.
+    assert.equal(res.status, 503);
+    assert.equal(res.headers.get("retry-after"), "300");
     const html = await res.text();
+    assert.doesNotMatch(html, /noindex/);
     assert.match(html, /wa\.me\/5511955591996\?text=Ol%C3%A1%2C%20gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20a%20avalia%C3%A7%C3%A3o%20neuropsicol%C3%B3gica\./);
     assert.match(html, /CRP 06\/157908/);
+});
+
+test("pages without a snapshot answer 503 to crawlers, not a 200 noindex", async () => {
+    origin = () => new Response("tunnel", { status: 530 });
+    const res = await handleRequest(get("/perguntas/terapia-online-funciona"), env, ctx);
+    assert.equal(res.status, 503);
+    assert.equal(res.headers.get("x-edge-fallback"), "snapshot");
+    assert.match(await res.text(), /Falar no WhatsApp/);
 });
 
 test("sessions see the real error instead of a snapshot", async () => {

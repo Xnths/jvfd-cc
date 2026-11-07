@@ -40,7 +40,7 @@ export function fallbackPage(pathname) {
     const message = pathname.startsWith("/avaliacao-neuropsicologica") ? AVALIACAO_MESSAGE : DEFAULT_MESSAGE;
     const href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;
     return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Psicólogo João Fernandes</title>
 <style>body{font-family:system-ui,sans-serif;margin:0;min-height:100vh;display:grid;place-items:center;background:#faf7f2;color:#2b2b2b}
 main{max-width:30rem;padding:2rem 1.25rem;text-align:center}a.b{display:inline-block;margin:1.25rem 0;padding:.9rem 1.6rem;border-radius:.6rem;background:#25d366;color:#06361a;font-weight:600;text-decoration:none}
@@ -83,7 +83,9 @@ async function serveSnapshot(request, env, url) {
         return null;
     }
     if ((request.headers.get("accept") || "").includes("text/html")) {
-        return new Response(request.method === "HEAD" ? null : fallbackPage(url.pathname), { status: 200, headers: { ...headers, "content-type": "text/html; charset=utf-8" } });
+        // 503, never 200: this is not the real page. A 200 here would tell crawlers it replaced the page, and an outage
+        // could drop real URLs from search. Browsers show the WhatsApp button all the same.
+        return new Response(request.method === "HEAD" ? null : fallbackPage(url.pathname), { status: 503, headers: { ...headers, "content-type": "text/html; charset=utf-8", "retry-after": "300" } });
     }
     return null;
 }
