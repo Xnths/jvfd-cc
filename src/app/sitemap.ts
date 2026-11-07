@@ -45,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: latest(posts.slice(0, 3).map((p) => p.updatedAt)),
             changeFrequency: 'weekly',
             priority: 1,
-            images: [`${SITE_URL}/jv.jpeg`, `${SITE_URL}/consultorio.jpg`],
+            images: [`${SITE_URL}/about/joao-1.jpg`, `${SITE_URL}/consultorio.jpg`],
         },
         {
             url: `${SITE_URL}/presencial`,

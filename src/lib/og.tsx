@@ -18,7 +18,7 @@ async function loadAssets() {
         readFile(join(root, "src/assets/fonts/Fraunces-SemiBold.woff")),
         readFile(join(root, "src/assets/fonts/Inter-Regular.woff")),
         readFile(join(root, "src/assets/fonts/Inter-SemiBold.woff")),
-        readFile(join(root, "public/jv.jpeg")),
+        readFile(join(root, "public/about/joao-1.jpg")),
     ]);
     return {
         fonts: [

@@ -9,7 +9,7 @@ const nextConfig = {
     },
     // OG cards read fonts and the portrait from disk at request time.
     outputFileTracingIncludes: {
-        '/**/opengraph-image*': ['./src/assets/fonts/**/*', './public/jv.jpeg'],
+        '/**/opengraph-image*': ['./src/assets/fonts/**/*', './public/about/joao-1.jpg'],
     },
     // Blog accounts were retired when the site moved to Google-only admin sign-in.
     async redirects() {

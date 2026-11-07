@@ -33,15 +33,35 @@ export function About() {
               <Editable k="home.about.profile_link">Ver formação e perfil completo</Editable>
             </Link>
           </div>
-          <div className="relative">
-            <div className="aspect-[4/4] rounded-lg overflow-hidden shadow-xl">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2 sm:col-span-1 sm:row-span-2 rounded-lg overflow-hidden shadow-xl">
               <Image
-                width={747}
-                height={665}
-                src="/jv.jpeg"
+                width={640}
+                height={858}
+                src="/about/joao-1.jpg"
                 alt={useText("home.about.image_alt", "Psicólogo João Fernandes")}
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="w-full h-full object-cover"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                className="w-full h-full aspect-[3/4] sm:aspect-auto object-cover object-[50%_30%]"
+              />
+            </div>
+            <div className="rounded-lg overflow-hidden shadow-xl">
+              <Image
+                width={600}
+                height={828}
+                src="/about/joao-2.jpg"
+                alt={useText("home.about.image_alt_2", "Psicólogo João Fernandes em pé")}
+                sizes="(max-width: 1024px) 50vw, 25vw"
+                className="w-full h-full aspect-[4/5] object-cover object-[50%_25%]"
+              />
+            </div>
+            <div className="rounded-lg overflow-hidden shadow-xl">
+              <Image
+                width={618}
+                height={740}
+                src="/about/joao-3.jpg"
+                alt={useText("home.about.image_alt_3", "Psicólogo João Fernandes sentado")}
+                sizes="(max-width: 1024px) 50vw, 25vw"
+                className="w-full h-full aspect-[4/5] object-cover object-[50%_20%]"
               />
             </div>
           </div>

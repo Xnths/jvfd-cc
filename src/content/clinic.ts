@@ -11,7 +11,7 @@ export const person = {
     crp: "06/157908",
     practicingSince: 2019,
     approach: "Análise do Comportamento (Behaviorismo Radical)",
-    image: `${SITE_URL}/jv.jpeg`,
+    image: `${SITE_URL}/about/joao-1.jpg`,
     languages: ["pt-BR"],
     knowsAbout: [
         "Análise do Comportamento",

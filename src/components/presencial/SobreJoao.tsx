@@ -7,14 +7,14 @@ export function SobreJoao() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
           <div className="relative order-2 lg:order-1">
-            <div className="aspect-[4/4] rounded-lg overflow-hidden shadow-xl">
+            <div className="aspect-[4/5] rounded-lg overflow-hidden shadow-xl">
               <Image
-                width={747}
-                height={665}
-                src="/jv.jpeg"
+                width={640}
+                height={858}
+                src="/about/joao-1.jpg"
                 alt="Psicólogo João Fernandes"
                 sizes="(max-width: 1024px) 100vw, 50vw"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-[50%_30%]"
               />
             </div>
           </div>

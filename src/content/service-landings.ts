@@ -25,7 +25,10 @@ export type ServiceLanding = {
     references: { n: number; text: string; doi?: string }[];
 };
 
-const JV: LandingImage = { src: "/jv.jpeg", alt: "Psicólogo João Fernandes", width: 747, height: 665 };
+// Three photos of João (public/about/). Close-up for clinical/serious pages, standing for warm ones, seated for "explaining" ones.
+const JV: LandingImage = { src: "/about/joao-1.jpg", alt: "Psicólogo João Fernandes", width: 640, height: 858 };
+const JV_STANDING: LandingImage = { src: "/about/joao-2.jpg", alt: "Psicólogo João Fernandes", width: 600, height: 828 };
+const JV_SEATED: LandingImage = { src: "/about/joao-3.jpg", alt: "Psicólogo João Fernandes", width: 618, height: 740 };
 const OFFICE: LandingImage = { src: "/consultorio.jpg", alt: "Consultório na Vila Madalena, São Paulo", width: 2912, height: 1440, caption: "Consultório na Vila Madalena." };
 
 const CRP = "CRP 06/157908";
@@ -267,7 +270,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
                 { title: "Revisar", text: "O que funcionou fica, o que não funcionou é ajustado nas sessões seguintes." },
             ],
         },
-        about: { eyebrow: "Quem conduz", title: "João Vitor Fernandes", text: `${WHO}, ${FORMATION}. ${PLACE}`, image: JV },
+        about: { eyebrow: "Quem conduz", title: "João Vitor Fernandes", text: `${WHO}, ${FORMATION}. ${PLACE}`, image: JV_SEATED },
         faq: [
             { question: "Preciso ter um diagnóstico para começar?", answer: "Não. O atendimento é para quem tem dificuldade de foco, organização ou estudo, com ou sem diagnóstico." },
             { question: "Isso substitui o tratamento de TDAH?", answer: "Não. A psicoterapia pode caminhar junto com o acompanhamento médico. As decisões sobre medicação são sempre do seu médico." },
@@ -391,7 +394,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
                 { title: "Decisões", text: "Vocês trabalham limites e decisões, no ritmo e com os objetivos do casal." },
             ],
         },
-        about: { eyebrow: "Quem conduz", title: "João Vitor Fernandes", text: `${WHO}, ${FORMATION}. ${PLACE}`, image: JV },
+        about: { eyebrow: "Quem conduz", title: "João Vitor Fernandes", text: `${WHO}, ${FORMATION}. ${PLACE}`, image: JV_STANDING },
         faq: [
             { question: "A terapia vai salvar o relacionamento?", answer: "O objetivo não é fazer ninguém terminar nem fazer com que fiquem juntos para sempre. É verificar o que cada um pode fazer para que o casal tenha qualidade de vida e tome decisões." },
             { question: "Os dois precisam participar?", answer: "Sim, a disponibilidade das duas pessoas é indispensável na terapia de casal. Se só uma quiser participar, a psicoterapia individual também pode trabalhar questões do relacionamento." },
@@ -452,7 +455,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
                 { title: "Escolher", text: "Com mais clareza, você decide o que quer manter e o que quer mudar." },
             ],
         },
-        about: { eyebrow: "Quem conduz", title: "João Vitor Fernandes", text: `${WHO}, ${FORMATION}. ${PLACE}`, image: JV },
+        about: { eyebrow: "Quem conduz", title: "João Vitor Fernandes", text: `${WHO}, ${FORMATION}. ${PLACE}`, image: JV_STANDING },
         faq: [
             { question: "Tá, mas eu chego na sessão e falo o quê?", answer: "A sessão é guiada, e fazer o processo fluir é parte do trabalho de João. Se for difícil nomear algo, ou se não houver nada específico para falar, atividades ajudam o assunto a surgir." },
             { question: "Preciso ter um problema para fazer terapia?", answer: "Não. Você pode começar para se conhecer melhor e cuidar da sua qualidade de vida." },
@@ -534,7 +537,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             subtitle: "Você merece um espaço que te receba inteiro/a/e.",
             cta: "Agendar uma conversa",
             note: "João é psicólogo gay. Atendimento afirmativo, online ou presencial, para adultos. Particular, sem convênio, com recibo para reembolso. Menores de 18 anos: contato por um responsável.",
-            image: JV,
+            image: JV_STANDING,
         },
         strip: [NAME_STRIP, "Atendimento afirmativo", "Sigilo profissional", "Online e presencial"],
         when: {
