@@ -20,6 +20,7 @@ export const person = {
         "Terapia comportamental",
         "Psicologia LGBTQIA+",
         "Neuropsicologia",
+        "Avaliação neuropsicológica",
         "Psicologia hospitalar",
         "Supervisão clínica",
         "Biologia do comportamento",
@@ -152,6 +153,13 @@ export const services: Service[] = [
         description:
             "Muitas vezes, não sabemos explicar o que sentimos. A avaliação psicológica ajuda a dar nome e sentido para suas angústias, sendo o primeiro passo para a mudança.",
         href: "/autoconhecimento",
+    },
+    {
+        name: "Avaliação neuropsicológica",
+        title: "Avaliação neuropsicológica",
+        description:
+            "Entrevista, testes padronizados, laudo e devolutiva para investigar atenção, memória, linguagem e funções executivas, em adultos e crianças. Somente presencial, na Vila Madalena, com pedido médico.",
+        href: "/avaliacao-neuropsicologica",
     },
     {
         name: "Supervisão clínica para psicólogos",

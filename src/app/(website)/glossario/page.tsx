@@ -12,9 +12,9 @@ export const revalidate = 86400;
 
 const baseMetadata = buildMetadata({
     title: "Glossário de psicologia e Análise do Comportamento",
-    description: "Termos de psicologia e Análise do Comportamento explicados em linguagem simples, com revisão de um psicólogo.",
+    description: "Termos de psicologia e Análise do Comportamento explicados em linguagem simples, com referências.",
     path: "/glossario",
-    markdown: false,
+    markdown: true,
 });
 
 // Empty section pages stay out of search results until there is something to read.
@@ -48,7 +48,7 @@ export default async function GlossaryPage() {
             <section className="container mx-auto max-w-3xl px-4 pb-20 pt-24">
                 <Editable as="h1" k="glossary.title" className="mb-4 text-4xl font-bold text-slate-900">Glossário</Editable>
                 <Editable as="p" k="glossary.intro" multiline className="mb-12 text-xl leading-relaxed text-slate-600">
-                    Termos de psicologia e de Análise do Comportamento explicados em linguagem simples. Os textos são revisados por um psicólogo e servem para informar, não para substituir uma avaliação profissional.
+                    Termos de psicologia e de Análise do Comportamento explicados em linguagem simples. Os textos trazem referências e servem para informar, não para substituir uma avaliação profissional.
                 </Editable>
                 {terms.length === 0 && <p className="text-slate-500">Os primeiros termos serão publicados em breve.</p>}
                 {[...groups.entries()].map(([letter, items]) => (

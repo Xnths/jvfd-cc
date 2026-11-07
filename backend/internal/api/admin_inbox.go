@@ -580,13 +580,13 @@ func (s *Server) adminPublishQuestion(w http.ResponseWriter, r *http.Request) {
 		serverError(w, s.Log, r, err)
 		return
 	}
-	if _, err := s.Pool.Exec(r.Context(), `UPDATE faq_questions SET status = 'published', slug = coalesce(slug, $2), published_at = coalesce(published_at, now()) WHERE id::text = $1`, r.PathValue("id"), slug); err != nil {
+	if err := s.Pool.QueryRow(r.Context(), `UPDATE faq_questions SET status = 'published', slug = coalesce(slug, $2), published_at = coalesce(published_at, now()) WHERE id::text = $1 RETURNING slug::text`, r.PathValue("id"), slug).Scan(&slug); err != nil {
 		serverError(w, s.Log, r, err)
 		return
 	}
 	s.audit(r, "faq.publish", "faq", r.PathValue("id"), nil)
-	s.Notify.Revalidate(r.Context(), []string{tagFAQ}, []string{"/perguntas", "/sitemap.xml", "/llms.txt", "/llms-full.txt"}, false)
-	s.Notify.IndexNow(r.Context(), []string{"/perguntas"})
+	s.Notify.Revalidate(r.Context(), []string{tagFAQ}, []string{"/perguntas", "/perguntas/" + slug, "/sitemap.xml", "/llms.txt", "/llms-full.txt"}, false)
+	s.Notify.IndexNow(r.Context(), []string{"/perguntas", "/perguntas/" + slug})
 	w.WriteHeader(http.StatusNoContent)
 }
 

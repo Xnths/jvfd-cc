@@ -29,7 +29,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
     const q = await find((await params).slug);
     if (!q) return { title: "Pergunta", robots: { index: false } };
-    return buildMetadata({ title: q.question, description: plainText(q.answer).slice(0, 160), path: `/perguntas/${q.slug}`, markdown: false });
+    return buildMetadata({ title: q.question, description: plainText(q.answer).slice(0, 160), path: `/perguntas/${q.slug}`, markdown: true });
 }
 
 export default async function QuestionPage({ params }: { params: Promise<Params> }) {
@@ -38,7 +38,7 @@ export default async function QuestionPage({ params }: { params: Promise<Params>
     const path = `/perguntas/${q.slug}`;
     return (
         <div className="min-h-screen bg-white">
-            <JsonLd data={graph(webPageNode({ path, name: q.question }), faqNode([{ question: q.question, answer: plainText(q.answer) }]), breadcrumbNode([{ name: "Perguntas", path: "/perguntas" }, { name: q.question, path }]))} />
+            <JsonLd data={graph(webPageNode({ path, name: q.question }), faqNode([{ question: q.question, answer: plainText(q.answer) }], path), breadcrumbNode([{ name: "Perguntas", path: "/perguntas" }, { name: q.question, path }]))} />
             <article className="container mx-auto max-w-3xl px-4 pb-20 pt-24">
                 <p className="mb-2 text-sm"><Link href="/perguntas" className="text-green-700 hover:underline">← Perguntas e respostas</Link></p>
                 <h1 className="mb-6 text-4xl font-bold text-slate-900">{q.question}</h1>

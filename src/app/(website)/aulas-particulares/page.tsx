@@ -24,7 +24,7 @@ export default async function AulasParticularesPage() {
                 data={graph(
                     webPageNode({ path: tutoring.path, name: tutoring.name, description: tutoring.description }),
                     tutoringNode(),
-                    faqNode(resolvedTutoringFaq(texts)),
+                    faqNode(resolvedTutoringFaq(texts), "/aulas-particulares"),
                     breadcrumbNode([{ name: tutoring.shortName, path: tutoring.path }]),
                 )}
             />

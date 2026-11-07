@@ -41,6 +41,7 @@ const ICONS: Record<string, LucideIcon> = {
   "/autoconhecimento": Lightbulb,
   "/supervisao": NotebookPen,
   "/lgbtqia": Heart,
+  "/avaliacao-neuropsicologica": Brain,
   [tutoring.path]: GraduationCap,
 };
 

@@ -14,7 +14,7 @@ export const metadata: Metadata = buildMetadata({
     title: "Quem somos",
     description: "Conheça a equipe: formação, registro profissional e experiência de quem cuida do conteúdo e do atendimento deste site.",
     path: "/sobre",
-    markdown: false,
+    markdown: true,
 });
 
 export default async function TeamPage() {

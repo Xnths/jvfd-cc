@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     const { slug } = await params;
     const term = await getGlossaryTerm(slug).catch(() => null);
     if (!term) return { title: "Termo", robots: { index: false } };
-    return buildMetadata({ title: `${term.term}: o que é`, description: term.shortDefinition, path: `/glossario/${term.slug}`, markdown: false });
+    return buildMetadata({ title: `${term.term}: o que é`, description: term.shortDefinition, path: `/glossario/${term.slug}`, markdown: true });
 }
 
 export default async function TermPage({ params }: { params: Promise<Params> }) {
@@ -75,9 +75,10 @@ export default async function TermPage({ params }: { params: Promise<Params> }) 
                     {term.reviewedBy && (
                         <p className="mt-8 text-sm text-slate-500">
                             Revisado por <Link href={`/sobre/${term.reviewedBy.slug}`} className="text-green-700 hover:underline">{term.reviewedBy.name}</Link>
-                            {term.reviewedBy.crp ? `, CRP ${term.reviewedBy.crp}` : ""}. Este texto é informativo e não substitui avaliação ou acompanhamento psicológico.
+                            {term.reviewedBy.crp ? `, CRP ${term.reviewedBy.crp}` : ""}.
                         </p>
                     )}
+                    <p className={`${term.reviewedBy ? "mt-2" : "mt-8"} text-sm text-slate-500`}>Este texto é informativo e não substitui avaliação ou acompanhamento psicológico.</p>
                 </TermSwap>
             </article>
             <Footer />

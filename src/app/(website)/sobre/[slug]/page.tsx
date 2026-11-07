@@ -9,7 +9,7 @@ import { ProfileSwap } from "@/edit/ProfileSwap";
 import { DraftProfile } from "@/edit/DraftProfile";
 import { getProfileBySlug, getProfiles } from "@/lib/queries";
 import { buildMetadata, absoluteUrl } from "@/lib/seo";
-import { breadcrumbNode, graph, webPageNode } from "@/lib/jsonld";
+import { IDS, breadcrumbNode, graph, webPageNode } from "@/lib/jsonld";
 import { SITE_URL } from "@/content/clinic";
 
 export const revalidate = 86400;
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
         description: `${p.displayName}: ${p.jobTitle}${p.crp ? `, CRP ${p.crp}` : ""}. ${p.approach}`.trim(),
         path: `/sobre/${p.slug}`,
         type: "profile",
-        markdown: false,
+        markdown: true,
     });
 }
 
@@ -46,17 +46,19 @@ export default async function ProfilePage({ params }: { params: Promise<Params> 
         notFound();
     }
     const path = `/sobre/${p.slug}`;
+    const personId = p.isPrimary ? IDS.person : `${SITE_URL}${path}#person`;
     return (
         <div className="min-h-screen bg-white">
             <JsonLd
                 data={graph(
-                    webPageNode({ path, name: p.displayName, description: p.jobTitle, type: "ProfilePage" }),
+                    { ...webPageNode({ path, name: p.displayName, description: p.jobTitle, type: "ProfilePage" }), mainEntity: { "@id": personId } },
                     {
                         "@type": "Person",
-                        "@id": `${SITE_URL}${path}#person`,
+                        "@id": personId,
                         name: p.fullName || p.displayName,
                         jobTitle: p.jobTitle,
-                        url: absoluteUrl(path),
+                        // The primary profile is the same person as the site-wide entity, whose url is the home page.
+                        ...(p.isPrimary ? { mainEntityOfPage: absoluteUrl(path) } : { url: absoluteUrl(path) }),
                         image: p.photo?.url ? absoluteUrl(p.photo.url) : undefined,
                         knowsAbout: p.knowsAbout.length ? p.knowsAbout : undefined,
                         knowsLanguage: p.languages.length ? p.languages : undefined,

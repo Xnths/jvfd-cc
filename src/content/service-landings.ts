@@ -121,11 +121,16 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             { question: "Preciso de pedido médico?", answer: "Sim. A avaliação é agendada com pedido médico. Se ainda não tiver o seu, tire suas dúvidas pelo WhatsApp antes de conversar com seu médico." },
             { question: "A avaliação dá um diagnóstico?", answer: "Os testes não fecham um diagnóstico sozinhos. Os resultados são analisados junto com a entrevista e a história de vida, e o laudo pode apoiar o trabalho do médico e de outros profissionais que acompanham você." },
             { question: "O que eu recebo ao final?", answer: "Um laudo escrito e uma sessão de devolutiva para conversar sobre os resultados." },
-            { question: "Quanto tempo leva?", answer: "A quantidade de encontros e a duração de cada etapa variam conforme o caso. João passa essas informações pelo WhatsApp." },
+            { question: "Quanto tempo leva?", answer: "Em geral, de 4 a 6 sessões, de até 2 horas cada. O número exato de encontros depende do caso." },
             { question: "Atende crianças?", answer: "Sim, a avaliação é feita com adultos e crianças." },
             { question: "A avaliação é online?", answer: "Não. A avaliação neuropsicológica é realizada somente de forma presencial, no consultório na Vila Madalena." },
             FAQ_VALOR,
             { question: "Como agendo?", answer: "Pelo WhatsApp, de segunda a sexta, das 8h às 21h." },
+            // Keys are index based (faq_<i>_q): new questions go at the end, or saved edits would land on the wrong question.
+            { question: "O que é avaliação neuropsicológica?", answer: "É um processo estruturado que investiga o funcionamento cognitivo, como atenção, memória, linguagem e funções executivas, por meio de entrevista e testes padronizados. Os resultados são relacionados à história e à rotina da pessoa e registrados em um laudo." },
+            { question: "Quem pode realizar a avaliação neuropsicológica?", answer: "No Brasil, o uso de testes psicológicos é privativo de psicólogas e psicólogos (Resolução CFP 31/2022). Aqui, a avaliação é conduzida por João Vitor Fernandes Domingues, psicólogo, CRP 06/157908, com pós-graduação em Neuropsicologia pelo Hospital Israelita Albert Einstein." },
+            { question: "Qual a diferença entre avaliação psicológica e avaliação neuropsicológica?", answer: "A avaliação psicológica investiga fenômenos psicológicos de forma ampla, a partir de uma demanda específica. A avaliação neuropsicológica dá ênfase às funções cognitivas e à relação delas com o funcionamento do cérebro." },
+            { question: "Onde fazer avaliação neuropsicológica na Vila Madalena?", answer: "O consultório de João fica na Rua Harmonia, 1323, Sumarezinho, Vila Madalena, São Paulo. O atendimento é presencial, para adultos e crianças, de segunda a sexta, das 8h às 21h, com pedido médico." },
         ],
         closing: { eyebrow: "Próximo passo", title: "Tem um pedido médico e dúvidas sobre o processo?", cta: "Agendar avaliação pelo WhatsApp" },
         references: [

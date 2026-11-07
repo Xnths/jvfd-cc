@@ -21,6 +21,15 @@ export const IDS = {
 
 type Node = Record<string, unknown>;
 
+// These are not treatments, so they must not be described to crawlers as MedicalTherapy.
+const NON_THERAPY_SERVICES = new Set(["/avaliacao-neuropsicologica", "/supervisao"]);
+
+function serviceFields(path: string, name: string): Node {
+    return NON_THERAPY_SERVICES.has(path)
+        ? { "@type": "Service", serviceType: name }
+        : { "@type": "MedicalTherapy" };
+}
+
 export function graph(...nodes: Node[]) {
     return { "@context": "https://schema.org", "@graph": nodes };
 }
@@ -77,7 +86,7 @@ export function personNode(): Node {
 
 export function clinicNode(list: { name: string; description: string; href: string }[] = services): Node {
     return {
-        "@type": "Psychologist",
+        "@type": "MedicalBusiness",
         "@id": IDS.clinic,
         name: "Consultório de Psicologia João Fernandes",
         url: SITE_URL,
@@ -111,7 +120,7 @@ export function clinicNode(list: { name: string; description: string; href: stri
         knowsLanguage: "pt-BR",
         availableService: [
             ...list.map((s) => ({
-                "@type": "MedicalTherapy",
+                ...serviceFields(s.href, s.name),
                 name: s.name,
                 description: s.description,
                 url: absoluteUrl(s.href),
@@ -128,7 +137,7 @@ export function clinicNode(list: { name: string; description: string; href: stri
 export function faqNode(items: { question: string; answer: string }[] = faq, path = ""): Node {
     return {
         "@type": "FAQPage",
-        "@id": `${SITE_URL}${path}/#faq`,
+        "@id": `${SITE_URL}${path || "/"}#faq`,
         mainEntity: items.map((item) => ({
             "@type": "Question",
             name: item.question,
@@ -230,7 +239,7 @@ export function therapyNode({
     description?: string | null;
 }): Node {
     return {
-        "@type": "MedicalTherapy",
+        ...serviceFields(path, name),
         "@id": `${absoluteUrl(path)}#servico`,
         name,
         description: description ?? undefined,

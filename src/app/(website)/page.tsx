@@ -22,7 +22,7 @@ import { resolvedFaq, resolvedTutoringFaq } from "@/content/resolve";
 export const dynamic = "force-dynamic";
 
 const description =
-    "Psicólogo particular, LGBT+ e especialista em Análise do Comportamento (PUCSP). Psicoterapia online para todo o Brasil ou presencial na Vila Madalena, SP. Agende sua sessão.";
+    "Psicólogo clínico (CRP 06/157908) em Análise do Comportamento. Psicoterapia online para todo o Brasil ou presencial na Vila Madalena, SP, e avaliação neuropsicológica presencial.";
 
 // The ?lgbt=true campaign variant canonicalizes to "/" like every other visit.
 export const metadata: Metadata = buildMetadata({

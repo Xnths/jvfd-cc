@@ -82,6 +82,16 @@ export function Footer() {
                   <Editable k="site.footer.blog">Blog</Editable>
                 </Link>
               </li>
+              <li>
+                <Link href="/perguntas" className={linkClass}>
+                  <Editable k="site.footer.questions">Perguntas e respostas</Editable>
+                </Link>
+              </li>
+              <li>
+                <Link href="/glossario" className={linkClass}>
+                  <Editable k="site.footer.glossary">Glossário</Editable>
+                </Link>
+              </li>
             </ul>
           </div>
 

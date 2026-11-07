@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Serves the Markdown twin of a page when an agent asks for it, either with a
 // ".md" suffix or with "Accept: text/markdown" (preferred over text/html).
+// Pages listed here have no twin: an agent that prefers Markdown still gets the HTML instead of a 404.
+const NO_MARKDOWN_TWIN = /^\/(ferramentas|politica-de-privacidade|termos-de-uso|conta|login|registro)(\/|$)/
 export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
 
@@ -13,7 +15,7 @@ export function proxy(request: NextRequest) {
     const accept = request.headers.get('accept') ?? ''
     const md = accept.indexOf('text/markdown')
     const html = accept.indexOf('text/html')
-    if (md !== -1 && (html === -1 || md < html)) {
+    if (md !== -1 && (html === -1 || md < html) && !NO_MARKDOWN_TWIN.test(pathname)) {
         return NextResponse.rewrite(new URL(`/markdown${pathname === '/' ? '' : pathname}`, request.url))
     }
 

@@ -14,9 +14,9 @@ export const revalidate = 86400;
 
 const baseMetadata = buildMetadata({
     title: "Perguntas e respostas sobre psicologia e terapia",
-    description: "Dúvidas frequentes sobre terapia, Análise do Comportamento e saúde mental, respondidas por um psicólogo.",
+    description: "Dúvidas frequentes sobre psicoterapia, avaliação neuropsicológica e Análise do Comportamento, com respostas informativas e referências.",
     path: "/perguntas",
-    markdown: false,
+    markdown: true,
 });
 
 // Empty section pages stay out of search results until there is something to read.
@@ -32,14 +32,14 @@ export default async function QuestionsPage() {
             <JsonLd
                 data={graph(
                     webPageNode({ path: "/perguntas", name: "Perguntas e respostas", description: baseMetadata.description as string }),
-                    faqNode(questions.map((q) => ({ question: q.question, answer: plainText(q.answer) }))),
+                    faqNode(questions.map((q) => ({ question: q.question, answer: plainText(q.answer) })), "/perguntas"),
                     breadcrumbNode([{ name: "Perguntas", path: "/perguntas" }]),
                 )}
             />
             <section className="container mx-auto max-w-3xl px-4 pb-20 pt-24">
                 <Editable as="h1" k="questions.title" className="mb-4 text-4xl font-bold text-slate-900">Perguntas e respostas</Editable>
                 <Editable as="p" k="questions.intro" multiline className="mb-12 text-xl leading-relaxed text-slate-600">
-                    Dúvidas sobre terapia, comportamento e saúde mental, respondidas pelo psicólogo. As respostas são informativas e não substituem avaliação ou atendimento individual.
+                    Dúvidas sobre psicoterapia, avaliação neuropsicológica e saúde mental. As respostas são informativas, trazem referências e não substituem avaliação ou atendimento individual.
                 </Editable>
                 <div className="space-y-10">
                     {questions.length === 0 && <p className="text-slate-500">As primeiras respostas serão publicadas em breve.</p>}

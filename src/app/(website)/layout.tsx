@@ -38,7 +38,7 @@ export const metadata: Metadata = {
         template: `%s | ${SITE_NAME}`,
     },
 
-    description: "Psicólogo particular, LGBT+ e especialista em Análise do Comportamento (PUCSP). Psicoterapia online para todo o Brasil ou presencial na Vila Madalena, SP. Agende sua sessão.",
+    description: "Psicólogo clínico (CRP 06/157908) em Análise do Comportamento. Psicoterapia online para todo o Brasil ou presencial na Vila Madalena, SP, e avaliação neuropsicológica presencial.",
 
     applicationName: SITE_NAME,
     authors: [{ name: person.name, url: siteConfig.url }],

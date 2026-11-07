@@ -10,6 +10,12 @@ check() { # name path expected-status
 check "home"                 /                              200
 check "blog"                 /blog                          200
 check "sitemap"              /sitemap.xml                   200
+check "robots"               /robots.txt                    200
+check "llms.txt"             /llms.txt                      200
+check "llms-full.txt"        /llms-full.txt                 200
+check "markdown twin"        /avaliacao-neuropsicologica.md 200
+check "glossary"             /glossario                     200
+check "questions"            /perguntas                     200
 check "auth health"          /auth/denied                   403
 check "jwks"                 /.well-known/jwks.json         200
 check "internal jobs hidden" /api/v1/internal/jobs/x        404
