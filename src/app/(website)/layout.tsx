@@ -13,6 +13,7 @@ import { EditProvider } from "@/edit/EditContext";
 import { getTexts } from "@/lib/texts";
 import { getServiceCards } from "@/lib/queries";
 import { GoogleAnalytics } from '@next/third-parties/google'
+import Script from 'next/script'
 
 // Self-hosted (fontsource variable files): the production build runs on a
 // Raspberry Pi whose DNS is unreliable, so it must not fetch fonts at build time.
@@ -104,6 +105,7 @@ export default async function RootLayout({
     children: React.ReactNode;
 }) {
     const gaId = process.env.NEXT_PUBLIC_GA_ID
+    const adsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID
     const [texts, serviceCards] = await Promise.all([getTexts(), getServiceCards().catch(() => null)])
 
     return (
@@ -126,6 +128,11 @@ export default async function RootLayout({
                 <FloatingCatButton />
                 </EditProvider>
                 {gaId && <GoogleAnalytics gaId={gaId} />}
+                {gaId && adsId && (
+                    <Script id="google-ads-config" strategy="afterInteractive">
+                        {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('config',${JSON.stringify(adsId)})`}
+                    </Script>
+                )}
             </body>
         </html>
     );

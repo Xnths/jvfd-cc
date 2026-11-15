@@ -69,13 +69,15 @@ const nextConfig = {
                     https://www.googletagmanager.com
                     https://www.google-analytics.com
                     https://maps.googleapis.com
-                    https://static.cloudflareinsights.com;
+                    https://static.cloudflareinsights.com
+                    https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com;
                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
                 img-src 'self' data:
                     https://www.google-analytics.com
                     https://www.googletagmanager.com
                     https://maps.gstatic.com
-                    https://maps.googleapis.com;
+                    https://maps.googleapis.com
+                    https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com;
                 font-src 'self' https://fonts.gstatic.com;
                 connect-src 'self'
                     https://www.google-analytics.com
@@ -85,7 +87,9 @@ const nextConfig = {
                     https://region1.analytics.google.com
                     https://maps.googleapis.com
                     https://api.whatsapp.com
-                    https://cloudflareinsights.com;
+                    https://cloudflareinsights.com
+                    https://www.googletagmanager.com
+                    https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com;
                 frame-src 'self' https://www.google.com;
                 object-src 'none';
                 base-uri 'self';

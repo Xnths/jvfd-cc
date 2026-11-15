@@ -7,8 +7,9 @@ import { getAdParamsFromCookie, getGclidFromCookie, getLandingUrlFromCookie } fr
 export function trackWhatsappClick(source: string): void {
     if (typeof window === 'undefined') return
     const ad = getAdParamsFromCookie()
+    const id = crypto.randomUUID()
     const body = JSON.stringify({
-        id: crypto.randomUUID(),
+        id,
         clicked_at: new Date().toISOString(),
         source,
         page_url: window.location.href.slice(0, 500),
@@ -32,5 +33,17 @@ export function trackWhatsappClick(source: string): void {
             body,
             keepalive: true,
         }).catch(() => {})
+    }
+    const adsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID
+    const label = process.env.NEXT_PUBLIC_GOOGLE_ADS_WA_LABEL
+    const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag
+    if (adsId && label && typeof gtag === 'function') {
+        try {
+            gtag('event', 'conversion', {
+                send_to: `${adsId}/${label}`,
+                transaction_id: id,
+                transport_type: 'beacon',
+            })
+        } catch {}
     }
 }

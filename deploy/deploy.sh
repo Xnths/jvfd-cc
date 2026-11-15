@@ -78,6 +78,8 @@ SQL
 
     docker build \
         --build-arg NEXT_PUBLIC_GA_ID="${NEXT_PUBLIC_GA_ID:-}" \
+        --build-arg NEXT_PUBLIC_GOOGLE_ADS_ID="${NEXT_PUBLIC_GOOGLE_ADS_ID:-}" \
+        --build-arg NEXT_PUBLIC_GOOGLE_ADS_WA_LABEL="${NEXT_PUBLIC_GOOGLE_ADS_WA_LABEL:-}" \
         --build-arg NEXT_PUBLIC_POSTHOG_TOKEN="${NEXT_PUBLIC_POSTHOG_TOKEN:-}" \
         --build-arg NEXT_PUBLIC_POSTHOG_HOST="${NEXT_PUBLIC_POSTHOG_HOST:-}" \
         --build-arg NEXT_PUBLIC_TURNSTILE_SITE_KEY="${TURNSTILE_SITE_KEY:-}" \
@@ -87,6 +89,8 @@ SQL
     docker run -d --name "clinic-frontend-$new" --network "$net_public" --restart always \
         -e NODE_ENV=production -e NEXT_TELEMETRY_DISABLED=1 -e HOSTNAME=0.0.0.0 \
         -e NEXT_PUBLIC_GA_ID="${NEXT_PUBLIC_GA_ID:-}" \
+        -e NEXT_PUBLIC_GOOGLE_ADS_ID="${NEXT_PUBLIC_GOOGLE_ADS_ID:-}" \
+        -e NEXT_PUBLIC_GOOGLE_ADS_WA_LABEL="${NEXT_PUBLIC_GOOGLE_ADS_WA_LABEL:-}" \
         -e NEXT_PUBLIC_POSTHOG_TOKEN="${NEXT_PUBLIC_POSTHOG_TOKEN:-}" -e NEXT_PUBLIC_POSTHOG_HOST="${NEXT_PUBLIC_POSTHOG_HOST:-}" \
         -e RESEND_API_KEY="${RESEND_API_KEY:-}" \
         -e API_INTERNAL_URL="${API_INTERNAL_URL:-}" -e AUTH_INTERNAL_URL="${AUTH_INTERNAL_URL:-}" \
