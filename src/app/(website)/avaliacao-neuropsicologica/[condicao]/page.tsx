@@ -5,6 +5,8 @@ import { Contact } from "@/components/Contact";
 import { CredentialBand } from "@/components/CredentialBand";
 import { Footer } from "@/components/Footer";
 import { WhatsappCtaButton } from "@/components/WhatsappCta";
+import { StickyWhatsappBar } from "@/components/StickyWhatsappBar";
+import { BringList, FactChips, FaqAccordion, NoReferralBand } from "@/components/AvaliacaoBlocks";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import {
@@ -87,8 +89,8 @@ export default async function ConditionPage({ params }: { params: Promise<Params
     const faq = resolvedConditionFaq(c.slug, await getTexts().catch(() => ({})));
     const others = conditions.filter((o) => o.slug !== c.slug);
 
-    const ctaButton = (key: string) => (
-        <WhatsappCtaButton message={cta.message} source={cta.source} textKey={key} text={SUBPAGE.cta} btnClass={t.cta} size="responsive" />
+    const ctaButton = (key: string, marker?: string, text: string = SUBPAGE.cta) => (
+        <WhatsappCtaButton message={cta.message} source={cta.source} textKey={key} text={text} btnClass={t.cta} size="responsive" marker={marker} />
     );
 
     return (
@@ -132,8 +134,9 @@ export default async function ConditionPage({ params }: { params: Promise<Params
                     </h1>
                     <E as="p" k={k("lead")} multiline className={`text-[15px] md:text-xl leading-snug md:leading-relaxed max-w-2xl mb-3 md:mb-8 ${t.heroText}`}>{c.lead}</E>
                     <CredentialBand className="mb-4 md:mb-8 max-w-3xl" />
-                    {ctaButton("avaliacao.sub.cta_hero")}
-                    <E as="p" k="avaliacao.sub.note" multiline className={`mt-4 text-sm max-w-xl ${t.heroNote}`}>{SUBPAGE.note}</E>
+                    {ctaButton("avaliacao.sub.cta_hero", "hero")}
+                    <FactChips className="mt-4 max-w-2xl" items={SUBPAGE.chips.map((chip, i) => <E key={i} k={`avaliacao.sub.chip_${i}`}>{chip}</E>)} />
+                    <E as="p" k="avaliacao.sub.note" multiline className={`mt-3 text-xs md:text-sm max-w-xl ${t.heroNote}`}>{SUBPAGE.note}</E>
                 </div>
             </section>
 
@@ -228,19 +231,24 @@ export default async function ConditionPage({ params }: { params: Promise<Params
                                 <E k="avaliacao.sub.steps_link">{SUBPAGE.stepsLink}</E>
                             </Link>
                         </p>
+                        <NoReferralBand
+                            className="mt-8"
+                            title={<E k="avaliacao.sub.no_referral_title">{SUBPAGE.noReferral.title}</E>}
+                            text={<E k="avaliacao.sub.no_referral_text" multiline>{SUBPAGE.noReferral.text}</E>}
+                            cta={ctaButton("avaliacao.sub.no_referral_cta", undefined, SUBPAGE.noReferral.cta)}
+                        />
                     </section>
 
                     {/* 8. FAQ */}
                     <section className="py-12 md:py-16 border-t border-slate-200" id="faq">
                         <H2 k="avaliacao.sub.faq_title">{SUBPAGE.faqTitle}</H2>
-                        <ul className="space-y-6">
-                            {c.faq.map((f, i) => (
-                                <li key={i}>
-                                    <E as="h3" k={k(`faq_${i}_q`)} className="text-lg font-semibold text-slate-900 mb-1">{f.question}</E>
-                                    <E as="p" k={k(`faq_${i}_a`)} multiline className="text-slate-600">{f.answer}</E>
-                                </li>
-                            ))}
-                        </ul>
+                        <FaqAccordion
+                            items={c.faq.map((f, i) => ({
+                                id: i,
+                                question: <E k={k(`faq_${i}_q`)}>{f.question}</E>,
+                                answer: <E k={k(`faq_${i}_a`)} multiline>{f.answer}</E>,
+                            }))}
+                        />
                     </section>
                 </div>
             </article>
@@ -262,11 +270,21 @@ export default async function ConditionPage({ params }: { params: Promise<Params
                 </div>
             </section>
 
+            {/* What to bring */}
+            <section className="pb-12 px-4" id="o-que-levar">
+                <div className="container mx-auto max-w-3xl">
+                    <BringList
+                        title={<E k="avaliacao.sub.bring_title">{SUBPAGE.bring.title}</E>}
+                        items={SUBPAGE.bring.items.map((item, i) => <E key={i} k={`avaliacao.sub.bring_${i}`}>{item}</E>)}
+                    />
+                </div>
+            </section>
+
             {/* 10. Final CTA */}
             <section className={`py-14 px-4 ${t.soft}`}>
                 <div className="container mx-auto max-w-2xl text-center">
                     <E as="h2" k="avaliacao.sub.closing_title" className="font-serif text-2xl md:text-3xl font-semibold text-slate-900 mb-6">{SUBPAGE.closingTitle}</E>
-                    {ctaButton("avaliacao.sub.cta_closing")}
+                    {ctaButton("avaliacao.sub.cta_closing", "closing")}
                     <E as="p" k="avaliacao.sub.closing_note" multiline className="mt-4 text-sm text-slate-600 max-w-md mx-auto">{SUBPAGE.closingNote}</E>
                     <p className="mt-6 text-sm">
                         <Link href={AVALIACAO_PATH} className="font-semibold text-green-700 underline">
@@ -280,6 +298,15 @@ export default async function ConditionPage({ params }: { params: Promise<Params
 
             <Contact />
             <Footer />
+            <StickyWhatsappBar
+                message={cta.message}
+                source={cta.source}
+                btnClass={t.cta}
+                text={SUBPAGE.cta}
+                textKey="avaliacao.sub.sticky_cta"
+                note={SUBPAGE.stickyNote}
+                noteKey="avaliacao.sub.sticky_note"
+            />
         </div>
     );
 }

@@ -137,7 +137,7 @@ export function treatmentMarkdown(t: TreatmentDoc) {
                             .join("\n")}`
                       : `### ${g.title}\n\n${g.text}\n\n${g.items.map((i) => `- ${i}`).join("\n")}`,
               )
-              .join("\n\n")}\n\n`
+              .join("\n\n")}\n\n${landing.noReferral ? `## ${landing.noReferral.title}\n\n${landing.noReferral.text}\n\n` : ""}`
         : "";
     const after = landing
         ? `\n\n## ${landing.steps.title}\n\n${landing.steps.items.map((s, i) => `${i + 1}. **${s.title}:** ${s.text}`).join("\n")}
@@ -155,7 +155,7 @@ ${landing.about.approach ? `${landing.about.role ?? ""}\n\n${credentialsMarkdown
 ## ${landing.faqTitle}
 
 ${faqDisplay(landing.faq).map(({ item: f }) => `**${f.question}**\n${f.answer}`).join("\n\n")}
-
+${landing.bring ? `\n## ${landing.bring.title}\n\n${landing.bring.items.map((x) => `- ${x}`).join("\n")}\n` : ""}
 ## ${landing.referencesTitle}
 
 ${landing.references.map((r) => `${r.n}. ${r.text}${r.doi ? ` https://doi.org/${r.doi}` : ""}`).join("\n")}\n`
@@ -306,6 +306,10 @@ ${SUBPAGE.steps.map((s, i) => `${i + 1}. **${s.title}:** ${s.text}`).join("\n")}
 
 Processo completo: ${absoluteUrl(`${AVALIACAO_PATH}#como-funciona`)}
 
+## ${SUBPAGE.noReferral.title}
+
+${SUBPAGE.noReferral.text}
+
 ## ${SUBPAGE.faqTitle}
 
 ${c.faq.map((f) => `**${f.question}**\n${f.answer}`).join("\n\n")}
@@ -313,6 +317,10 @@ ${c.faq.map((f) => `**${f.question}**\n${f.answer}`).join("\n\n")}
 ## ${SUBPAGE.refsTitle}
 
 ${c.references.map((r, i) => `${i + 1}. ${r.text}${r.doi ? ` https://doi.org/${r.doi}` : ""}`).join("\n")}
+
+## ${SUBPAGE.bring.title}
+
+${SUBPAGE.bring.items.map((x) => `- ${x}`).join("\n")}
 
 ${bookingFooter({ whatsapp: AVALIACAO_WHATSAPP_MESSAGE, presencialOnly: true })}`;
 }

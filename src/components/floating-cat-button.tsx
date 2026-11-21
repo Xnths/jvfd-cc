@@ -6,10 +6,16 @@ import { useWhatsappUrl } from "@/hooks/use-whatsapp-url";
 import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
 import posthog from "posthog-js";
+import { usePathname } from "next/navigation";
+
+// Pages with their own sticky WhatsApp bar, which sends the page's own text (the ad upload tells avaliação leads
+// apart by that text). The bubble would send the generic one.
+const HIDDEN_ON = ["/avaliacao-neuropsicologica"];
 
 export function FloatingCatButton() {
     const whatsappUrl = useWhatsappUrl();
     const { getElapsedTime } = useTimeToAction();
+    const pathname = usePathname();
 
     const handleClick = () => {
         const elapsedTime = getElapsedTime() || 0;
@@ -24,6 +30,8 @@ export function FloatingCatButton() {
         });
         trackWhatsappClick('floating_button');
     };
+
+    if (pathname && HIDDEN_ON.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return null;
 
     return (
         <a

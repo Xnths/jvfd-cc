@@ -49,6 +49,7 @@ export function CTAButton({
   onClick,
   size = "default",
   className = "",
+  marker,
   children,
 }: {
   href: string;
@@ -56,6 +57,8 @@ export function CTAButton({
   onClick: () => void;
   size?: "default" | "large" | "responsive";
   className?: string;
+  /** Sets data-cta="<marker>" (the sticky bar watches "hero" and "closing"). */
+  marker?: string;
   children: ReactNode;
 }) {
   const sizeClass =
@@ -67,6 +70,7 @@ export function CTAButton({
       target="_blank"
       rel="noopener noreferrer"
       onClick={onClick}
+      data-cta={marker}
       className={`inline-flex items-center gap-3 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${btnClass} ${sizeClass} ${className}`}
     >
       <FaWhatsapp className={`shrink-0 ${iconClass}`} />
@@ -83,6 +87,7 @@ export function WhatsappCtaButton({
   text,
   btnClass,
   size = "default",
+  marker,
 }: {
   message: string;
   source: string;
@@ -90,10 +95,11 @@ export function WhatsappCtaButton({
   text: string;
   btnClass: string;
   size?: "default" | "large" | "responsive";
+  marker?: string;
 }) {
   const { href, onClick } = useWhatsappCta(message, source);
   return (
-    <CTAButton href={href} onClick={onClick} btnClass={btnClass} size={size}>
+    <CTAButton href={href} onClick={onClick} btnClass={btnClass} size={size} marker={marker}>
       <Editable k={textKey}>{text}</Editable>
     </CTAButton>
   );

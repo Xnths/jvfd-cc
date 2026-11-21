@@ -10,14 +10,27 @@ export type LandingImage = { src: string; alt: string; width: number; height: nu
 export type ServiceLanding = {
     theme: LandingTheme;
     /** credentials: the credential band (src/content/credentials.ts) sits above the CTA and replaces `strip`. */
-    hero: { badge: string; title: string; subtitle: string; facts?: string[]; cta: string; note: string; image?: LandingImage; credentials?: boolean };
+    /**
+     * credentials: the credential band (src/content/credentials.ts) sits above the CTA and replaces `strip`; on phones the
+     * hero photo becomes a small avatar with `byline`. chips: short facts under the CTA.
+     */
+    hero: { badge: string; title: string; subtitle: string; facts?: string[]; cta: string; note: string; image?: LandingImage; credentials?: boolean; byline?: string; chips?: string[] };
+    /** WhatsApp bar that follows the reader (src/components/StickyWhatsappBar.tsx); the floating bubble is hidden on these pages. */
+    stickyCta?: { text: string; note: string };
+    /** Band right after "Para quem é" for people who don't have a referral yet. */
+    noReferral?: { title: string; text: string; cta: string };
+    /** "O que levar" checklist, before the closing CTA. */
+    bring?: { title: string; items: string[] };
+    /** FAQ as <details> (answers stay in the HTML). */
+    faqAccordion?: boolean;
     /** Crisis pages: shown first, before anything else. */
     safety?: { title: string; text: string; actions: { label: string; detail: string; href: string }[] };
     strip: string[];
     /** cards: each group lists the condition cards of src/content/avaliacoes.ts instead of `items`. */
     when: { eyebrow: string; title: string; intro: string; groups: { title: string; text: string; items: string[] }[]; cards?: boolean };
     bodyImage?: LandingImage;
-    research: { eyebrow: string; title: string; findings: { text: string; refs: number[] }[]; caveat: string };
+    /** more: on phones only the first 2 findings show, with this button for the rest. */
+    research: { eyebrow: string; title: string; findings: { text: string; refs: number[] }[]; caveat: string; more?: string };
     steps: { eyebrow: string; title: string; items: { title: string; text: string }[] };
     /** "O que você recebe", right after the steps. */
     deliverables?: { eyebrow: string; title: string; items: { title: string; text: string }[] };
@@ -92,7 +105,20 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             note: "Consulta particular, sem convênio; João emite recibo para reembolso. Presencial na Vila Madalena. Para crianças e adolescentes, o agendamento é feito por um responsável.",
             image: JV,
             credentials: true,
+            byline: `Conduzida por João Vitor Fernandes, psicólogo, ${CRP}`,
+            chips: ["Pedido médico", "4 a 6 sessões de até 2h", "Presencial · Vila Madalena", "Particular · recibo para reembolso", "Menores com um responsável"],
         },
+        stickyCta: { text: "Agendar avaliação com pedido médico", note: "Particular, sem convênio · recibo para reembolso" },
+        noReferral: {
+            title: "Ainda não tem pedido médico?",
+            text: "A avaliação começa com um pedido médico. Se você ainda não tem o seu, fale com João pelo WhatsApp: ele pode indicar médicos da rede de contatos dele para uma consulta. A decisão de pedir a avaliação é sempre do médico.",
+            cta: "Pedir indicação pelo WhatsApp",
+        },
+        bring: {
+            title: "O que levar",
+            items: ["Pedido médico", "Laudos de exames que você já tem", "Relatórios ou questionários da escola, no caso de crianças e adolescentes", "Lista dos remédios em uso e dos horários"],
+        },
+        faqAccordion: true,
         strip: ["Pós-graduação em Neuropsicologia · Hospital Israelita Albert Einstein", "Psicologia pela PUC-SP", CRP, "Adultos, adolescentes e crianças", "Presencial na Vila Madalena"],
         when: {
             eyebrow: "Para quem é",
@@ -115,6 +141,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
                 { text: "A revisão da literatura recomenda que o resultado seja explicado em uma sessão de devolutiva, de preferência com material escrito, o que ajuda a lembrar e a seguir as orientações.", refs: [5] },
             ],
             caveat: "A avaliação não decide um diagnóstico sozinha: o diagnóstico é clínico e usa várias fontes de informação. Os próprios pesquisadores apontam que ainda faltam ensaios controlados sobre o efeito no tratamento.",
+            more: "Ver mais estudos",
         },
         steps: {
             eyebrow: "Como funciona",
@@ -147,7 +174,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
         faq: [
             { question: "Aceita convênio médico?", answer: "Não. João não atende por convênio médico: a avaliação neuropsicológica é uma consulta particular. Ele emite recibo para você solicitar o reembolso ao seu plano de saúde." },
             { question: "Como funciona o reembolso?", answer: "Você faz a consulta particular, recebe o recibo e pede o reembolso diretamente ao seu plano. A cobertura e os documentos exigidos dependem do seu contrato, por isso vale confirmar com a operadora antes de começar." },
-            { question: "Preciso de pedido médico?", answer: "Sim. A avaliação é agendada com pedido médico. Se ainda não tiver o seu, tire suas dúvidas pelo WhatsApp antes de conversar com seu médico." },
+            { question: "Preciso de pedido médico?", answer: "Sim. A avaliação é agendada com pedido médico. Se ainda não tiver o seu, fale com João pelo WhatsApp: ele pode indicar médicos da rede de contatos dele." },
             { question: "A avaliação dá um diagnóstico?", answer: "Os testes não fecham um diagnóstico sozinhos. Os resultados são analisados junto com a entrevista e a história de vida, e o laudo pode apoiar o trabalho do médico e de outros profissionais que acompanham você." },
             { question: "O que eu recebo ao final?", answer: "Um laudo escrito e uma sessão de devolutiva para conversar sobre os resultados." },
             { question: "Quanto tempo leva?", answer: "Em geral, de 4 a 6 sessões, de até 2 horas cada. O número exato de encontros depende do caso." },

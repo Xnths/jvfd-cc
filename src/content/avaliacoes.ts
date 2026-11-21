@@ -83,6 +83,17 @@ export const SUBPAGE = {
     closingTitle: "Tem um pedido médico? Agende pelo WhatsApp.",
     closingNote: "Pedido médico necessário · particular, sem convênio · recibo para reembolso · presencial · em geral, 4 a 6 sessões de até 2 horas.",
     backLink: "← Voltar para a avaliação neuropsicológica",
+    chips: ["Pedido médico", "4 a 6 sessões de até 2h", "Presencial · Vila Madalena", "Particular · recibo para reembolso"],
+    stickyNote: "Particular, sem convênio · recibo para reembolso",
+    noReferral: {
+        title: "Ainda não tem pedido médico?",
+        text: "A avaliação começa com um pedido médico. Se você ainda não tem o seu, fale com João pelo WhatsApp: ele pode indicar médicos da rede de contatos dele para uma consulta. A decisão de pedir a avaliação é sempre do médico.",
+        cta: "Pedir indicação pelo WhatsApp",
+    },
+    bring: {
+        title: "O que levar",
+        items: ["Pedido médico", "Laudos de exames que você já tem", "Relatórios ou questionários da escola, no caso de crianças e adolescentes", "Lista dos remédios em uso e dos horários"],
+    },
     otherConditions: "Outros quadros avaliados",
     steps: [
         { title: "Pedido médico", text: "Você envia o pedido médico pelo WhatsApp e agenda a primeira sessão." },
