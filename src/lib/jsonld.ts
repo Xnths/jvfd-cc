@@ -9,6 +9,7 @@ import {
     services,
 } from "@/content/clinic";
 import { tutoring } from "@/content/tutoring";
+import { credentials } from "@/content/credentials";
 import { absoluteUrl } from "@/lib/seo";
 
 // Stable @ids let every page reference the same entities instead of
@@ -81,6 +82,35 @@ export function personNode(): Node {
         knowsAbout: person.knowsAbout,
         knowsLanguage: person.languages,
         sameAs,
+    };
+}
+
+/**
+ * João as the author of the avaliação pages: alumniOf comes from the credentials rendered on those pages
+ * (src/content/credentials.ts). Same @id as personNode(), so search engines merge the two.
+ */
+export function credentialPersonNode(): Node {
+    return {
+        "@type": "Person",
+        "@id": IDS.person,
+        name: person.name,
+        jobTitle: person.jobTitle,
+        // Without the "(PUCSP)" suffix, so the names match alumniOf in personNode().
+        alumniOf: [...new Set(credentials.map((c) => c.institution.replace(/\s*\([^)]*\)$/, "")))].map((name) => ({ "@type": "EducationalOrganization", name })),
+        hasCredential: [
+            ...credentials.map((c) => ({
+                "@type": "EducationalOccupationalCredential",
+                credentialCategory: c.type === "curso" ? "Curso" : c.type === "graduacao" ? "Graduação" : "Pós-graduação",
+                name: c.title,
+                recognizedBy: { "@type": "EducationalOrganization", name: c.institution },
+            })),
+            {
+                "@type": "EducationalOccupationalCredential",
+                credentialCategory: "Registro profissional",
+                name: `CRP ${person.crp}`,
+                recognizedBy: { "@type": "Organization", name: "Conselho Regional de Psicologia da 6ª Região (CRP-06)", url: "https://www.crpsp.org/" },
+            },
+        ],
     };
 }
 

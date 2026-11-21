@@ -1,19 +1,18 @@
 "use client";
 
-import { trackWhatsappClick } from "@/lib/whatsapp-lead";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { Editable } from "@/edit/Editable";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import Link from "next/link";
 import { serviceLandings, faqDisplay, type LandingImage, type ServiceLanding } from "@/content/service-landings";
 import { useEdit } from "@/edit/EditContext";
 import type { ServiceInfo } from "@/lib/queries";
 import { LANDING_THEMES, SERVICE_THEMES, type ServiceTheme } from "@/lib/service-themes";
-import { FaWhatsapp } from "react-icons/fa";
 import posthog from "posthog-js";
-import { sendGAEvent } from "@next/third-parties/google";
-import { useTimeToAction } from "@/hooks/use-time-to-action";
-import { getGclidFromCookie } from "@/lib/gclid";
+import { CTAButton as BaseCTAButton, useWhatsappCta } from "@/components/WhatsappCta";
+import { CredentialBand } from "@/components/CredentialBand";
+import { conditions, conditionPath, OTHER_CARD } from "@/content/avaliacoes";
 import { RichText } from "@/components/RichText";
 import { Footer } from "@/components/Footer";
 import { Contact } from "@/components/Contact";
@@ -31,8 +30,6 @@ function SE({ k, as, className, multiline, children }: { k: string; as?: React.E
 }
 
 // ─── Per-service config ─────────────────────────────────────────────────────
-
-const PHONE = "5511955591996";
 
 type Variant = "calming" | "structured" | "plantao" | "supervisao" | "exploratory" | "affirmative";
 
@@ -153,42 +150,13 @@ function ServiceBody({ content }: { content: unknown }) {
   return <RichText content={content} />;
 }
 
-function buildWhatsappUrl(message: string, isMobile: boolean): string {
-  const encoded = encodeURIComponent(message);
-  if (isMobile) return `https://wa.me/${PHONE}?text=${encoded}`;
-  return `https://api.whatsapp.com/send?phone=${PHONE}&text=${encoded}`;
-}
-
 // ─── Shared chrome ──────────────────────────────────────────────────────────
 
-function CTAButton({
-  href,
-  btnClass,
-  text,
-  onClick,
-  size = "default",
-}: {
-  href: string;
-  btnClass: string;
-  text: string;
-  onClick: () => void;
-  size?: "default" | "large";
-}) {
+function CTAButton({ href, btnClass, text, onClick, size = "default" }: { href: string; btnClass: string; text: string; onClick: () => void; size?: "default" | "large" | "responsive" }) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={onClick}
-      className={`inline-flex items-center gap-3 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${btnClass} ${
-        size === "large"
-          ? "px-8 py-5 text-lg"
-          : "px-6 py-4 text-base"
-      }`}
-    >
-      <FaWhatsapp className={size === "large" ? "w-6 h-6" : "w-5 h-5"} />
+    <BaseCTAButton href={href} btnClass={btnClass} onClick={onClick} size={size}>
       <SE k="cta">{text}</SE>
-    </a>
+    </BaseCTAButton>
   );
 }
 
@@ -791,9 +759,60 @@ function LandingEyebrow({ k, className, children }: { k: string; className: stri
   return <p className={`text-xs font-bold uppercase tracking-[0.2em] mb-3 ${className}`}><SE k={k}>{children}</SE></p>;
 }
 
+// "Para quem é": one row per group (labels reuse the when_<gi>_* keys), a card per condition page, then "Outras queixas",
+// which opens WhatsApp through the page's own tracked CTA handler.
+function ConditionGrid({ groups, whatsappUrl, onCTAClick, t }: { groups: ServiceLanding["when"]["groups"]; whatsappUrl: string; onCTAClick: () => void; t: (typeof LANDING_THEMES)[keyof typeof LANDING_THEMES] }) {
+  const { editing } = useEdit();
+  const cardClass = "group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-slate-400 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500";
+  return (
+    <div className="space-y-10">
+      {groups.map((g, gi) => {
+        const items = conditions.filter((c) => c.group === gi);
+        if (!items.length) return null;
+        return (
+          <div key={gi}>
+            <h3 className="font-serif text-xl font-semibold text-slate-900"><SE k={`when_${gi}_title`}>{g.title}</SE></h3>
+            <p className="text-sm text-slate-600 leading-relaxed mb-4"><SE k={`when_${gi}_text`} multiline>{g.text}</SE></p>
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((c) => {
+                const inner = (
+                  <>
+                    <span className="font-semibold text-lg text-slate-900 leading-snug"><Editable k={`avaliacao.${c.slug}.card_title`}>{c.card.title}</Editable></span>
+                    <span className="mt-2 text-sm text-slate-600 leading-relaxed"><Editable k={`avaliacao.${c.slug}.card_description`} multiline>{c.card.description}</Editable></span>
+                    <span className="mt-3 flex flex-wrap gap-1.5">
+                      {c.tags.map((tag) => (
+                        <span key={tag} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{tag}</span>
+                      ))}
+                    </span>
+                    <span className={`mt-auto pt-4 text-sm font-semibold ${t.eyebrow} group-hover:underline`}><Editable k="avaliacao.sub.card_link">Entenda a investigação →</Editable></span>
+                  </>
+                );
+                return (
+                  <li key={c.slug}>
+                    {editing ? <div className={cardClass}>{inner}</div> : <Link href={conditionPath(c.slug)} className={cardClass}>{inner}</Link>}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        );
+      })}
+      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" onClick={editing ? (e) => e.preventDefault() : onCTAClick} className="flex flex-col rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-5 transition hover:border-slate-500 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <span>
+          <span className="block font-semibold text-lg text-slate-900"><Editable k="avaliacao.other.card_title">{OTHER_CARD.title}</Editable></span>
+          <span className="block mt-1 text-sm text-slate-600"><Editable k="avaliacao.other.card_description">{OTHER_CARD.description}</Editable></span>
+        </span>
+        <span className={`mt-3 sm:mt-0 shrink-0 text-sm font-semibold ${t.eyebrow}`}><Editable k="avaliacao.other.card_link">{OTHER_CARD.link}</Editable></span>
+      </a>
+    </div>
+  );
+}
+
 function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick }: Omit<LayoutProps, "config"> & { data: ServiceLanding }) {
   const t = LANDING_THEMES[data.theme];
   const groupCols = data.when.groups.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2";
+  // Pages with the credential band keep H1, band and CTA above the fold on a 375×667 phone.
+  const compact = !!data.hero.credentials;
   return (
     <div className="min-h-screen bg-white">
       {data.safety && (
@@ -814,18 +833,19 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
       )}
 
       {/* Hero */}
-      <section className={`pt-16 md:pt-20 pb-16 px-4 ${t.heroBg}`}>
+      <section className={`${compact ? "pt-5 pb-12" : "pt-16 pb-16"} md:pt-20 md:pb-16 px-4 ${t.heroBg}`}>
         <div className={`container mx-auto ${data.hero.image ? "max-w-6xl grid md:grid-cols-5 gap-10 items-center" : "max-w-4xl"}`}>
           <div className={data.hero.image ? "md:col-span-3" : ""}>
-            <span className={`inline-block text-xs font-bold uppercase tracking-[0.2em] mb-5 ${t.heroEyebrow}`}>
+            <span className={`${compact ? "hidden md:inline-block" : "inline-block"} text-xs font-bold uppercase tracking-[0.2em] mb-5 ${t.heroEyebrow}`}>
               <SE k="badge">{data.hero.badge}</SE>
             </span>
-            <h1 className={`font-serif text-4xl md:text-5xl font-semibold leading-tight mb-5 ${t.heroHeading}`}>
+            <h1 className={`font-serif ${compact ? "text-[2rem] mb-2 md:mb-5" : "text-4xl mb-5"} md:text-5xl font-semibold leading-tight ${t.heroHeading}`}>
               <SE k="title">{title || data.hero.title}</SE>
             </h1>
-            <p className={`text-base md:text-xl leading-relaxed max-w-xl mb-5 md:mb-8 ${t.heroText}`}>
+            <p className={`${compact ? "text-[15px] leading-snug mb-3" : "text-base leading-relaxed mb-5"} md:text-xl md:leading-relaxed max-w-xl md:mb-8 ${t.heroText}`}>
               <SE k="subtitle" multiline>{subtitle || data.hero.subtitle}</SE>
             </p>
+            {compact && <CredentialBand className="mb-4 md:mb-8 max-w-2xl" />}
             {data.hero.facts && (
               <ul className={`mb-6 max-w-xl space-y-1.5 text-sm md:text-base leading-snug ${t.heroText}`}>
                 {data.hero.facts.map((f, i) => (
@@ -833,7 +853,7 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
                 ))}
               </ul>
             )}
-            <CTAButton href={whatsappUrl} btnClass={t.cta} text={data.hero.cta} onClick={onCTAClick} size="large" />
+            <CTAButton href={whatsappUrl} btnClass={t.cta} text={data.hero.cta} onClick={onCTAClick} size={compact ? "responsive" : "large"} />
             <p className={`mt-4 text-sm max-w-md ${t.heroNote}`}>
               <SE k="hero_note" multiline>{data.hero.note}</SE>
             </p>
@@ -842,8 +862,8 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
         </div>
       </section>
 
-      {/* Credentials */}
-      <div className="border-y border-slate-200 bg-white py-5 px-4">
+      {/* Credentials (pages with the hero band skip it: the titles are already above) */}
+      {!compact && <div className="border-y border-slate-200 bg-white py-5 px-4">
         <ul className="container mx-auto max-w-6xl flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm font-medium text-slate-700">
           {data.strip.map((text, i) => (
             <li key={i} className="flex items-center gap-2">
@@ -852,7 +872,7 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
             </li>
           ))}
         </ul>
-      </div>
+      </div>}
 
       {/* When to look for it */}
       <section className="py-20 px-4">
@@ -860,6 +880,9 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
           <LandingEyebrow k="when_eyebrow" className={t.eyebrow}>{data.when.eyebrow}</LandingEyebrow>
           <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-4 max-w-3xl"><SE k="when_title">{data.when.title}</SE></h2>
           <p className="text-lg text-slate-600 leading-relaxed max-w-3xl mb-12"><SE k="when_intro" multiline>{data.when.intro}</SE></p>
+          {data.when.cards ? (
+            <ConditionGrid groups={data.when.groups} whatsappUrl={whatsappUrl} onCTAClick={onCTAClick} t={t} />
+          ) : (
           <div className={`grid gap-6 ${groupCols}`}>
             {data.when.groups.map((g, gi) => (
               <div key={gi} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
@@ -873,6 +896,7 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
               </div>
             ))}
           </div>
+          )}
         </div>
       </section>
 
@@ -887,7 +911,7 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
       </section>
 
       {/* Process */}
-      <section className={`py-20 px-4 ${t.soft}`}>
+      <section className={`py-20 px-4 ${t.soft}`} id="como-funciona">
         <div className="container mx-auto max-w-4xl">
           <LandingEyebrow k="steps_eyebrow" className={t.eyebrow}>{data.steps.eyebrow}</LandingEyebrow>
           <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-10"><SE k="steps_title">{data.steps.title}</SE></h2>
@@ -903,8 +927,26 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
         </div>
       </section>
 
+      {/* What you receive */}
+      {data.deliverables && (
+        <section className="py-20 px-4" id="o-que-voce-recebe">
+          <div className="container mx-auto max-w-6xl">
+            <LandingEyebrow k="deliverables_eyebrow" className={t.eyebrow}>{data.deliverables.eyebrow}</LandingEyebrow>
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-slate-900 mb-10"><SE k="deliverables_title">{data.deliverables.title}</SE></h2>
+            <div className="grid gap-6 md:grid-cols-3">
+              {data.deliverables.items.map((d, i) => (
+                <div key={i} className="rounded-2xl border border-slate-200 p-6">
+                  <h3 className="font-serif text-xl font-semibold text-slate-900 mb-2"><SE k={`deliverables_${i}_title`}>{d.title}</SE></h3>
+                  <p className="text-slate-600 leading-relaxed"><SE k={`deliverables_${i}_text`} multiline>{d.text}</SE></p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Research */}
-      <section className={`py-20 px-4 text-white ${t.band}`}>
+      <section className={`py-20 px-4 text-white ${t.band}`} id="respaldo-cientifico">
         <div className="container mx-auto max-w-4xl">
           <p className={`text-xs font-bold uppercase tracking-[0.2em] mb-3 ${t.bandAccent}`}><SE k="research_eyebrow">{data.research.eyebrow}</SE></p>
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-10"><SE k="research_title">{data.research.title}</SE></h2>
@@ -930,7 +972,16 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
           <div className="md:col-span-3">
             <LandingEyebrow k="about_eyebrow" className={t.eyebrow}>{data.about.eyebrow}</LandingEyebrow>
             <h2 className="font-serif text-3xl font-semibold text-slate-900 mb-4"><SE k="about_title">{data.about.title}</SE></h2>
-            <p className="text-lg text-slate-700 leading-relaxed"><SE k="about_text" multiline>{data.about.text}</SE></p>
+            {data.about.approach ? (
+              <>
+                {data.about.role && <p className="-mt-2 mb-5 font-medium text-slate-700"><SE k="about_role">{data.about.role}</SE></p>}
+                <CredentialBand variant="list" className="mb-6" />
+                {/* TODO: confirm with João whether he talks directly with the requesting physician; until then the text only says the laudo is written for them. */}
+                <p className="text-lg text-slate-700 leading-relaxed"><SE k="about_approach" multiline>{data.about.approach}</SE></p>
+              </>
+            ) : (
+              <p className="text-lg text-slate-700 leading-relaxed"><SE k="about_text" multiline>{data.about.text}</SE></p>
+            )}
           </div>
         </div>
       </section>
@@ -1029,30 +1080,12 @@ function ServicePageInner({ slug, title, subtitle, content, service }: ServicePa
   const config = service ? configFromService(service) : SERVICE_CONFIG[slug];
   const defaultMessage = service?.whatsappMessage || config?.whatsappMessage || "Olá! Gostaria de agendar uma conversa.";
 
-  const [whatsappUrl, setWhatsappUrl] = useState(() =>
-    buildWhatsappUrl(defaultMessage, true)
-  );
-  const { getElapsedTime } = useTimeToAction();
+  const source = service?.analyticsKey ?? `service_page_${slug}`;
+  const { href: whatsappUrl, onClick: handleCTAClick } = useWhatsappCta(defaultMessage, source);
 
   useEffect(() => {
     posthog.capture("treatment_page_viewed", { treatment_title: title, slug });
-
-    const ua = navigator.userAgent;
-    const isMobile =
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-    setWhatsappUrl(buildWhatsappUrl(defaultMessage, isMobile));
-  }, [title, slug, defaultMessage]);
-
-  const handleCTAClick = () => {
-    const elapsed = getElapsedTime() ?? 0;
-    const gclid = getGclidFromCookie();
-    const source = service?.analyticsKey ?? `service_page_${slug}`;
-    const params = { source, time_to_click_ms: elapsed, ...(gclid ? { gclid } : {}) };
-    sendGAEvent("event", "schedule_click", params);
-    posthog.capture("schedule_click", params);
-
-    trackWhatsappClick(source);
-  };
+  }, [title, slug]);
 
   const landing = serviceLandings[slug];
   if (landing) {

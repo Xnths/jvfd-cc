@@ -1,10 +1,14 @@
 import type { MetadataRoute } from 'next'
 import { SITE_URL } from '@/content/clinic'
 import { tutoring } from '@/content/tutoring'
+import { conditionPath, conditions } from '@/content/avaliacoes'
 import { getMedia, getPublishedPosts, getRoutes, getTreatments } from '@/lib/queries'
 
 // Per request, but backed by the tag-invalidated query cache (no DB hit).
 export const dynamic = 'force-dynamic'
+
+// Bump when the avaliação condition pages (src/content/avaliacoes.ts) change meaningfully.
+const CONDITIONS_UPDATED = new Date('2026-11-21')
 
 // Bump when the hand-written pages (home sections, presencial, aulas,
 // policies) change meaningfully.
@@ -93,5 +97,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ...(hasKind('question') ? [{ url: `${SITE_URL}/perguntas`, lastModified: latest(routes.filter((r) => r.kind === 'question').map((r) => r.updatedAt)), changeFrequency: 'weekly' as const, priority: 0.6 }] : []),
     ]
 
-    return [...staticEntries, ...sectionEntries, ...treatmentEntries, ...dynamicEntries, ...blogEntries]
+    const conditionEntries: MetadataRoute.Sitemap = conditions.map((c) => ({
+        url: `${SITE_URL}${conditionPath(c.slug)}`,
+        lastModified: CONDITIONS_UPDATED,
+        changeFrequency: 'monthly',
+        priority: 0.8,
+    }))
+
+    return [...staticEntries, ...sectionEntries, ...treatmentEntries, ...conditionEntries, ...dynamicEntries, ...blogEntries]
 }

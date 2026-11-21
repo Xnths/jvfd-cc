@@ -1,5 +1,6 @@
 import { SITE_URL, contact, person, services } from '@/content/clinic'
 import { tutoring } from '@/content/tutoring'
+import { conditionPath, conditions } from '@/content/avaliacoes'
 import { getPublishedPosts, getRoutes, getTreatments } from '@/lib/queries'
 import { publicCacheHeaders } from '@/lib/http'
 
@@ -46,6 +47,10 @@ ${quickAnswers.length ? `\n## Respostas rápidas\n\n${quickAnswers.map((r) => `-
 
 ${treatmentLinks.join('\n')}
 - [Atendimento presencial na Vila Madalena](${SITE_URL}/presencial.md): endereço, como chegar e acessibilidade.
+
+## Avaliação neuropsicológica por quadro
+
+${conditions.map((c) => `- [Avaliação neuropsicológica para ${c.h1}](${SITE_URL}${conditionPath(c.slug)}.md): ${c.card.description}`).join('\n')}
 
 ## Aulas particulares
 

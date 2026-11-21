@@ -10,8 +10,10 @@ import {
     getPublishedPosts,
     getTreatmentBySlug,
 } from '@/lib/queries'
+import { getCondition } from '@/content/avaliacoes'
 import {
     blogIndexMarkdown,
+    conditionMarkdown,
     glossaryIndexMarkdown,
     glossaryTermMarkdown,
     homeMarkdown,
@@ -54,6 +56,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ path?: 
     } else if (path[0] === 'sobre' && path.length === 2) {
         const profile = await getProfileBySlug(path[1]).catch(() => null)
         if (profile) body = profileDocMarkdown(profile)
+    } else if (path[0] === 'avaliacao-neuropsicologica' && path.length === 2) {
+        const condition = getCondition(path[1])
+        if (condition) body = conditionMarkdown(condition)
     } else if (path.length === 1) {
         const t = await getTreatmentBySlug(path[0]).catch(() => null)
         if (t) body = treatmentMarkdown(t)

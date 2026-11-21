@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { getTreatmentBySlug, getTreatments } from '@/lib/queries'
 import { buildMetadata } from '@/lib/seo'
-import { breadcrumbNode, faqNode, graph, therapyNode, webPageNode } from '@/lib/jsonld'
+import { breadcrumbNode, credentialPersonNode, faqNode, graph, therapyNode, webPageNode } from '@/lib/jsonld'
 import { getTexts } from '@/lib/texts'
 import { resolvedServiceFaq } from '@/content/resolve'
 import { serviceLandings } from '@/content/service-landings'
@@ -77,8 +77,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         <>
             <JsonLd
                 data={graph(
-                    webPageNode({ path, name: treatment.title, description }),
+                    webPageNode({ path, name: treatment.title, description, ...(slug === 'avaliacao-neuropsicologica' ? { type: 'MedicalWebPage' } : {}) }),
                     therapyNode({ path, name: treatment.title, description }),
+                    ...(slug === 'avaliacao-neuropsicologica' ? [credentialPersonNode()] : []),
                     breadcrumbNode([{ name: treatment.title, path }]),
                     ...(faq ? [faq] : []),
                 )}

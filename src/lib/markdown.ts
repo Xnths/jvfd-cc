@@ -12,6 +12,8 @@ import {
 } from "@/content/clinic";
 import { tutoring } from "@/content/tutoring";
 import { serviceLandings, faqDisplay } from "@/content/service-landings";
+import { AVALIACAO_PATH, AVALIACAO_WHATSAPP_MESSAGE, SUBPAGE, conditionPath, conditions, type Condition } from "@/content/avaliacoes";
+import { credentials } from "@/content/credentials";
 import type { AnsweredQuestion, GlossaryItem, GlossaryTerm, PostDoc, ProfileDoc, TreatmentDoc } from "@/lib/queries";
 import { absoluteUrl } from "@/lib/seo";
 
@@ -126,13 +128,20 @@ export function treatmentMarkdown(t: TreatmentDoc) {
         ? `**${landing.safety.title}** ${landing.safety.text} ${landing.safety.actions.map((a) => `${a.label} (${a.detail})`).join(" · ")}\n\n`
         : "";
     const before = landing
-        ? `${landing.hero.facts ? landing.hero.facts.map((f) => `- ${f}`).join("\n") + "\n\n" : ""}${landing.hero.note}\n\n## ${landing.when.title}\n\n${landing.when.intro}\n\n${landing.when.groups
-              .map((g) => `### ${g.title}\n\n${g.text}\n\n${g.items.map((i) => `- ${i}`).join("\n")}`)
+        ? `${landing.hero.facts ? landing.hero.facts.map((f) => `- ${f}`).join("\n") + "\n\n" : ""}${landing.hero.credentials ? credentialsMarkdown() + "\n\n" : ""}${landing.hero.note}\n\n## ${landing.when.title}\n\n${landing.when.intro}\n\n${landing.when.groups
+              .map((g, gi) =>
+                  landing.when.cards
+                      ? `### ${g.title}\n\n${g.text}\n\n${conditions
+                            .filter((c) => c.group === gi)
+                            .map((c) => `- [${c.card.title}](${absoluteUrl(conditionPath(c.slug))}): ${c.card.description} (${c.tags.join(", ")})`)
+                            .join("\n")}`
+                      : `### ${g.title}\n\n${g.text}\n\n${g.items.map((i) => `- ${i}`).join("\n")}`,
+              )
               .join("\n\n")}\n\n`
         : "";
     const after = landing
         ? `\n\n## ${landing.steps.title}\n\n${landing.steps.items.map((s, i) => `${i + 1}. **${s.title}:** ${s.text}`).join("\n")}
-
+${landing.deliverables ? `\n## ${landing.deliverables.title}\n\n${landing.deliverables.items.map((d) => `- **${d.title}:** ${d.text}`).join("\n")}\n` : ""}
 ## ${landing.research.title}
 
 ${landing.research.findings.map((f) => `- ${f.text} [${f.refs.join(", ")}]`).join("\n")}
@@ -141,7 +150,7 @@ ${landing.research.caveat}
 
 ## ${landing.about.title}
 
-${landing.about.text}
+${landing.about.approach ? `${landing.about.role ?? ""}\n\n${credentialsMarkdown()}\n\n${landing.about.approach}` : landing.about.text}
 
 ## ${landing.faqTitle}
 
@@ -253,4 +262,57 @@ ${tutoring.howItWorks.map((s, i) => `${i + 1}. **${s.title}:** ${s.description}`
 ${tutoring.faq.map((f) => `**${f.question}**\n${f.answer}`).join("\n\n")}
 
 - WhatsApp: ${whatsappLink(tutoring.whatsappMessage)}`;
+}
+
+function credentialsMarkdown() {
+    return credentials.map((c) => `- ${c.title} — ${c.institution}`).join("\n");
+}
+
+/** Markdown twin of /avaliacao-neuropsicologica/<slug> (code defaults, like treatmentMarkdown). */
+export function conditionMarkdown(c: Condition) {
+    const path = conditionPath(c.slug);
+    return `${header(`${SUBPAGE.h1Prefix} ${c.h1}`, path)}
+**${c.lead}**
+
+${person.name}, psicólogo, CRP ${person.crp}.
+
+${credentialsMarkdown()}
+
+${SUBPAGE.note}
+
+## ${SUBPAGE.whatIsTitle}
+
+${c.whatIs.join("\n\n")}
+
+## ${SUBPAGE.signsTitle}
+
+${c.signs.map((x) => `- ${x}`).join("\n")}
+
+${SUBPAGE.signsNote}
+
+## ${SUBPAGE.investigatesTitle}
+
+${c.investigatesIntro ? `${c.investigatesIntro}\n\n` : ""}${c.investigates.map((f) => `- **${f.fn}:** ${f.text}`).join("\n")}
+
+${SUBPAGE.investigatesNote}
+
+## ${SUBPAGE.helpsTitle}
+
+${c.helps.map((x) => `- ${x}`).join("\n")}
+${c.crisisLine ? `\n${c.crisisLine}\n` : ""}
+## ${SUBPAGE.stepsTitle}
+
+${SUBPAGE.steps.map((s, i) => `${i + 1}. **${s.title}:** ${s.text}`).join("\n")}
+
+Processo completo: ${absoluteUrl(`${AVALIACAO_PATH}#como-funciona`)}
+
+## ${SUBPAGE.faqTitle}
+
+${c.faq.map((f) => `**${f.question}**\n${f.answer}`).join("\n\n")}
+
+## ${SUBPAGE.refsTitle}
+
+${c.references.map((r, i) => `${i + 1}. ${r.text}${r.doi ? ` https://doi.org/${r.doi}` : ""}`).join("\n")}
+
+${bookingFooter({ whatsapp: AVALIACAO_WHATSAPP_MESSAGE, presencialOnly: true })}`;
 }

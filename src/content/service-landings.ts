@@ -9,15 +9,20 @@ export type LandingImage = { src: string; alt: string; width: number; height: nu
 
 export type ServiceLanding = {
     theme: LandingTheme;
-    hero: { badge: string; title: string; subtitle: string; facts?: string[]; cta: string; note: string; image?: LandingImage };
+    /** credentials: the credential band (src/content/credentials.ts) sits above the CTA and replaces `strip`. */
+    hero: { badge: string; title: string; subtitle: string; facts?: string[]; cta: string; note: string; image?: LandingImage; credentials?: boolean };
     /** Crisis pages: shown first, before anything else. */
     safety?: { title: string; text: string; actions: { label: string; detail: string; href: string }[] };
     strip: string[];
-    when: { eyebrow: string; title: string; intro: string; groups: { title: string; text: string; items: string[] }[] };
+    /** cards: each group lists the condition cards of src/content/avaliacoes.ts instead of `items`. */
+    when: { eyebrow: string; title: string; intro: string; groups: { title: string; text: string; items: string[] }[]; cards?: boolean };
     bodyImage?: LandingImage;
     research: { eyebrow: string; title: string; findings: { text: string; refs: number[] }[]; caveat: string };
     steps: { eyebrow: string; title: string; items: { title: string; text: string }[] };
-    about: { eyebrow: string; title: string; text: string; image: LandingImage };
+    /** "O que você recebe", right after the steps. */
+    deliverables?: { eyebrow: string; title: string; items: { title: string; text: string }[] };
+    /** approach: the profile shows name, CRP, the credential list and this text instead of `text`. */
+    about: { eyebrow: string; title: string; text: string; image: LandingImage; role?: string; approach?: string };
     faqTitle: string;
     faq: { question: string; answer: string }[];
     closing: { eyebrow: string; title: string; cta: string; note?: string };
@@ -82,14 +87,15 @@ export const serviceLandings: Record<string, ServiceLanding> = {
         hero: {
             badge: "Avaliação Neuropsicológica",
             title: "Avaliação neuropsicológica",
-            subtitle: "Entenda como você ou seu filho prestam atenção, lembram, se organizam e se comunicam, com testes padronizados, laudo escrito e uma sessão de devolutiva.",
+            subtitle: "Avaliação com testes padronizados, laudo e devolutiva para crianças, adolescentes e adultos, conduzida por psicólogo pós-graduado em Neuropsicologia pelo Hospital Israelita Albert Einstein.",
             cta: "Agendar avaliação com pedido médico",
             note: "Consulta particular, sem convênio; João emite recibo para reembolso. Presencial na Vila Madalena. Para crianças e adolescentes, o agendamento é feito por um responsável.",
             image: JV,
+            credentials: true,
         },
         strip: ["Pós-graduação em Neuropsicologia · Hospital Israelita Albert Einstein", "Psicologia pela PUC-SP", CRP, "Adultos, adolescentes e crianças", "Presencial na Vila Madalena"],
         when: {
-            eyebrow: "Quando procurar",
+            eyebrow: "Para quem é",
             title: "Para que serve uma avaliação neuropsicológica",
             intro: "A avaliação reúne dados objetivos sobre o funcionamento cognitivo. Ela pode ajudar a esclarecer uma queixa, apoiar o trabalho do médico e de outros profissionais e orientar o cuidado, escolar, profissional e familiar.",
             groups: [
@@ -97,6 +103,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
                 { title: "Saúde mental", text: "Ajuda a entender o impacto cognitivo do quadro no dia a dia e a planejar o cuidado.", items: ["Depressão", "Transtorno bipolar", "Transtornos de personalidade, como o borderline", "Esquizofrenia e outros quadros psiquiátricos"] },
                 { title: "Neurologia e envelhecimento", text: "Documenta o funcionamento cognitivo e permite acompanhar mudanças ao longo do tempo.", items: ["Queixas de memória", "Comprometimento cognitivo leve e demências", "Traumatismo craniano e AVC", "Epilepsia e esclerose múltipla"] },
             ],
+            cards: true,
         },
         research: {
             eyebrow: "O que a pesquisa mostra",
@@ -113,17 +120,28 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             eyebrow: "Como funciona",
             title: "Do primeiro contato à devolutiva",
             items: [
-                { title: "Pedido médico", text: "O processo parte de um pedido médico. Em caso de dúvida, você pode perguntar pelo WhatsApp." },
-                { title: "Entrevista", text: "Conversa sobre a história de vida, a queixa e o contexto escolar, profissional e familiar." },
-                { title: "Testes padronizados", text: "Instrumentos reconhecidos, com parecer favorável no SATEPSI, escolhidos conforme a demanda de cada caso." },
-                { title: "Laudo", text: "Documento escrito com os procedimentos, os resultados e as conclusões, conforme a Resolução CFP 06/2019." },
-                { title: "Devolutiva", text: "Encontro para apresentar e conversar sobre os resultados e os próximos passos." },
+                { title: "Pedido médico", text: "Você envia o pedido médico pelo WhatsApp e tira suas dúvidas antes de agendar." },
+                { title: "Entrevista", text: "Você conta sua história, a queixa e como é a rotina na escola, no trabalho e em casa; para menores de 18 anos, o responsável participa." },
+                { title: "Testes padronizados", text: "Você faz tarefas com testes padronizados com parecer favorável no SATEPSI, escolhidos conforme a pergunta de cada caso." },
+                { title: "Laudo", text: "Você recebe um documento escrito com os procedimentos, os resultados e as conclusões, conforme a Resolução CFP 06/2019." },
+                { title: "Devolutiva", text: "Você conversa sobre os resultados em um encontro e sai com orientações para os próximos passos." },
+            ],
+        },
+        deliverables: {
+            eyebrow: "Ao final",
+            title: "O que você recebe",
+            items: [
+                { title: "Laudo psicológico", text: "Um documento escrito conforme a Resolução CFP 06/2019, com os procedimentos, os resultados e as conclusões. Ele é redigido para o médico que fez o pedido e pode ser usado pelos profissionais que acompanham o caso." },
+                { title: "Devolutiva em sessão", text: "Um encontro para explicar os resultados em linguagem simples. Você pode tirar dúvidas e entender o que cada resultado significa na sua rotina." },
+                { title: "Orientações por escrito", text: "Material escrito com orientações práticas para o paciente e a família. Quando faz sentido, inclui orientações para a escola." },
             ],
         },
         about: {
             eyebrow: "Quem conduz",
-            title: "João Vitor Fernandes",
+            title: "João Vitor Fernandes Domingues",
+            role: `Psicólogo · ${CRP}`,
             text: `Psicólogo clínico, ${CRP}, bacharel em Psicologia pela PUC-SP, com pós-graduação em Neuropsicologia pelo Hospital Israelita Albert Einstein. A avaliação é presencial, no consultório na Vila Madalena (${ADDRESS}), de segunda a sexta, das 8h às 21h.`,
+            approach: "Cada avaliação parte da pergunta do pedido médico e combina entrevista, testes padronizados e informações de quem convive com o paciente. Na devolutiva, João explica os resultados com calma e entrega orientações por escrito para o paciente e a família. O laudo é escrito para o médico que fez o pedido, para que os dados apoiem as decisões da equipe.",
             image: OFFICE,
         },
         faq: [
@@ -142,6 +160,7 @@ export const serviceLandings: Record<string, ServiceLanding> = {
             { question: "Quem pode realizar a avaliação neuropsicológica?", answer: "No Brasil, o uso de testes psicológicos é privativo de psicólogas e psicólogos (Resolução CFP 31/2022). Aqui, a avaliação é conduzida por João Vitor Fernandes Domingues, psicólogo, CRP 06/157908, com pós-graduação em Neuropsicologia pelo Hospital Israelita Albert Einstein." },
             { question: "Qual a diferença entre avaliação psicológica e avaliação neuropsicológica?", answer: "A avaliação psicológica investiga fenômenos psicológicos de forma ampla, a partir de uma demanda específica. A avaliação neuropsicológica dá ênfase às funções cognitivas e à relação delas com o funcionamento do cérebro." },
             { question: "Onde fazer avaliação neuropsicológica na Vila Madalena?", answer: `O consultório de João fica na ${ADDRESS}. O atendimento é presencial, para adultos, adolescentes e crianças (menores de 18 anos com um responsável), de segunda a sexta, das 8h às 21h, com pedido médico.` },
+            { question: "A avaliação serve para o meu caso?", answer: "Veja, no início desta página, os quadros que mais motivam o pedido: cada um tem uma página que explica o que é investigado. Se a sua situação não estiver lá, envie o pedido médico pelo WhatsApp e conversamos sobre o seu caso." },
         ],
         closing: { eyebrow: "Próximo passo", title: "Tem um pedido médico e dúvidas sobre o processo?", cta: "Agendar avaliação com pedido médico", note: "Pedido médico necessário · particular, sem convênio · recibo para reembolso · presencial · em geral, 4 a 6 sessões de até 2 horas." },
         references: [

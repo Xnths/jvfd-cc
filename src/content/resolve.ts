@@ -1,6 +1,7 @@
 import { faq } from "@/content/clinic";
 import { tutoring } from "@/content/tutoring";
 import { serviceLandings, faqDisplay } from "@/content/service-landings";
+import { getCondition } from "@/content/avaliacoes";
 import { pickText, type TextMap } from "@/lib/texts";
 
 // Copies of the structured content with João's inline edits applied, so JSON-LD matches what
@@ -24,5 +25,12 @@ export function resolvedServiceFaq(slug: string, texts: TextMap) {
     return faqDisplay(serviceLandings[slug]?.faq ?? []).map(({ item, i }) => ({
         question: pickText(texts, `service.${slug}.faq_${i}_q`, item.question),
         answer: pickText(texts, `service.${slug}.faq_${i}_a`, item.answer),
+    }));
+}
+
+export function resolvedConditionFaq(slug: string, texts: TextMap) {
+    return (getCondition(slug)?.faq ?? []).map((item, i) => ({
+        question: pickText(texts, `avaliacao.${slug}.faq_${i}_q`, item.question),
+        answer: pickText(texts, `avaliacao.${slug}.faq_${i}_a`, item.answer),
     }));
 }
