@@ -14,6 +14,8 @@ check "robots"               /robots.txt                    200
 check "llms.txt"             /llms.txt                      200
 check "llms-full.txt"        /llms-full.txt                 200
 check "markdown twin"        /avaliacao-neuropsicologica.md 200
+check "avaliação condition"  /avaliacao-neuropsicologica/tdah 200
+check "unknown condition"    /avaliacao-neuropsicologica/xyz 404
 check "glossary"             /glossario                     200
 check "questions"            /perguntas                     200
 check "auth health"          /auth/denied                   403

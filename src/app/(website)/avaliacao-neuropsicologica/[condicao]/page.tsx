@@ -28,8 +28,9 @@ import { getTexts } from "@/lib/texts";
 
 // Condition pages of the avaliação (copy in src/content/avaliacoes.ts). Static: they build without the API; the
 // WhatsApp text and analytics key are read from the avaliação service row so every CTA is tracked like the main page.
+// No `dynamicParams = false`: in Next 16 a revalidated page of such a route regenerates as a 404 (NoFallbackError),
+// which took these pages down after the deploy's revalidate-all. Unknown slugs get notFound() below.
 export const revalidate = 86400;
-export const dynamicParams = false;
 
 type Params = { condicao: string };
 
