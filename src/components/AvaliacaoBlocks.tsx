@@ -11,7 +11,7 @@ export function FactChips({ items, className = "" }: { items: ReactNode[]; class
   return (
     <ul className={`flex flex-wrap gap-1.5 ${className}`} aria-label="Informações rápidas">
       {items.map((item, i) => (
-        <li key={i} className="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 md:text-sm">
+        <li key={i} className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-[13px] font-medium leading-tight text-slate-700 md:text-sm">
           {item}
         </li>
       ))}
@@ -62,13 +62,13 @@ export function FaqAccordion({ items }: { items: { id: number | string; question
       {items.map((f) => (
         <li key={f.id}>
           <details className="group" open={editing || undefined}>
-            <summary className="flex cursor-pointer list-none items-start justify-between gap-4 py-4 [&::-webkit-details-marker]:hidden">
+            <summary className="flex min-h-12 cursor-pointer list-none items-start justify-between gap-4 py-4 [&::-webkit-details-marker]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 rounded-sm">
               <h3 className="text-base md:text-lg font-semibold text-slate-900">{f.question}</h3>
               <span className="mt-1 shrink-0 text-slate-500 transition-transform group-open:rotate-180" aria-hidden>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </span>
             </summary>
-            <div className="pb-5 pr-8 text-slate-600 leading-relaxed">{f.answer}</div>
+            <div className="pb-5 pr-2 md:pr-8 text-slate-700 leading-relaxed">{f.answer}</div>
           </details>
         </li>
       ))}

@@ -12,18 +12,18 @@ export async function Discussions() {
     }
 
     return (
-        <section className="py-20 bg-slate-50" id="discussions">
+        <section className="py-14 md:py-20 bg-slate-50" id="discussions">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-16">
+                <div className="text-center mb-10 md:mb-16">
                     <Editable as="h2" k="home.discussions.title" className="text-3xl font-bold text-slate-900 mb-4">Discussões</Editable>
                     <Editable as="p" k="home.discussions.subtitle" className="text-xl text-slate-600 max-w-2xl mx-auto">
                         Artigos e reflexões sobre psicologia e saúde mental.
                     </Editable>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8 mb-10 md:mb-12">
                     {posts.map((post) => (
-                        <Card key={post.id} className="border-slate-200 hover:shadow-lg transition-shadow bg-white flex flex-col">
+                        <Card key={post.id} className="relative border-slate-200 hover:shadow-lg transition-shadow bg-white flex flex-col">
                             <CardHeader>
                                 <div className="text-sm text-slate-500 mb-2">
                                     {new Date(post.publishedDate).toLocaleDateString("pt-BR", {
@@ -44,7 +44,8 @@ export async function Discussions() {
                             <CardFooter>
                                 <Link
                                     href={`/blog/${post.slug}`}
-                                    className="inline-flex items-center text-blue-600 font-medium hover:gap-2 transition-all gap-1 group"
+                                    // The whole card is the tap target (stretched link), not just "Ler mais".
+                                    className="inline-flex items-center text-blue-600 font-medium hover:gap-2 transition-all gap-1 group after:absolute after:inset-0 after:rounded-[inherit] after:content-['']"
                                 >
                                     <Editable k="home.discussions.read_more">Ler mais</Editable>
                                     <MoveRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -1,8 +1,9 @@
 "use client";
 
 import { trackWhatsappClick } from "@/lib/whatsapp-lead";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import posthog from "posthog-js";
@@ -23,6 +24,30 @@ export function SiteHeader() {
     const [open, setOpen] = useState(false);
     const whatsappUrl = useWhatsappUrl();
     const { getElapsedTime } = useTimeToAction();
+    const pathname = usePathname();
+    const headerRef = useRef<HTMLElement>(null);
+    const toggleRef = useRef<HTMLButtonElement>(null);
+
+    // The mobile menu closes on navigation, on Escape (focus goes back to the toggle) and on a tap outside it.
+    useEffect(() => setOpen(false), [pathname]);
+    useEffect(() => {
+        if (!open) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setOpen(false);
+                toggleRef.current?.focus();
+            }
+        };
+        const onPointer = (e: PointerEvent) => {
+            if (headerRef.current && !headerRef.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener("keydown", onKey);
+        document.addEventListener("pointerdown", onPointer);
+        return () => {
+            document.removeEventListener("keydown", onKey);
+            document.removeEventListener("pointerdown", onPointer);
+        };
+    }, [open]);
 
     const onCtaClick = () => {
         const props = { source: "header", time_to_click_ms: getElapsedTime() || 0 };
@@ -32,7 +57,7 @@ export function SiteHeader() {
     };
 
     return (
-        <header className="sticky top-0 z-[60] border-b border-slate-200 bg-white/90 text-green-900 backdrop-blur">
+        <header ref={headerRef} className="sticky top-0 z-[60] border-b border-slate-200 bg-white/90 text-green-900 backdrop-blur">
             <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
                 <Link href="/" aria-label="João Fernandes, página inicial" className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600">
                     <Logo size={36} />
@@ -57,8 +82,9 @@ export function SiteHeader() {
                 </nav>
 
                 <button
+                    ref={toggleRef}
                     type="button"
-                    className="rounded-md p-2 text-green-900 lg:hidden"
+                    className="-mr-2 rounded-md p-2.5 text-green-900 lg:hidden"
                     aria-expanded={open}
                     aria-controls="mobile-nav"
                     aria-label={open ? "Fechar menu" : "Abrir menu"}
@@ -87,7 +113,10 @@ export function SiteHeader() {
                                 href={whatsappUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                onClick={onCtaClick}
+                                onClick={() => {
+                                    onCtaClick();
+                                    setOpen(false);
+                                }}
                                 className="flex items-center justify-center gap-2 rounded-md bg-green-700 px-4 py-3 font-semibold text-white"
                             >
                                 <FaWhatsapp className="h-5 w-5" />

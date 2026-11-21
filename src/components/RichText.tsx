@@ -65,7 +65,7 @@ export const RichText: React.FC<{ content: any }> = ({ content }) => {
                     <a
                         key={key}
                         href={url}
-                        className="text-green-700 underline underline-offset-2 hover:text-green-800"
+                        className="text-green-700 underline underline-offset-2 hover:text-green-800 [overflow-wrap:anywhere]"
                         {...(external || node.fields?.newTab || node.target === '_blank' ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     >
                         {node.children.map(renderChildren)}

@@ -48,13 +48,13 @@ export function QuestionForm() {
         <form onSubmit={submit} className="flex flex-col gap-3">
             <label htmlFor="q" className="text-sm font-medium text-slate-700"><Editable k="questions.form_label">Sua pergunta</Editable></label>
             <textarea id="q" value={question} onChange={(e) => { setQuestion(e.target.value); setState("idle"); }} rows={4} maxLength={1000}
-                className="resize-none rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-600/20" />
+                className="resize-none rounded-md border border-slate-300 bg-white px-3 py-2.5 text-base md:text-sm text-slate-900 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-600/20" />
             <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden"><label>Não preencha<input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} /></label></div>
             <Turnstile onToken={setToken} resetKey={reset} />
-            <button type="submit" disabled={!can} className="self-start rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-slate-300">
+            <button type="submit" disabled={!can} className="min-h-11 w-full sm:w-auto sm:self-start rounded-md bg-green-600 px-5 py-2.5 text-base md:text-sm font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-slate-300">
                 {state === "sending" ? "Enviando…" : "Enviar pergunta"}
             </button>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm md:text-xs text-slate-600">
                 <Editable k="questions.form_note" multiline>Não escreva seu nome, telefone ou detalhes que identifiquem você ou outras pessoas. Isto não é um canal de atendimento nem de urgência: em crise, ligue 188 (CVV) ou 192 (SAMU).</Editable>
             </p>
             {error && <p role="alert" className="text-sm text-red-600">{error}</p>}

@@ -68,8 +68,8 @@ function E({ k, as, className, multiline, children }: { k: string; as?: React.El
 function Refs({ n }: { n?: number[] }) {
     if (!n?.length) return null;
     return (
-        <sup className="ml-1 text-green-700">
-            <a href="#referencias" className="underline">[{n.join(", ")}]</a>
+        <sup className="ml-0.5 text-green-700">
+            <a href="#referencias" className="-my-3 inline-block px-1.5 py-3 underline" aria-label={`Referências ${n.join(", ")}`}>[{n.join(", ")}]</a>
         </sup>
     );
 }
@@ -115,7 +115,7 @@ export default async function ConditionPage({ params }: { params: Promise<Params
             <section className={`pt-5 pb-12 md:pt-12 md:pb-16 px-4 ${t.heroBg}`}>
                 <div className="container mx-auto max-w-4xl">
                     <Breadcrumb className="mb-3 md:mb-4">
-                        <BreadcrumbList className="text-xs md:text-sm">
+                        <BreadcrumbList className="text-sm [&_a]:inline-block [&_a]:py-1.5">
                             <BreadcrumbItem>
                                 <BreadcrumbLink asChild><Link href="/">{SUBPAGE.breadcrumbHome}</Link></BreadcrumbLink>
                             </BreadcrumbItem>
@@ -132,11 +132,11 @@ export default async function ConditionPage({ params }: { params: Promise<Params
                     <h1 className={`font-serif text-[1.75rem] md:text-5xl font-semibold leading-[1.15] md:leading-tight mb-2 md:mb-5 ${t.heroHeading}`}>
                         <E k="avaliacao.sub.h1_prefix">{SUBPAGE.h1Prefix}</E> <E k={k("h1")}>{c.h1}</E>
                     </h1>
-                    <E as="p" k={k("lead")} multiline className={`text-[15px] md:text-xl leading-snug md:leading-relaxed max-w-2xl mb-3 md:mb-8 ${t.heroText}`}>{c.lead}</E>
+                    <E as="p" k={k("lead")} multiline className={`text-base md:text-xl leading-snug md:leading-relaxed max-w-2xl mb-4 md:mb-8 ${t.heroText}`}>{c.lead}</E>
                     <CredentialBand className="mb-4 md:mb-8 max-w-3xl" />
                     {ctaButton("avaliacao.sub.cta_hero", "hero")}
                     <FactChips className="mt-4 max-w-2xl" items={SUBPAGE.chips.map((chip, i) => <E key={i} k={`avaliacao.sub.chip_${i}`}>{chip}</E>)} />
-                    <E as="p" k="avaliacao.sub.note" multiline className={`mt-3 text-xs md:text-sm max-w-xl ${t.heroNote}`}>{SUBPAGE.note}</E>
+                    <E as="p" k="avaliacao.sub.note" multiline className={`mt-3 text-sm leading-relaxed max-w-xl ${t.heroNote}`}>{SUBPAGE.note}</E>
                 </div>
             </section>
 
@@ -227,7 +227,7 @@ export default async function ConditionPage({ params }: { params: Promise<Params
                             ))}
                         </ol>
                         <p className="mt-5 text-base">
-                            <Link href={`${AVALIACAO_PATH}#como-funciona`} className="font-semibold text-green-700 underline">
+                            <Link href={`${AVALIACAO_PATH}#como-funciona`} className="inline-block py-2.5 font-semibold text-green-700 underline">
                                 <E k="avaliacao.sub.steps_link">{SUBPAGE.stepsLink}</E>
                             </Link>
                         </p>
@@ -257,12 +257,12 @@ export default async function ConditionPage({ params }: { params: Promise<Params
             <section className="pb-12 px-4" id="referencias">
                 <div className="container mx-auto max-w-3xl">
                     <E as="h2" k="avaliacao.sub.refs_title" className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4">{SUBPAGE.refsTitle}</E>
-                    <ol className="space-y-2 text-xs text-slate-500 leading-relaxed">
+                    <ol className="space-y-3 md:space-y-2 text-sm md:text-xs text-slate-600 md:text-slate-500 leading-relaxed">
                         {c.references.map((r, i) => (
                             <li key={i}>
                                 [{i + 1}] {r.text}{" "}
                                 {r.doi && (
-                                    <a href={`https://doi.org/${r.doi}`} target="_blank" rel="noopener noreferrer" className="underline">doi:{r.doi}</a>
+                                    <a href={`https://doi.org/${r.doi}`} target="_blank" rel="noopener noreferrer" className="inline-block py-1 underline [overflow-wrap:anywhere]">doi:{r.doi}</a>
                                 )}
                             </li>
                         ))}
@@ -281,13 +281,13 @@ export default async function ConditionPage({ params }: { params: Promise<Params
             </section>
 
             {/* 10. Final CTA */}
-            <section className={`py-14 px-4 ${t.soft}`}>
+            <section className={`py-12 md:py-14 px-4 ${t.soft}`}>
                 <div className="container mx-auto max-w-2xl text-center">
                     <E as="h2" k="avaliacao.sub.closing_title" className="font-serif text-2xl md:text-3xl font-semibold text-slate-900 mb-6">{SUBPAGE.closingTitle}</E>
                     {ctaButton("avaliacao.sub.cta_closing", "closing")}
                     <E as="p" k="avaliacao.sub.closing_note" multiline className="mt-4 text-sm text-slate-600 max-w-md mx-auto">{SUBPAGE.closingNote}</E>
-                    <p className="mt-6 text-sm">
-                        <Link href={AVALIACAO_PATH} className="font-semibold text-green-700 underline">
+                    <p className="mt-4 text-base md:text-sm">
+                        <Link href={AVALIACAO_PATH} className="inline-block py-3 font-semibold text-green-700 underline">
                             <E k="avaliacao.sub.back_link">{SUBPAGE.backLink}</E>
                         </Link>
                     </p>
@@ -319,7 +319,7 @@ function OtherConditions({ others }: { others: Condition[] }) {
                 <ul className="flex flex-wrap gap-2">
                     {others.map((o) => (
                         <li key={o.slug}>
-                            <Link href={conditionPath(o.slug)} className="inline-block rounded-full border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:border-slate-500">
+                            <Link href={conditionPath(o.slug)} className="inline-flex min-h-11 items-center rounded-full border border-slate-300 bg-white px-4 py-2 text-[15px] text-slate-700 hover:border-slate-500 md:min-h-0 md:px-3 md:py-1.5 md:text-sm">
                                 {o.card.title}
                             </Link>
                         </li>

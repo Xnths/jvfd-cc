@@ -7,10 +7,11 @@ import { useTimeToAction } from "@/hooks/use-time-to-action";
 import { sendGAEvent } from "@next/third-parties/google";
 import posthog from "posthog-js";
 import { usePathname } from "next/navigation";
+import { isAvaliacaoPath } from "@/content/avaliacao-cta";
 
-// Pages with their own sticky WhatsApp bar, which sends the page's own text (the ad upload tells avaliação leads
-// apart by that text). The bubble would send the generic one.
-const HIDDEN_ON = ["/avaliacao-neuropsicologica"];
+// Hidden on the avaliação pages, which have their own sticky WhatsApp bar with the page's own text (the ad upload
+// tells avaliação leads apart by that text). The footer leaves room for this button on phones (--bottom-ui-h in
+// globals.css).
 
 export function FloatingCatButton() {
     const whatsappUrl = useWhatsappUrl();
@@ -31,7 +32,7 @@ export function FloatingCatButton() {
         trackWhatsappClick('floating_button');
     };
 
-    if (pathname && HIDDEN_ON.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return null;
+    if (isAvaliacaoPath(pathname)) return null;
 
     return (
         <a
@@ -39,8 +40,9 @@ export function FloatingCatButton() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleClick}
+            aria-label="Conversar pelo WhatsApp"
             className="
-        fixed bottom-6 right-6 z-40
+        fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] right-[max(1.5rem,env(safe-area-inset-right))] z-40
         flex items-center gap-3
         bg-green-600 hover:bg-green-700
         text-white px-5 py-3

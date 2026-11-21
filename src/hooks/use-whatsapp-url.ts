@@ -1,33 +1,35 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { AVALIACAO_WHATSAPP_MESSAGE, isAvaliacaoPath } from "@/content/avaliacao-cta";
 
 const phone = "5511955591996";
-const message = encodeURIComponent(
-    "Olá! Gostaria de saber mais sobre os atendimentos."
-);
+const genericMessage = "Olá! Gostaria de saber mais sobre os atendimentos.";
 
-const fallbackUrl = `https://wa.me/${phone}?text=${message}`;
+function buildUrl(text: string, isMobile: boolean): string {
+    const message = encodeURIComponent(text);
+    return isMobile ? `https://wa.me/${phone}?text=${message}` : `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
+}
 
 /**
  * Returns the best WhatsApp URL based on the user's device.
  * - Desktop: uses api.whatsapp.com (opens WhatsApp Web without QR Code prompt)
  * - Mobile: uses wa.me (opens native app)
  *
+ * On the avaliação pages (/avaliacao-neuropsicologica and its condition pages) the header, contact card and footer
+ * send the avaliação text too: the Google Ads upload tells those leads apart by it.
+ *
  * Uses useEffect to avoid hydration mismatch (SSR always returns wa.me).
  */
 export function useWhatsappUrl(): string {
-    const [url, setUrl] = useState(fallbackUrl);
+    const pathname = usePathname();
+    const text = isAvaliacaoPath(pathname) ? AVALIACAO_WHATSAPP_MESSAGE : genericMessage;
+    const [isMobile, setIsMobile] = useState(true);
 
     useEffect(() => {
-        const ua = navigator.userAgent;
-        const isMobile =
-            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-
-        if (!isMobile) {
-            setUrl(`https://api.whatsapp.com/send?phone=${phone}&text=${message}`);
-        }
+        setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
     }, []);
 
-    return url;
+    return buildUrl(text, isMobile);
 }

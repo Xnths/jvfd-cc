@@ -11,14 +11,14 @@ export function OtherServices() {
             <Editable as="p" k="home.other.text" multiline className="text-slate-600 text-center mb-4">
                 Estes serviços são separados da psicoterapia e têm páginas próprias.
             </Editable>
-            <ul className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm font-medium">
+            <ul className="flex flex-wrap justify-center gap-x-8 text-base md:text-sm font-medium text-center">
                 <li>
-                    <Link href={tutoring.path} className="underline underline-offset-2 text-green-800 hover:text-green-900">
+                    <Link href={tutoring.path} className="inline-block py-2.5 underline underline-offset-2 text-green-800 hover:text-green-900">
                         <Editable k="home.other.tutoring">Aulas particulares de Química, Biologia e método de estudo</Editable>
                     </Link>
                 </li>
                 <li>
-                    <Link href="/supervisao" className="underline underline-offset-2 text-green-800 hover:text-green-900">
+                    <Link href="/supervisao" className="inline-block py-2.5 underline underline-offset-2 text-green-800 hover:text-green-900">
                         <Editable k="home.other.supervision">Supervisão clínica para psicólogos</Editable>
                     </Link>
                 </li>

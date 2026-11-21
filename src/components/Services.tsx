@@ -65,9 +65,9 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
   };
 
   return (
-    <section className="py-20 bg-slate-50" id="services">
+    <section className="py-14 md:py-20 bg-slate-50" id="services">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-10 md:mb-16">
           <Editable as="h2" k="home.services.title" className="text-slate-900 mb-4 text-3xl">
             Como posso te ajudar?
           </Editable>
@@ -154,11 +154,11 @@ export function Services({ showLgbt = false }: { showLgbt?: boolean }) {
         </div>
 
         {/* CTA pós-evocação */}
-        <div className="mt-16 flex justify-center">
+        <div className="mt-10 md:mt-16 flex justify-center">
           <Button
             asChild
             size="lg"
-            className="bg-green-600 hover:bg-green-700 text-white gap-2"
+            className="h-12 w-full sm:w-auto px-6 text-base bg-green-600 hover:bg-green-700 text-white gap-2"
             onClick={handleWhatsAppClick}
           >
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">

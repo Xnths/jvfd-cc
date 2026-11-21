@@ -51,17 +51,17 @@ export function NewsletterForm({ placement = "home", slug }: { placement?: "home
     };
 
     return (
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 sm:p-8">
             <Editable as="h3" k="newsletter.title" className="text-xl font-semibold text-slate-900 mb-1">
                 Receba novidades do blog
             </Editable>
-            <Editable as="p" k="newsletter.text" className="text-slate-600 mb-6 text-sm">
+            <Editable as="p" k="newsletter.text" className="text-slate-600 mb-5 sm:mb-6 text-base sm:text-sm">
                 Quando João publicar um novo artigo, você recebe no e-mail. Sem spam e cancele quando quiser.
             </Editable>
 
             {state !== "success" ? (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row">
                         <input
                             type="email"
                             placeholder="seu@email.com"
@@ -69,29 +69,31 @@ export function NewsletterForm({ placement = "home", slug }: { placement?: "home
                             onChange={(e) => { setEmail(e.target.value); setState("idle"); }}
                             disabled={state === "submitting"}
                             required
-                            className="flex-1 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-600/20 disabled:opacity-50 text-sm"
+                            className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-4 py-3 sm:py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-600/20 disabled:opacity-50 text-base sm:text-sm"
+                            autoComplete="email"
+                            inputMode="email"
                             aria-label="Seu endereço de e-mail"
                         />
                         <button
                             type="submit"
                             disabled={!canSubmit}
-                            className="rounded-md bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                            className="rounded-md bg-green-600 px-5 py-3 sm:py-2.5 text-base sm:text-sm font-semibold text-white hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
                         >
                             {state === "submitting" ? "Enviando…" : "Inscrever"}
                         </button>
                     </div>
 
                     {/* LGPD consent */}
-                    <label className="flex items-start gap-2.5 cursor-pointer">
+                    <label className="flex items-start gap-3 cursor-pointer">
                         <input
                             type="checkbox"
                             checked={consent}
                             onChange={(e) => setConsent(e.target.checked)}
                             disabled={state === "submitting"}
-                            className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-green-600"
+                            className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 accent-green-600 sm:h-4 sm:w-4"
                             required
                         />
-                        <span className="text-slate-500 text-xs leading-relaxed">
+                        <span className="text-slate-600 text-sm sm:text-xs leading-relaxed">
                             Concordo com a{" "}
                             <Link
                                 href="/politica-de-privacidade"
@@ -105,7 +107,7 @@ export function NewsletterForm({ placement = "home", slug }: { placement?: "home
                     </label>
 
                     {state === "idle" && !canSubmit && (email.length > 0 || consent) && (
-                        <p className="text-xs text-slate-500">
+                        <p className="text-sm sm:text-xs text-slate-600">
                             {!email.includes("@") ? "Digite um e-mail válido para continuar." : "Marque a caixa de concordância para continuar."}
                         </p>
                     )}

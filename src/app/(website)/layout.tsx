@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -97,6 +97,15 @@ export const metadata: Metadata = {
     },
 
     formatDetection: { telephone: false },
+};
+
+// viewportFit "cover" makes env(safe-area-inset-*) real on iPhones (the sticky WhatsApp bar pads with it).
+// No maximumScale: people must be able to zoom.
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+    themeColor: "#fdfcf8",
 };
 
 export default async function RootLayout({

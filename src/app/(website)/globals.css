@@ -110,8 +110,22 @@
     @apply border-border;
   }
 
+  /* Anchors (#faq, #referencias, /#services) land below the 64px sticky header. */
+  html {
+    scroll-padding-top: 4.5rem;
+    /* Height of what is fixed at the bottom of a phone screen (the floating WhatsApp button by default; the sticky
+       CTA bar sets its measured height). The footer pads by it so nothing covers its last line. */
+    --bottom-ui-h: 4.5rem;
+  }
+
   body {
     @apply bg-background text-foreground;
+    /* Safety net against sideways scrolling on phones; clip (not hidden) keeps the sticky header working. */
+    overflow-x: clip;
+  }
+
+  p, li, dd, figcaption {
+    overflow-wrap: break-word;
   }
 
   h1, h2, h3, h4 {
@@ -124,6 +138,7 @@
 /* ── Admin bar and inline editing (only active for signed-in admins) ─────── */
 html[data-admin-bar] body { padding-top: var(--admin-bar-h); }
 html[data-admin-bar] header.sticky { top: var(--admin-bar-h); }
+html[data-admin-bar] { scroll-padding-top: calc(4.5rem + var(--admin-bar-h)); }
 [data-edit-key].edit-box {
     outline: 2px dashed rgb(22 163 74 / 0.75);
     outline-offset: 3px;

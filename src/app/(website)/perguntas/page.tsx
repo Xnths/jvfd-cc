@@ -36,7 +36,7 @@ export default async function QuestionsPage() {
                     breadcrumbNode([{ name: "Perguntas", path: "/perguntas" }]),
                 )}
             />
-            <section className="container mx-auto max-w-3xl px-4 pb-20 pt-24">
+            <section className="container mx-auto max-w-3xl px-4 pb-16 pt-8 md:pb-20 md:pt-24">
                 <Editable as="h1" k="questions.title" className="mb-4 text-4xl font-bold text-slate-900">Perguntas e respostas</Editable>
                 <Editable as="p" k="questions.intro" multiline className="mb-12 text-xl leading-relaxed text-slate-600">
                     Dúvidas sobre psicoterapia, avaliação neuropsicológica e saúde mental. As respostas são informativas, trazem referências e não substituem avaliação ou atendimento individual.
@@ -50,7 +50,7 @@ export default async function QuestionsPage() {
                         </article>
                     ))}
                 </div>
-                <div className="mt-16 rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                <div className="mt-12 md:mt-16 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6">
                     <Editable as="h2" k="questions.form_title" className="mb-3 text-2xl font-semibold text-slate-900">Envie sua pergunta</Editable>
                     <QuestionForm />
                 </div>

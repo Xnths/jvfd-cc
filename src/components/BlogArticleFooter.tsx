@@ -66,13 +66,16 @@ export function BlogArticleFooter({ relatedPosts }: BlogArticleFooterProps) {
                         Psicoterapia particular para adultos, online ou presencial. Não atende convênio; emite recibo para reembolso.
                     </Editable>
 
-                    <div className="flex items-center gap-4">
+                    {/* QR code only from md up: a phone can't scan its own screen. */}
+                    <div className="hidden md:flex items-center gap-4">
                         <div className="flex-1 h-px bg-slate-300"></div>
                         <span className="text-slate-500 text-sm">ou</span>
                         <div className="flex-1 h-px bg-slate-300"></div>
                     </div>
 
-                    <ContactForm />
+                    <div className="hidden md:block">
+                        <ContactForm />
+                    </div>
                 </div>
             </div>
 

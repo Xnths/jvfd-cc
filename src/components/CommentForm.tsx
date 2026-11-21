@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import posthog from "posthog-js";
+import { turnstileSize } from "@/components/Turnstile";
 import { sendGAEvent } from "@next/third-parties/google";
 
 interface CommentFormProps {
@@ -37,6 +38,7 @@ export function CommentForm({ postId }: CommentFormProps) {
             if (!window.turnstile || !widget.current || widgetId.current) return;
             widgetId.current = window.turnstile.render(widget.current, {
                 sitekey: SITE_KEY,
+                size: turnstileSize(widget.current),
                 callback: (t: string) => setToken(t),
                 "expired-callback": () => setToken(""),
             });
@@ -107,7 +109,7 @@ export function CommentForm({ postId }: CommentFormProps) {
     };
 
     const field =
-        "rounded-md border border-slate-300 bg-white px-3 py-2.5 text-slate-900 text-sm placeholder:text-slate-400 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-600/20 disabled:opacity-50";
+        "rounded-md border border-slate-300 bg-white px-3 py-2.5 text-slate-900 text-base md:text-sm placeholder:text-slate-400 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-600/20 disabled:opacity-50";
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -138,18 +140,18 @@ export function CommentForm({ postId }: CommentFormProps) {
                     <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
                 </label>
             </div>
-            <div ref={widget} />
-            <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">{body.length}/2000</span>
+            <div ref={widget} className="w-full max-w-full" />
+            <div className="flex items-center justify-between gap-3">
+                <span className="text-xs text-slate-500">{body.length}/2000</span>
                 <button
                     type="submit"
                     disabled={!canSubmit}
-                    className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+                    className="min-h-11 rounded-md bg-green-600 px-5 py-2.5 text-base md:text-sm font-semibold text-white hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
                 >
                     {state === "submitting" ? "Enviando…" : "Enviar comentário"}
                 </button>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm md:text-xs text-slate-600">
                 Comentários são moderados antes de aparecer. Não compartilhe informações pessoais ou de saúde.
             </p>
             {errorMsg && (

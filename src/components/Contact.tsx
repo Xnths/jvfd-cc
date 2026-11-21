@@ -58,9 +58,9 @@ export function Contact() {
 
 
   return (
-    <section id="contact" className="py-20 bg-slate-50">
+    <section id="contact" className="py-14 md:py-20 bg-slate-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-8 md:mb-16">
           <Editable as="h2" k="home.contact.title" className="text-slate-900 mb-4 text-2xl">Contato</Editable>
           <Editable as="p" k="home.contact.subtitle" className="text-slate-600 max-w-2xl mx-auto text-lg">
             Entre em contato com o profissional
@@ -71,18 +71,19 @@ export function Contact() {
           Atendimento particular, sem convênio, com recibo para reembolso. Valores informados pelo WhatsApp.
         </Editable>
 
-        <div className="gap-12 max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-center">
-          <div className="space-y-6">
+        <div className="gap-12 max-w-6xl mx-auto flex flex-col md:flex-row justify-center items-stretch md:items-center">
+          <div className="space-y-4 md:space-y-6 w-full max-w-md mx-auto md:w-auto">
             {contactInfo.map((info, index) => {
               const Icon = info.icon;
               return (
                 <Card key={index} className="border-slate-200 bg-white">
-                  <CardContent className="p-6">
+                  <CardContent className="p-0">
                     <Link
                       href={info.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => handleContactClick(info.type)}
+                      className="block p-5 md:p-6 rounded-[inherit]"
                     >
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -90,7 +91,7 @@ export function Contact() {
                         </div>
                         <div>
                           <Editable as="h3" k={`home.contact.${info.type}.title`} className="text-slate-900 mb-1">{info.title}</Editable>
-                          <p className="text-slate-600">{info.details}</p>
+                          <p className="text-slate-600 [overflow-wrap:anywhere]">{info.details}</p>
                         </div>
                       </div>
                     </Link>

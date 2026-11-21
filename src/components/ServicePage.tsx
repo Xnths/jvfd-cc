@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Editable } from "@/edit/Editable";
 import dynamic from "next/dynamic";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import Link from "next/link";
 import { serviceLandings, faqDisplay, type LandingImage, type ServiceLanding } from "@/content/service-landings";
 import { useEdit } from "@/edit/EditContext";
@@ -748,17 +748,39 @@ function GenericLayout({
 // Pictures sit next to the text they support, with a caption (Houts et al., 2006). Crisis pages open with the
 // emergency numbers. See CLAUDE.md for the copy rules.
 
-function LandingPicture({ image, k, className = "", priority = false }: { image: LandingImage; k: string; className?: string; priority?: boolean }) {
+// 1×1 transparent GIF: what phones get for a desktop-only picture, so they download nothing.
+const BLANK_GIF = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+function LandingPicture({ image, k, className = "", priority = false, desktopOnly = false }: { image: LandingImage; k: string; className?: string; priority?: boolean; desktopOnly?: boolean }) {
+  const caption = image.caption && <figcaption className="mt-2 text-sm md:text-xs text-slate-500"><SE k={`${k}_caption`}>{image.caption}</SE></figcaption>;
+  if (desktopOnly) {
+    // Art direction: the <source> only matches from md up, so phones (where the figure is hidden) neither preload nor
+    // download the photo; desktops still fetch it eagerly with high priority (it is the LCP image there).
+    const { props } = getImageProps({ src: image.src, alt: image.alt, width: image.width, height: image.height, sizes: "(min-width: 1152px) 440px, 40vw" });
+    const { srcSet, sizes, src: _src, loading: _loading, ...rest } = props;
+    void _src;
+    void _loading;
+    return (
+      <figure className={className}>
+        <picture>
+          <source media="(min-width: 768px)" srcSet={srcSet} sizes={sizes} />
+          {/* eslint-disable-next-line @next/next/no-img-element -- art-directed <picture>; srcSet comes from getImageProps */}
+          <img {...rest} src={BLANK_GIF} alt={image.alt} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : undefined} className="w-full h-auto rounded-lg shadow-lg" />
+        </picture>
+        {caption}
+      </figure>
+    );
+  }
   return (
     <figure className={className}>
-      <Image src={image.src} alt={image.alt} width={image.width} height={image.height} sizes="(max-width: 768px) 100vw, 45vw" priority={priority} className="w-full h-auto rounded-lg shadow-lg" />
-      {image.caption && <figcaption className="mt-2 text-xs text-slate-500"><SE k={`${k}_caption`}>{image.caption}</SE></figcaption>}
+      <Image src={image.src} alt={image.alt} width={image.width} height={image.height} sizes="(max-width: 768px) 100vw, 45vw" preload={priority} className="w-full h-auto rounded-lg shadow-lg" />
+      {caption}
     </figure>
   );
 }
 
 function LandingEyebrow({ k, className, children }: { k: string; className: string; children: string }) {
-  return <p className={`text-xs font-bold uppercase tracking-[0.2em] mb-3 ${className}`}><SE k={k}>{children}</SE></p>;
+  return <p className={`text-[13px] md:text-xs font-bold uppercase tracking-[0.18em] mb-3 ${className}`}><SE k={k}>{children}</SE></p>;
 }
 
 // "Para quem é": one row per group (labels reuse the when_<gi>_* keys), a card per condition page, then "Outras queixas",
@@ -785,7 +807,7 @@ function ConditionGrid({ groups, whatsappUrl, onCTAClick, t }: { groups: Service
                       <span className="hidden sm:block mt-2 text-sm text-slate-600 leading-relaxed"><Editable k={`avaliacao.${c.slug}.card_description`} multiline>{c.card.description}</Editable></span>
                       <span className="mt-2 sm:mt-3 flex flex-wrap gap-1.5">
                         {c.tags.map((tag) => (
-                          <span key={tag} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">{tag}</span>
+                          <span key={tag} className="rounded-full bg-slate-100 px-2 py-0.5 text-[13px] sm:text-xs font-medium text-slate-700">{tag}</span>
                         ))}
                       </span>
                       <span className={`hidden sm:block mt-auto pt-4 text-sm font-semibold ${t.eyebrow} group-hover:underline`}><Editable k="avaliacao.sub.card_link">Entenda a investigação →</Editable></span>
@@ -806,9 +828,9 @@ function ConditionGrid({ groups, whatsappUrl, onCTAClick, t }: { groups: Service
       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" onClick={editing ? (e) => e.preventDefault() : onCTAClick} className="flex flex-col rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-5 transition hover:border-slate-500 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
         <span>
           <span className="block font-semibold text-lg text-slate-900"><Editable k="avaliacao.other.card_title">{OTHER_CARD.title}</Editable></span>
-          <span className="block mt-1 text-sm text-slate-600"><Editable k="avaliacao.other.card_description">{OTHER_CARD.description}</Editable></span>
+          <span className="block mt-1 text-base sm:text-sm text-slate-600"><Editable k="avaliacao.other.card_description">{OTHER_CARD.description}</Editable></span>
         </span>
-        <span className={`mt-3 sm:mt-0 shrink-0 text-sm font-semibold ${t.eyebrow}`}><Editable k="avaliacao.other.card_link">{OTHER_CARD.link}</Editable></span>
+        <span className={`mt-3 sm:mt-0 shrink-0 text-base sm:text-sm font-semibold ${t.eyebrow}`}><Editable k="avaliacao.other.card_link">{OTHER_CARD.link}</Editable></span>
       </a>
     </div>
   );
@@ -844,7 +866,7 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
       )}
 
       {/* Hero */}
-      <section className={`${compact ? "pt-5 pb-12" : "pt-16 pb-16"} md:pt-20 md:pb-16 px-4 ${t.heroBg}`}>
+      <section className={`${compact ? "pt-4 pb-10" : "pt-16 pb-16"} md:pt-20 md:pb-16 px-4 ${t.heroBg}`}>
         <div className={`container mx-auto ${data.hero.image ? "max-w-6xl grid md:grid-cols-5 gap-10 items-center" : "max-w-4xl"}`}>
           <div className={data.hero.image ? "md:col-span-3" : ""}>
             <span className={`${compact ? "hidden md:inline-block" : "inline-block"} text-xs font-bold uppercase tracking-[0.2em] mb-5 ${t.heroEyebrow}`}>
@@ -853,10 +875,10 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
             <h1 className={`font-serif ${compact ? "text-[2rem] mb-2 md:mb-5" : "text-4xl mb-5"} md:text-5xl font-semibold leading-tight ${t.heroHeading}`}>
               <SE k="title">{title || data.hero.title}</SE>
             </h1>
-            <p className={`${compact ? "text-[15px] leading-snug mb-3" : "text-base leading-relaxed mb-5"} md:text-xl md:leading-relaxed max-w-xl md:mb-8 ${t.heroText}`}>
+            <p className={`${compact ? "text-base leading-snug mb-3" : "text-base leading-relaxed mb-5"} md:text-xl md:leading-relaxed max-w-xl md:mb-8 ${t.heroText}`}>
               <SE k="subtitle" multiline>{subtitle || data.hero.subtitle}</SE>
             </p>
-            {compact && <CredentialBand className="mb-4 md:mb-8 max-w-2xl" />}
+            {compact && <CredentialBand className="mb-3 md:mb-8 max-w-2xl" />}
             {data.hero.facts && (
               <ul className={`mb-6 max-w-xl space-y-1.5 text-sm md:text-base leading-snug ${t.heroText}`}>
                 {data.hero.facts.map((f, i) => (
@@ -868,7 +890,7 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
             {data.hero.chips && (
               <FactChips className="mt-4 max-w-xl" items={data.hero.chips.map((c, i) => <SE key={i} k={`hero_chip_${i}`}>{c}</SE>)} />
             )}
-            <p className={`${data.hero.chips ? "mt-3 text-xs md:text-sm" : "mt-4 text-sm"} max-w-md ${t.heroNote}`}>
+            <p className={`${data.hero.chips ? "mt-3" : "mt-4"} text-sm leading-relaxed max-w-md ${t.heroNote}`}>
               <SE k="hero_note" multiline>{data.hero.note}</SE>
             </p>
             {/* Phones: a small avatar instead of the large photo (which took a whole screen). */}
@@ -879,7 +901,7 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
               </div>
             )}
           </div>
-          {data.hero.image && <LandingPicture image={data.hero.image} k="hero_image" className={`md:col-span-2 ${data.hero.byline ? "hidden md:block" : ""}`} priority />}
+          {data.hero.image && <LandingPicture image={data.hero.image} k="hero_image" className={`md:col-span-2 ${data.hero.byline ? "hidden md:block" : ""}`} desktopOnly={!!data.hero.byline} priority />}
         </div>
       </section>
 
@@ -941,7 +963,8 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
       {/* What it is (rich text, edited in place) */}
       <section className={`${compact ? "pb-12 md:pb-20" : "pb-20"} px-4`}>
         <div className={`container mx-auto ${data.bodyImage ? "max-w-6xl grid md:grid-cols-2 gap-10 items-center" : "max-w-3xl"}`}>
-          <div className="text-lg text-slate-700 leading-relaxed">
+          {/* The rich-text H2 is bold uppercase by default (blog style); here it matches the page's other H2s. */}
+          <div className="text-lg text-slate-700 leading-relaxed [&_h2]:font-serif [&_h2]:normal-case [&_h2]:font-semibold [&_h2]:text-3xl [&_h2]:leading-tight [&_h2]:text-slate-900 md:[&_h2]:text-4xl">
             <ServiceBody content={content} />
           </div>
           {data.bodyImage && <LandingPicture image={data.bodyImage} k="body_image" />}
@@ -987,24 +1010,24 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
       <section className={`${sec} px-4 text-white ${t.band}`} id="respaldo-cientifico">
         <div className="container mx-auto max-w-4xl">
           <p className={`text-xs font-bold uppercase tracking-[0.2em] mb-3 ${t.bandAccent}`}><SE k="research_eyebrow">{data.research.eyebrow}</SE></p>
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-10"><SE k="research_title">{data.research.title}</SE></h2>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-7 md:mb-10"><SE k="research_title">{data.research.title}</SE></h2>
           <ol className="space-y-6">
             {data.research.findings.map((f, i) => (
               <li key={i} className={`gap-5 ${collapseFindings && i >= 2 ? "hidden md:flex" : "flex"}`}>
                 <span className={`font-serif text-3xl leading-none w-8 shrink-0 ${t.bandAccent}`}>{i + 1}</span>
                 <p className="text-lg text-slate-100 leading-relaxed">
                   <SE k={`research_${i}`} multiline>{f.text}</SE>
-                  <sup className={`ml-1 ${t.bandAccent}`}><a href="#referencias" className="underline">[{f.refs.join(", ")}]</a></sup>
+                  <sup className={`ml-0.5 ${t.bandAccent}`}><a href="#referencias" className="-my-3 inline-block px-1.5 py-3 underline" aria-label={`Referências ${f.refs.join(", ")}`}>[{f.refs.join(", ")}]</a></sup>
                 </p>
               </li>
             ))}
           </ol>
           {collapseFindings && data.research.findings.length > 2 && (
-            <button type="button" onClick={() => setAllFindings(true)} className={`mt-6 text-sm font-semibold underline md:hidden ${t.bandAccent}`}>
+            <button type="button" onClick={() => setAllFindings(true)} aria-expanded={false} className={`mt-6 flex min-h-11 w-full items-center justify-center rounded-xl border border-white/25 px-4 text-base font-semibold md:hidden ${t.bandAccent}`}>
               <SE k="research_more">{data.research.more!}</SE>
             </button>
           )}
-          <p className="mt-10 text-sm text-slate-300 leading-relaxed border-t border-white/20 pt-6"><SE k="research_caveat" multiline>{data.research.caveat}</SE></p>
+          <p className={`${compact ? "mt-8" : "mt-10"} md:mt-10 text-sm text-slate-300 leading-relaxed border-t border-white/20 pt-6`}><SE k="research_caveat" multiline>{data.research.caveat}</SE></p>
         </div>
       </section>
 
@@ -1067,11 +1090,11 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
       )}
 
       {/* Closing CTA */}
-      <section className={`py-16 px-4 ${t.soft}`}>
+      <section className={`${compact ? "py-12" : "py-16"} md:py-16 px-4 ${t.soft}`}>
         <div className="container mx-auto max-w-2xl text-center">
           <LandingEyebrow k="closing_eyebrow" className={t.eyebrow}>{data.closing.eyebrow}</LandingEyebrow>
           <h2 className="font-serif text-2xl md:text-3xl font-semibold text-slate-900 mb-6"><SE k="closing_heading">{data.closing.title}</SE></h2>
-          <CTAButton href={whatsappUrl} btnClass={t.cta} text={data.closing.cta} onClick={onCTAClick} size="large" marker="closing" />
+          <CTAButton href={whatsappUrl} btnClass={t.cta} text={data.closing.cta} onClick={onCTAClick} size={compact ? "responsive" : "large"} marker="closing" />
           {data.closing.note && (
             <p className="mt-4 text-sm text-slate-600 max-w-md mx-auto"><SE k="closing_note" multiline>{data.closing.note}</SE></p>
           )}
@@ -1082,11 +1105,11 @@ function LandingLayout({ data, title, subtitle, content, whatsappUrl, onCTAClick
       <section className="py-12 px-4" id="referencias">
         <div className="container mx-auto max-w-3xl">
           <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4"><SE k="refs_title">{data.referencesTitle}</SE></h2>
-          <ol className="space-y-2 text-xs text-slate-500 leading-relaxed">
+          <ol className="space-y-3 md:space-y-2 text-sm md:text-xs text-slate-600 md:text-slate-500 leading-relaxed">
             {data.references.map((r) => (
               <li key={r.n}>
                 [{r.n}] {r.text}{" "}
-                {r.doi && <a href={`https://doi.org/${r.doi}`} target="_blank" rel="noopener noreferrer" className="underline">doi:{r.doi}</a>}
+                {r.doi && <a href={`https://doi.org/${r.doi}`} target="_blank" rel="noopener noreferrer" className="inline-block py-1 underline [overflow-wrap:anywhere]">doi:{r.doi}</a>}
               </li>
             ))}
           </ol>

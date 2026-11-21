@@ -15,8 +15,10 @@ import { useEdit } from "@/edit/EditContext";
 
 const linkClass =
   "rounded-sm transition-colors hover:text-white focus:text-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900";
+// Phones: each list link is a full-width 36px row (tap target), inline from md up.
+const listLinkClass = `${linkClass} block py-2 md:inline-block md:py-0`;
 const iconClass =
-  "flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2 focus:ring-offset-slate-900";
+  "flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2 focus:ring-offset-slate-900";
 
 export function Footer() {
   const whatsappUrl = useWhatsappUrl();
@@ -31,8 +33,9 @@ export function Footer() {
     trackWhatsappClick("footer");
   };
 
+  // Phones: extra bottom room for the fixed WhatsApp button or sticky bar (--bottom-ui-h, globals.css).
   return (
-    <footer className="bg-green-900 py-14 text-green-50/80">
+    <footer className="bg-green-900 pt-14 pb-[calc(3.5rem+var(--bottom-ui-h,0px))] text-green-50/80 md:pb-14">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-10 grid max-w-6xl gap-10 md:grid-cols-[1.3fr_1fr_1fr]">
           <div className="space-y-4">
@@ -49,46 +52,46 @@ export function Footer() {
 
           <div>
             <h2 className="mb-4 font-sans text-sm font-semibold uppercase tracking-widest text-white"><Editable k="site.footer.services_title">Atendimentos</Editable></h2>
-            <ul className="space-y-2 text-sm">
+            <ul className="text-sm md:space-y-2">
               {(serviceCards ? serviceCards.filter((s) => s.inFooter) : services.filter((s) => !s.pride)).map((s) => (
                   <li key={s.href}>
-                    <Link href={s.href} className={linkClass}>
+                    <Link href={s.href} className={listLinkClass}>
                       <Editable k={`site.footer.service.${s.href.slice(1)}`}>{s.name}</Editable>
                     </Link>
                   </li>
                 ))}
               <li>
-                <Link href={tutoring.path} className={linkClass}>
+                <Link href={tutoring.path} className={listLinkClass}>
                   <Editable k="site.footer.tutoring">{tutoring.shortName}</Editable>
                 </Link>
               </li>
               <li>
-                <Link href="/presencial" className={linkClass}>
+                <Link href="/presencial" className={listLinkClass}>
                   <Editable k="site.footer.presencial">Atendimento presencial</Editable>
                 </Link>
               </li>
               <li>
-                <Link href="/sobre" className={linkClass}>
+                <Link href="/sobre" className={listLinkClass}>
                   <Editable k="site.footer.team">Quem somos</Editable>
                 </Link>
               </li>
               <li>
-                <Link href="/ferramentas" className={linkClass}>
+                <Link href="/ferramentas" className={listLinkClass}>
                   <Editable k="site.footer.tools">Ferramentas de autoavaliação</Editable>
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className={linkClass}>
+                <Link href="/blog" className={listLinkClass}>
                   <Editable k="site.footer.blog">Blog</Editable>
                 </Link>
               </li>
               <li>
-                <Link href="/perguntas" className={linkClass}>
+                <Link href="/perguntas" className={listLinkClass}>
                   <Editable k="site.footer.questions">Perguntas e respostas</Editable>
                 </Link>
               </li>
               <li>
-                <Link href="/glossario" className={linkClass}>
+                <Link href="/glossario" className={listLinkClass}>
                   <Editable k="site.footer.glossary">Glossário</Editable>
                 </Link>
               </li>
@@ -124,11 +127,11 @@ export function Footer() {
         <div className="border-t border-white/15 pt-8 text-center text-sm text-green-50/70">
           <p>© {new Date().getFullYear()} {person.name}. <Editable k="site.footer.rights">Todos os direitos reservados.</Editable></p>
           <p className="mt-1">Psicólogo, CRP {person.crp}</p>
-          <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1">
-            <Link href="/politica-de-privacidade" className={`${linkClass} underline`}>
+          <div className="mt-3 flex flex-wrap justify-center gap-x-6">
+            <Link href="/politica-de-privacidade" className={`${linkClass} inline-block py-2 underline`}>
               <Editable k="site.footer.privacy">Política de Privacidade</Editable>
             </Link>
-            <Link href="/termos-de-uso" className={`${linkClass} underline`}>
+            <Link href="/termos-de-uso" className={`${linkClass} inline-block py-2 underline`}>
               <Editable k="site.footer.terms">Termos de Uso</Editable>
             </Link>
           </div>

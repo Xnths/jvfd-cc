@@ -41,11 +41,8 @@ export type Condition = {
     references: ConditionReference[];
 };
 
-export const AVALIACAO_PATH = "/avaliacao-neuropsicologica";
-
-/** Same text and analytics key as the service row (migration 0010). The live values come from Postgres; these are the fallback. */
-export const AVALIACAO_WHATSAPP_MESSAGE = "Olá, gostaria de informações sobre a avaliação neuropsicológica.";
-export const AVALIACAO_ANALYTICS_KEY = "service_page_avaliacao-neuropsicologica";
+import { AVALIACAO_PATH } from "./avaliacao-cta";
+export { AVALIACAO_PATH, AVALIACAO_WHATSAPP_MESSAGE, AVALIACAO_ANALYTICS_KEY } from "./avaliacao-cta";
 
 const DSM5TR: ConditionReference = {
     text: "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, Fifth Edition, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.",

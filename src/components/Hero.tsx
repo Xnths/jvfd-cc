@@ -46,7 +46,8 @@ export function Hero({ showLgbt = false }: { showLgbt?: boolean }) {
           sizes="100vw"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-green-950/95 via-green-950/80 to-green-950/20"></div>
+        {/* Phones: the text spans the whole width, so the overlay stays dark edge to edge (contrast); from md the photo shows on the right. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-green-950/90 via-green-950/85 to-green-950/80 md:bg-gradient-to-r md:from-green-950/95 md:via-green-950/80 md:to-green-950/20"></div>
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -81,13 +82,16 @@ export function Hero({ showLgbt = false }: { showLgbt?: boolean }) {
               Psicoterapia para adultos, online ou presencial. Atendimento particular, sem convênio, com recibo para reembolso. Menores de 18 anos: contato por um responsável.
             </Editable>
 
-            <div className="flex items-center gap-4">
+            {/* QR code: only where it can be scanned with another device (a phone can't scan its own screen). */}
+            <div className="hidden md:flex items-center gap-4">
               <div className="flex-1 h-px bg-slate-600"></div>
               <Editable k="home.hero.or" className="text-slate-400 text-sm">ou</Editable>
               <div className="flex-1 h-px bg-slate-600"></div>
             </div>
 
-            <ContactForm />
+            <div className="hidden md:block">
+              <ContactForm />
+            </div>
           </div>
         </div>
       </div>

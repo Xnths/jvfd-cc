@@ -65,7 +65,7 @@ export default async function PostPage({ params }: PostPageProps) {
         // Drafts have no public page: an admin who opened one through /edit/enter writes it here.
         if ((await draftMode()).isEnabled) {
             return (
-                <article className="container mx-auto px-4 py-20 min-h-screen max-w-4xl">
+                <article className="container mx-auto px-4 pt-8 pb-16 md:py-20 min-h-screen max-w-4xl">
                     <DraftPost slug={slug} />
                 </article>
             );
@@ -87,7 +87,7 @@ export default async function PostPage({ params }: PostPageProps) {
     const image = getMedia(post.image);
 
     return (
-        <article className="container mx-auto px-4 py-20 min-h-screen max-w-4xl">
+        <article className="container mx-auto px-4 pt-8 pb-16 md:py-20 min-h-screen max-w-4xl">
             <JsonLd
                 data={graph(
                     blogPostingNode({ ...post, imageUrl: image?.url }),
@@ -99,8 +99,8 @@ export default async function PostPage({ params }: PostPageProps) {
             />
             <ArticleEngagementTracker slug={slug} />
             <PostSwap postId={String(post.id)}>
-            <header className="mb-12 text-center">
-                <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-4">
+            <header className="mb-8 md:mb-12 text-center">
+                <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-slate-500 mb-4">
                     <time dateTime={post.publishedDate}>
                         {new Date(post.publishedDate).toLocaleDateString("pt-BR", {
                             day: "numeric",

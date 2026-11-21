@@ -9,7 +9,7 @@ export function About() {
 
 
   return (
-    <section className="py-20 bg-white" id="about">
+    <section className="py-14 md:py-20 bg-white" id="about">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto">
           <div>
@@ -29,7 +29,7 @@ export function About() {
             <Editable as="p" k="home.about.p3" multiline className="text-slate-600 mb-6 leading-relaxed">
               Como psicólogo gay, conheço de perto as alegrias e os desafios da vida LGBTQIA+. Aqui, sua identidade é respeitada e a terapia é um espaço para construir relacionamentos que nutrem, viver com mais leveza e com autenticidade.
             </Editable>
-            <Link href="/sobre/joao" className="font-medium text-green-800 underline underline-offset-2 hover:text-green-900">
+            <Link href="/sobre/joao" className="inline-block py-2 font-medium text-green-800 underline underline-offset-2 hover:text-green-900">
               <Editable k="home.about.profile_link">Ver formação e perfil completo</Editable>
             </Link>
           </div>

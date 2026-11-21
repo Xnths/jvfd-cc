@@ -59,9 +59,9 @@ export default async function TermPage({ params }: { params: Promise<Params> }) 
                     breadcrumbNode([{ name: "Glossário", path: "/glossario" }, { name: term.term, path }]),
                 )}
             />
-            <article className="container mx-auto max-w-3xl px-4 pb-20 pt-24">
+            <article className="container mx-auto max-w-3xl px-4 pb-16 pt-8 md:pb-20 md:pt-24">
                 <TermSwap termId={term.slug}>
-                    <p className="mb-2 text-sm"><Link href="/glossario" className="text-green-700 hover:underline">← Glossário</Link></p>
+                    <p className="mb-2 text-base md:text-sm"><Link href="/glossario" className="-my-2 inline-block py-2 text-green-700 hover:underline">← Glossário</Link></p>
                     <h1 className="mb-4 text-4xl font-bold text-slate-900">{term.term}</h1>
                     {term.altNames.length > 0 && <p className="mb-4 text-sm text-slate-500">Também chamado de: {term.altNames.join(", ")}</p>}
                     <p className="mb-8 text-xl leading-relaxed text-slate-600">{term.shortDefinition}</p>
@@ -69,7 +69,7 @@ export default async function TermPage({ params }: { params: Promise<Params> }) 
                     {sources.length > 0 && (
                         <section className="mt-10 border-t pt-6">
                             <h2 className="mb-2 text-lg font-semibold text-slate-900">Referências</h2>
-                            <ol className="list-decimal space-y-1 pl-6 text-sm text-slate-600">{sources.map((s, i) => <li key={i}>{s}</li>)}</ol>
+                            <ol className="list-decimal space-y-1 pl-6 text-sm text-slate-600">{sources.map((s, i) => <li key={i} className="[overflow-wrap:anywhere]">{s}</li>)}</ol>
                         </section>
                     )}
                     {term.reviewedBy && (

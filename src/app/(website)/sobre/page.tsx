@@ -22,7 +22,7 @@ export default async function TeamPage() {
     return (
         <div className="min-h-screen bg-white">
             <JsonLd data={graph(webPageNode({ path: "/sobre", name: "Quem somos", description: metadata.description as string }), breadcrumbNode([{ name: "Quem somos", path: "/sobre" }]))} />
-            <section className="container mx-auto max-w-3xl px-4 pb-20 pt-24">
+            <section className="container mx-auto max-w-3xl px-4 pb-16 pt-8 md:pb-20 md:pt-24">
                 <Editable as="h1" k="team.title" className="mb-4 text-4xl font-bold text-slate-900">Quem somos</Editable>
                 <Editable as="p" k="team.intro" multiline className="mb-10 text-xl leading-relaxed text-slate-600">
                     Quem atende e quem cuida do conteúdo deste site, com formação e registro profissional.

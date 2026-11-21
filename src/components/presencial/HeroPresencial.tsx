@@ -47,7 +47,7 @@ export function HeroPresencial() {
     <>
       {/* Hero */}
       <section
-        className="relative h-svh flex items-center pb-24 md:pb-0"
+        className="relative flex min-h-[calc(100svh-4rem)] items-center py-16"
         id="hero"
       >
         <div className="absolute inset-0 z-0">
@@ -59,7 +59,7 @@ export function HeroPresencial() {
             sizes="100vw"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/90 via-slate-900/85 to-slate-900/80 md:bg-gradient-to-r md:from-slate-900/95 md:via-slate-900/80 md:to-transparent" />
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -70,7 +70,7 @@ export function HeroPresencial() {
             <Editable as="h1" k="presencial.hero.title" className="text-white mb-6 text-4xl md:text-6xl font-bold leading-tight">
               Atendimento Psicológico Presencial em Vila Madalena
             </Editable>
-            <Editable as="p" k="presencial.hero.subtitle" className="text-slate-200 mb-10 text-lg md:text-xl leading-relaxed max-w-2xl">
+            <Editable as="p" k="presencial.hero.subtitle" className="text-slate-200 mb-8 md:mb-10 text-lg md:text-xl leading-relaxed max-w-2xl">
               Espaço dedicado ao equilíbrio emocional e autoconhecimento
             </Editable>
 
@@ -79,7 +79,7 @@ export function HeroPresencial() {
               onClick={handleClick}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-md text-lg font-bold transition-all shadow-lg"
+              className="flex w-full items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-md text-lg font-bold leading-snug text-center transition-all shadow-lg sm:inline-flex sm:w-auto sm:px-8"
             >
               <FaWhatsapp className="w-6 h-6" />
               <Editable k="presencial.hero.cta">Entrar em contato pelo WhatsApp</Editable>

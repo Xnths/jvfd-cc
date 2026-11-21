@@ -24,9 +24,9 @@ export function Excellence() {
 
 
     return (
-        <section className="py-20 bg-white" id="excellence">
+        <section className="py-14 md:py-20 bg-white" id="excellence">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-16">
+                <div className="text-center mb-10 md:mb-16">
                     <Editable as="h2" k="home.excellence.title" className="text-slate-900 mb-4 text-3xl">Formações e qualificações</Editable>
                     <Editable as="p" k="home.excellence.subtitle" className="text-slate-600 max-w-2xl mx-auto text-lg">
                         Formação em Psicologia e Neuropsicologia, com atualização contínua.
@@ -61,7 +61,7 @@ export function Excellence() {
                                     <Editable as="p" k="home.excellence.lattes.subtitle" className="text-sm text-slate-500 font-medium">Plataforma Lattes</Editable>
                                 </div>
                             </div>
-                            <Link href={links.lattes} target="_blank" rel="noopener noreferrer" aria-label="Acessar Currículo Lattes">
+                            <Link href={links.lattes} target="_blank" rel="noopener noreferrer" aria-label="Acessar Currículo Lattes" className="-m-2.5 rounded-md p-2.5 hover:bg-slate-100">
                                 <ExternalLink className="w-5 h-5" />
                             </Link>
                         </CardHeader>

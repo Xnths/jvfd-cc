@@ -62,7 +62,7 @@ export function CTAButton({
   children: ReactNode;
 }) {
   const sizeClass =
-    size === "large" ? "px-8 py-5 text-lg" : size === "responsive" ? "px-6 py-4 text-base md:px-8 md:py-5 md:text-lg" : "px-6 py-4 text-base";
+    size === "large" ? "px-8 py-5 text-lg" : size === "responsive" ? "gap-2 px-4 py-4 text-[15px] min-[400px]:text-base md:gap-3 md:px-8 md:py-5 md:text-lg" : "px-5 py-4 text-base sm:px-6";
   const iconClass = size === "large" ? "w-6 h-6" : size === "responsive" ? "w-5 h-5 md:w-6 md:h-6" : "w-5 h-5";
   return (
     <a
@@ -71,7 +71,8 @@ export function CTAButton({
       rel="noopener noreferrer"
       onClick={onClick}
       data-cta={marker}
-      className={`inline-flex items-center gap-3 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${btnClass} ${sizeClass} ${className}`}
+      // Phones: full width, label centred and balanced when it wraps (a thumb-sized target); natural width from sm up.
+      className={`flex w-full items-center justify-center ${size === "responsive" ? "" : "gap-3"} rounded-xl text-center font-semibold leading-snug [text-wrap:balance] transition-all duration-200 shadow-md hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:inline-flex sm:w-auto sm:text-left ${btnClass} ${sizeClass} ${className}`}
     >
       <FaWhatsapp className={`shrink-0 ${iconClass}`} />
       {children}

@@ -17,7 +17,7 @@ export function SoftCta() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => posthog.capture("instagram_follow_clicked", { source: "soft_cta" })}
-                        className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-semibold text-lg transition-colors group"
+                        className="inline-flex min-h-11 items-center gap-2 text-pink-600 [overflow-wrap:anywhere] hover:text-pink-700 font-semibold text-lg transition-colors group"
                     >
                         <FaInstagram className="w-6 h-6" />
                         <Editable k="home.softcta.handle" className="group-hover:underline">@ciencia_comportamental_</Editable>

@@ -68,9 +68,9 @@ export default async function ProfilePage({ params }: { params: Promise<Params> 
                     breadcrumbNode([{ name: "Quem somos", path: "/sobre" }, { name: p.displayName, path }]),
                 )}
             />
-            <article className="container mx-auto max-w-3xl px-4 pb-20 pt-24">
+            <article className="container mx-auto max-w-3xl px-4 pb-16 pt-8 md:pb-20 md:pt-24">
                 <ProfileSwap profileSlug={p.slug}>
-                    <p className="mb-6 text-sm"><Link href="/sobre" className="text-green-700 hover:underline">← Quem somos</Link></p>
+                    <p className="mb-6 text-base md:text-sm"><Link href="/sobre" className="-my-2 inline-block py-2 text-green-700 hover:underline">← Quem somos</Link></p>
                     <ProfileView profile={p} />
                 </ProfileSwap>
             </article>

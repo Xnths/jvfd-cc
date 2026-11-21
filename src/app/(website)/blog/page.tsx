@@ -29,7 +29,7 @@ export default async function BlogPage() {
     }));
 
     return (
-        <div className="container mx-auto px-4 py-20 min-h-screen">
+        <div className="container mx-auto px-4 pt-8 pb-16 md:py-20 min-h-screen">
             <JsonLd data={graph(blogNode(posts), breadcrumbNode([{ name: "Blog", path: "/blog" }]))} />
             <BlogList posts={serializablePosts} />
         </div>
