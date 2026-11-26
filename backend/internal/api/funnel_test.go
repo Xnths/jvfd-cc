@@ -449,3 +449,34 @@ func TestAlertsNoLeadsWhileGoogleReportsClicks(t *testing.T) {
 		t.Fatalf("sent: %+v", mailer.sent)
 	}
 }
+
+func TestNotPaidAfterPaymentWasSentIsRefused(t *testing.T) {
+	e, _, w, tok := bookedAndUploaded(t)
+	e.pay(tok, leadA, `{"status":"paid","value":300}`)
+	if _, err := w.UploadPending(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if c := e.pay(tok, leadA, `{"status":"not_paid"}`); c != 409 {
+		t.Fatalf("not_paid after payment sent: %d", c)
+	}
+	if _, _, _, ok := e.adjustment(leadA); ok {
+		t.Fatal("retraction queued")
+	}
+}
+
+func TestAlertsOnAnyPaymentProblem(t *testing.T) {
+	e := newTestEnv(t)
+	t.Setenv("ADMIN_EMAILS", "jonathas@x.test")
+	t.Setenv("ADMIN_ROLES", "jonathas@x.test:tech")
+	mailer := &recordingMailer{}
+	e.srv.Mailer = mailer
+	e.exec(`INSERT INTO leads (id, gclid, clicked_at) SELECT gen_random_uuid(), 'g'||i, now() FROM generate_series(1,50) i`)
+	e.exec(`INSERT INTO conversion_uploads (lead_id, stage, conversion_time, status) SELECT id, 'whatsapp_click', now(), 'succeeded' FROM leads`)
+	e.exec(`INSERT INTO conversion_uploads (lead_id, stage, conversion_time, value, status, updated_at) SELECT id, 'payment_confirmed', now(), 100, 'pending', now() - interval '2 days' FROM leads LIMIT 1`)
+	if _, err := jobs["ads.alerts"](t.Context(), e.srv); err != nil {
+		t.Fatal(err)
+	}
+	if len(mailer.sent) != 1 || !strings.Contains(mailer.sent[0].HTML, "GOOGLE_ADS_ACTION_PAGAMENTO") {
+		t.Fatalf("sent: %+v", mailer.sent)
+	}
+}

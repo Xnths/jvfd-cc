@@ -244,7 +244,7 @@ export function Leads() {
                                                     <Button
                                                         size="sm"
                                                         variant={l.paymentStatus === 'not_paid' ? 'destructive' : 'outline'}
-                                                        disabled={l.paymentStatus === 'not_paid' || saving}
+                                                        disabled={l.paymentStatus === 'not_paid' || l.uploads.payment_confirmed?.status === 'succeeded' || saving}
                                                         onClick={() => {
                                                             if (window.confirm('Marcar como não paga? A consulta será retirada do Google Ads.')) void pay(l, 'not_paid')
                                                         }}

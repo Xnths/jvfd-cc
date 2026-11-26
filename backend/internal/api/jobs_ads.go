@@ -120,6 +120,24 @@ func adsAlerts(ctx context.Context, s *Server) (map[string]any, error) {
 		reasons = append(reasons, fmt.Sprintf("%d de %d envios ao Google Ads falharam nas últimas 24 h.", failed, total))
 	}
 
+	var payFailed, payStuck, adjFailed int
+	if err := s.Pool.QueryRow(ctx, `SELECT
+		(SELECT count(*) FROM conversion_uploads WHERE stage = $1 AND (status = 'failed' OR google_status = 'FAILURE')),
+		(SELECT count(*) FROM conversion_uploads WHERE stage = $1 AND status IN ('pending','retry') AND updated_at < $2),
+		(SELECT count(*) FROM conversion_adjustments WHERE status = 'failed' OR (status IN ('pending','retry') AND updated_at < $3))`,
+		ads.StagePayment, now.Add(-24*time.Hour), now.AddDate(0, 0, -3)).Scan(&payFailed, &payStuck, &adjFailed); err != nil {
+		return nil, err
+	}
+	if payFailed > 0 {
+		reasons = append(reasons, fmt.Sprintf("%d pagamento(s) falharam no envio ao Google Ads: use Reenviar em /admin/leads.", payFailed))
+	}
+	if payStuck > 0 {
+		reasons = append(reasons, fmt.Sprintf("%d pagamento(s) na fila há mais de 24 h (confira GOOGLE_ADS_ACTION_PAGAMENTO).", payStuck))
+	}
+	if adjFailed > 0 {
+		reasons = append(reasons, fmt.Sprintf("%d correção(ões) de valor ou retirada de consulta falharam ou estão paradas.", adjFailed))
+	}
+
 	if raw := s.jobState(ctx, "ads.campaigns"); raw != nil {
 		var camp struct {
 			D3 []ads.CampaignRow `json:"d3"`

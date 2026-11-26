@@ -253,6 +253,19 @@ func (s *Server) adminLeadPayment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if in.Status == "not_paid" {
+		var sent bool
+		if err := tx.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM conversion_uploads WHERE lead_id::text = $1 AND stage = $2 AND status = 'succeeded')`,
+			r.PathValue("id"), ads.StagePayment).Scan(&sent); err != nil {
+			serverError(w, s.Log, r, err)
+			return
+		}
+		if sent {
+			httpx.Problem(w, http.StatusConflict, "O pagamento já foi enviado ao Google Ads e não pode ser desfeito por aqui.")
+			return
+		}
+	}
+
 	if in.Status == "paid" {
 		at := now
 		if paidAt != nil {
