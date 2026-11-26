@@ -169,13 +169,15 @@ func insertUpload(ctx context.Context, q interface {
 	}
 	_, err := q.Exec(ctx, `INSERT INTO conversion_uploads (lead_id, stage, conversion_time, value, status, last_error_code)
 		SELECT $1::uuid, $2, $3, $4,
-		  CASE WHEN l.source = ANY($7::text[]) THEN 'skipped' ELSE $5 END,
-		  CASE WHEN l.source = ANY($7::text[]) THEN 'NOT_PATIENT' ELSE nullif($6,'') END
+		  CASE WHEN l.source = ANY($7::text[]) THEN 'skipped' WHEN $2 = $8 AND l.gclid IS NULL THEN 'skipped' ELSE $5 END,
+		  CASE WHEN l.source = ANY($7::text[]) THEN 'NOT_PATIENT'
+		    WHEN $2 = $8 AND l.gclid IS NULL AND (l.gbraid IS NOT NULL OR l.wbraid IS NOT NULL) THEN $9
+		    WHEN $2 = $8 AND l.gclid IS NULL THEN 'NO_CLICK_ID' ELSE nullif($6,'') END
 		FROM leads l WHERE l.id = $1::uuid
 		ON CONFLICT (lead_id, stage) DO UPDATE SET conversion_time = EXCLUDED.conversion_time, value = EXCLUDED.value,
 		  status = EXCLUDED.status, last_error_code = EXCLUDED.last_error_code, last_error_message = NULL, attempts = 0,
 		  next_attempt_at = now(), updated_at = now()
-		WHERE conversion_uploads.status <> 'succeeded'`, leadID, stage, at, value, status, code, nonPatientSources)
+		WHERE conversion_uploads.status <> 'succeeded'`, leadID, stage, at, value, status, code, nonPatientSources, ads.StagePayment, ads.BraidNotPermitted)
 	return err
 }
 

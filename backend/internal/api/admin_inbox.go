@@ -261,15 +261,7 @@ func (s *Server) adminLeadStatus(w http.ResponseWriter, r *http.Request) {
 	case in.Status == "qualified" && qAt != nil:
 		err = insertUpload(r.Context(), tx, r.PathValue("id"), ads.StageMessage, *qAt, nil, hasID)
 	case in.Status == "converted" && cAt != nil:
-		v := suggestedValue(source, pageURL)
-		if stored != nil {
-			v = *stored
-		}
-		err = insertUpload(r.Context(), tx, r.PathValue("id"), ads.StageAppointment, *cAt, &v, hasID)
-		// A value edited after Google already has the booking is corrected with an adjustment.
-		if err == nil && hasID {
-			err = syncRestatement(r.Context(), tx, r.PathValue("id"), v, s.Now())
-		}
+		err = insertUpload(r.Context(), tx, r.PathValue("id"), ads.StageAppointment, *cAt, nil, hasID)
 	}
 	if err == nil {
 		err = tx.Commit(r.Context())

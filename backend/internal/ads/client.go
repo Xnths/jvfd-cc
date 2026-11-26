@@ -21,6 +21,7 @@ type Config struct {
 	DeveloperToken, ClientID, ClientSecret, RefreshToken string
 	LoginCustomerID, CustomerID, APIVersion              string
 	ActionClick, ActionMessage, ActionAppointment        string
+	ActionPayment                                        string
 	ValidateOnly                                         bool
 }
 
@@ -36,6 +37,8 @@ func (c Config) action(stage string) string {
 		return c.ActionMessage
 	case StageAppointment:
 		return c.ActionAppointment
+	case StagePayment:
+		return c.ActionPayment
 	}
 	return c.ActionClick
 }
@@ -44,7 +47,17 @@ const (
 	StageClick       = "whatsapp_click"
 	StageMessage     = "message_received"
 	StageAppointment = "appointment_booked"
+	StagePayment     = "payment_confirmed"
 )
+
+const BraidNotPermitted = "ONE_PER_CLICK_CONVERSION_ACTION_NOT_PERMITTED_WITH_BRAID"
+
+func OrderID(leadID, stage string) string {
+	if stage == StagePayment {
+		return leadID + "-pago"
+	}
+	return leadID + ":" + stage
+}
 
 // ErrAuth means OAuth or the developer token was rejected: retrying will not help until someone fixes the credentials.
 var ErrAuth = errors.New("google ads authentication failed")
@@ -501,7 +514,7 @@ func ConfigFromEnv(get func(string) string) Config {
 		DeveloperToken: get("GADS_DEVELOPER_TOKEN"), ClientID: get("GADS_CLIENT_ID"), ClientSecret: get("GADS_CLIENT_SECRET"),
 		RefreshToken: get("GADS_REFRESH_TOKEN"), LoginCustomerID: get("GADS_LOGIN_CUSTOMER_ID"), CustomerID: get("GADS_CUSTOMER_ID"),
 		APIVersion: get("GADS_API_VERSION"), ActionClick: get("GADS_CA_WHATSAPP_CLICK"), ActionMessage: get("GADS_CA_MESSAGE_RECEIVED"),
-		ActionAppointment: get("GADS_CA_APPOINTMENT_BOOKED"), ValidateOnly: get("GADS_VALIDATE_ONLY") == "true",
+		ActionAppointment: get("GADS_CA_APPOINTMENT_BOOKED"), ActionPayment: get("GOOGLE_ADS_ACTION_PAGAMENTO"), ValidateOnly: get("GADS_VALIDATE_ONLY") == "true",
 	}
 }
 

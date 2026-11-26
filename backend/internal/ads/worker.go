@@ -100,8 +100,8 @@ func (w *Worker) UploadPending(ctx context.Context) (Result, error) {
 	rs, err := tx.Query(ctx, `SELECT cu.id::text, cu.lead_id::text, cu.stage, cu.conversion_time, cu.value::float8, cu.attempts,
 		l.gclid, l.gbraid, l.wbraid, l.clicked_at, l.message_at
 		FROM conversion_uploads cu JOIN leads l ON l.id = cu.lead_id
-		WHERE cu.status IN ('pending','retry') AND cu.next_attempt_at <= now()
-		ORDER BY cu.next_attempt_at LIMIT $1 FOR UPDATE OF cu SKIP LOCKED`, w.Batch)
+		WHERE cu.status IN ('pending','retry') AND cu.next_attempt_at <= now() AND (cu.stage <> $2 OR $3)
+		ORDER BY cu.next_attempt_at LIMIT $1 FOR UPDATE OF cu SKIP LOCKED`, w.Batch, StagePayment, w.Cfg.ActionPayment != "")
 	if err != nil {
 		return res, err
 	}
@@ -119,12 +119,30 @@ func (w *Worker) UploadPending(ctx context.Context) (Result, error) {
 		return res, nil
 	}
 	now := w.Now()
+	kept := rows[:0]
+	for _, r := range rows {
+		if r.stage == StagePayment && deref(r.gclid) == "" {
+			code := "NO_CLICK_ID"
+			if deref(r.gbraid) != "" || deref(r.wbraid) != "" {
+				code = BraidNotPermitted
+			}
+			if _, err := tx.Exec(ctx, `UPDATE conversion_uploads SET status = 'skipped', last_error_code = $2, updated_at = now() WHERE id::text = $1`, r.id, code); err != nil {
+				return res, err
+			}
+			continue
+		}
+		kept = append(kept, r)
+	}
+	rows = kept
+	if len(rows) == 0 {
+		return res, tx.Commit(ctx)
+	}
 	convs := make([]Conversion, len(rows))
 	for i := range rows {
 		rows[i].at = ConversionTime(rows[i].stage, rows[i].at, rows[i].clickedAt, rows[i].messageAt, now)
 		r := rows[i]
 		convs[i] = Conversion{Gclid: deref(r.gclid), Gbraid: deref(r.gbraid), Wbraid: deref(r.wbraid),
-			Action: w.Cfg.action(r.stage), Time: r.at, Value: r.value, OrderID: r.leadID + ":" + r.stage}
+			Action: w.Cfg.action(r.stage), Time: r.at, Value: r.value, OrderID: OrderID(r.leadID, r.stage)}
 	}
 	out := w.Up.Upload(ctx, convs)
 	if errors.Is(out.Err, ErrAuth) {

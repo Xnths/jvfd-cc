@@ -34,7 +34,7 @@ func (f *fakeUploader) Upload(_ context.Context, c []ads.Conversion) ads.Outcome
 }
 
 func adsWorker(e *testEnv, up ads.Uploader) *ads.Worker {
-	return ads.NewWorker(e.srv.Pool, up, ads.Config{ActionClick: "ca/click", ActionMessage: "ca/msg", ActionAppointment: "ca/appt"},
+	return ads.NewWorker(e.srv.Pool, up, ads.Config{ActionClick: "ca/click", ActionMessage: "ca/msg", ActionAppointment: "ca/appt", ActionPayment: "ca/pay"},
 		slog.New(slog.NewTextHandler(io.Discard, nil)))
 }
 
@@ -167,21 +167,26 @@ func TestStatusQueuesStagesWithEditableValue(t *testing.T) {
 	if uploadStatus(e, leadA, "message_received") != "pending" {
 		t.Fatal("message_received not queued")
 	}
-	value := func(id string) float64 {
-		var v float64
+	uploadValue := func(id string) *float64 {
+		var v *float64
 		_ = e.srv.Pool.QueryRow(t.Context(), `SELECT value::float8 FROM conversion_uploads WHERE lead_id::text=$1 AND stage='appointment_booked'`, id).Scan(&v)
 		return v
 	}
+	stored := func(id string) float64 {
+		var v float64
+		_ = e.srv.Pool.QueryRow(t.Context(), `SELECT converted_value::float8 FROM leads WHERE id::text=$1`, id).Scan(&v)
+		return v
+	}
 	patch(leadA, `{"status":"converted"}`)
-	if v := value(leadA); v != 3000 {
-		t.Fatalf("evaluation suggestion = %v", v)
+	if v := uploadValue(leadA); v != nil || uploadStatus(e, leadA, "appointment_booked") != "pending" {
+		t.Fatalf("booking upload value = %v", v)
 	}
 	patch("22222222-2222-4222-8222-222222222222", `{"status":"converted"}`)
-	if v := value("22222222-2222-4222-8222-222222222222"); v != 350 {
-		t.Fatalf("default suggestion = %v", v)
-	}
 	patch("22222222-2222-4222-8222-222222222222", `{"status":"converted","value":420.5}`)
-	if v := value("22222222-2222-4222-8222-222222222222"); v != 420.5 {
+	if v := uploadValue("22222222-2222-4222-8222-222222222222"); v != nil {
+		t.Fatalf("booking upload value = %v", *v)
+	}
+	if v := stored("22222222-2222-4222-8222-222222222222"); v != 420.5 {
 		t.Fatalf("edited value = %v", v)
 	}
 	if c := patch(leadA, `{"status":"converted","value":-1}`); c != 400 {

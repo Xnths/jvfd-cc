@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -195,8 +194,6 @@ func (s *Server) adminListMessages(w http.ResponseWriter, r *http.Request) {
 
 // ── payment: adjustments on the booking (§5.3) ───────────────────────────────
 
-var errRetracted = errors.New("conversion already retracted")
-
 // queueAdjustment (re)queues the single adjustment of a lead; the latest decision wins.
 func queueAdjustment(ctx context.Context, tx pgx.Tx, leadID, typ string, value *float64, at time.Time) error {
 	_, err := tx.Exec(ctx, `INSERT INTO conversion_adjustments (lead_id, adjustment_type, value, adjustment_time, status)
@@ -205,53 +202,6 @@ func queueAdjustment(ctx context.Context, tx pgx.Tx, leadID, typ string, value *
 		  adjustment_time = EXCLUDED.adjustment_time, status = 'pending', attempts = 0, next_attempt_at = now(),
 		  last_error_code = NULL, last_error_message = NULL, response = NULL, updated_at = now()`, leadID, typ, value, at)
 	return err
-}
-
-// syncRestatement makes Google's value for the booking equal want. Before the booking has been accepted there is
-// nothing to correct (the upload itself carries the stored value); a paid lead keeps its paid value.
-func syncRestatement(ctx context.Context, tx pgx.Tx, leadID string, want float64, now time.Time) error {
-	var upStatus string
-	var upValue *float64
-	var payStatus *string
-	err := tx.QueryRow(ctx, `SELECT cu.status, cu.value::float8, l.payment_status
-		FROM conversion_uploads cu JOIN leads l ON l.id = cu.lead_id
-		WHERE cu.lead_id::text = $1 AND cu.stage = $2`, leadID, ads.StageAppointment).Scan(&upStatus, &upValue, &payStatus)
-	if isNoRows(err) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	if upStatus != "succeeded" || payStatus != nil {
-		return nil
-	}
-	return restate(ctx, tx, leadID, upValue, want, now)
-}
-
-// restate compares want with the value Google has now (the uploaded one, or the last restated one).
-func restate(ctx context.Context, tx pgx.Tx, leadID string, uploaded *float64, want float64, now time.Time) error {
-	var adjType, adjStatus *string
-	var adjValue *float64
-	err := tx.QueryRow(ctx, `SELECT adjustment_type, status, value::float8 FROM conversion_adjustments WHERE lead_id::text = $1`, leadID).
-		Scan(&adjType, &adjStatus, &adjValue)
-	if err != nil && !isNoRows(err) {
-		return err
-	}
-	have := uploaded
-	if adjType != nil {
-		switch {
-		case *adjType == "RETRACTION" && *adjStatus == "succeeded":
-			return errRetracted
-		case *adjType == "RESTATEMENT" && *adjStatus == "succeeded":
-			have = adjValue
-		}
-	}
-	if have != nil && *have == want {
-		// Google already has this value; drop a queued correction it never needed.
-		_, err := tx.Exec(ctx, `DELETE FROM conversion_adjustments WHERE lead_id::text = $1 AND status IN ('pending','retry','failed')`, leadID)
-		return err
-	}
-	return queueAdjustment(ctx, tx, leadID, "RESTATEMENT", &want, now)
 }
 
 func (s *Server) adminLeadPayment(w http.ResponseWriter, r *http.Request) {
@@ -291,10 +241,9 @@ func (s *Server) adminLeadPayment(w http.ResponseWriter, r *http.Request) {
 
 	var hasID bool
 	var upStatus *string
-	var upValue *float64
-	err = tx.QueryRow(ctx, `SELECT l.gclid IS NOT NULL OR l.gbraid IS NOT NULL OR l.wbraid IS NOT NULL, cu.status, cu.value::float8
+	err = tx.QueryRow(ctx, `SELECT l.gclid IS NOT NULL OR l.gbraid IS NOT NULL OR l.wbraid IS NOT NULL, cu.status
 		FROM leads l LEFT JOIN conversion_uploads cu ON cu.lead_id = l.id AND cu.stage = $2
-		WHERE l.id::text = $1 AND l.status = 'converted' FOR UPDATE OF l`, r.PathValue("id"), ads.StageAppointment).Scan(&hasID, &upStatus, &upValue)
+		WHERE l.id::text = $1 AND l.status = 'converted' FOR UPDATE OF l`, r.PathValue("id"), ads.StageAppointment).Scan(&hasID, &upStatus)
 	if isNoRows(err) {
 		httpx.Problem(w, http.StatusConflict, "Só é possível registrar pagamento de consultas marcadas.")
 		return
@@ -305,24 +254,27 @@ func (s *Server) adminLeadPayment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if in.Status == "paid" {
-		_, err = tx.Exec(ctx, `UPDATE leads SET payment_status = 'paid', paid_value = $2, paid_at = coalesce($3, now()) WHERE id::text = $1`,
-			r.PathValue("id"), in.Value, paidAt)
-		// The booking row carries the stored value until Google has it; after that the paid amount is restated.
-		if err == nil && hasID && upStatus != nil && *upStatus == "succeeded" {
-			err = restate(ctx, tx, r.PathValue("id"), upValue, *in.Value, now)
-		} else if err == nil && hasID && upStatus != nil {
-			_, err = tx.Exec(ctx, `UPDATE conversion_uploads SET value = $3, updated_at = now() WHERE lead_id::text = $1 AND stage = $2 AND status <> 'succeeded'`,
-				r.PathValue("id"), ads.StageAppointment, in.Value)
+		at := now
+		if paidAt != nil {
+			at = *paidAt
+		}
+		_, err = tx.Exec(ctx, `UPDATE leads SET payment_status = 'paid', paid_value = $2, paid_at = $3 WHERE id::text = $1`,
+			r.PathValue("id"), in.Value, at)
+		if err == nil {
+			_, err = tx.Exec(ctx, `DELETE FROM conversion_adjustments WHERE lead_id::text = $1 AND adjustment_type = 'RETRACTION' AND status <> 'succeeded'`, r.PathValue("id"))
+		}
+		if err == nil {
+			err = insertUpload(ctx, tx, r.PathValue("id"), ads.StagePayment, at, in.Value, hasID)
 		}
 	} else {
 		_, err = tx.Exec(ctx, `UPDATE leads SET payment_status = 'not_paid', paid_value = NULL, paid_at = NULL WHERE id::text = $1`, r.PathValue("id"))
+		if err == nil {
+			_, err = tx.Exec(ctx, `UPDATE conversion_uploads SET status = 'skipped', last_error_code = 'NOT_PAID', updated_at = now()
+				WHERE lead_id::text = $1 AND stage = $2 AND status <> 'succeeded'`, r.PathValue("id"), ads.StagePayment)
+		}
 		if err == nil && hasID && upStatus != nil && *upStatus != "skipped" {
 			err = queueAdjustment(ctx, tx, r.PathValue("id"), "RETRACTION", nil, now)
 		}
-	}
-	if errors.Is(err, errRetracted) {
-		httpx.Problem(w, http.StatusConflict, "A conversão já foi retirada do Google Ads e não pode ser corrigida.")
-		return
 	}
 	if err == nil {
 		err = tx.Commit(ctx)

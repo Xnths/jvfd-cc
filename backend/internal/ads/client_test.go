@@ -152,3 +152,18 @@ func TestParseCampaigns(t *testing.T) {
 		t.Fatalf("rows=%+v err=%v", rows, err)
 	}
 }
+
+func TestPaymentEventCarriesOffsetValueAndOrderID(t *testing.T) {
+	v := 2300.0
+	at := time.Date(2026, 11, 24, 16, 8, 0, 0, time.UTC)
+	e := (&Client{}).dmEvent(Conversion{Gclid: "G1", Action: "7917766229", Time: at, Value: &v, OrderID: OrderID("L1", StagePayment)})
+	if e.EventTimestamp != "2026-11-24T13:08:00-03:00" || e.TransactionID != "L1-pago" || e.Currency != "BRL" || e.ConversionValue == nil || *e.ConversionValue != 2300 || e.AdIdentifiers["gclid"] != "G1" {
+		t.Fatalf("event %+v", e)
+	}
+	if OrderID("L1", StageAppointment) != "L1:appointment_booked" {
+		t.Fatal("booking order id changed")
+	}
+	if (Config{ActionPayment: "7917766229"}).action(StagePayment) != "7917766229" {
+		t.Fatal("payment action")
+	}
+}

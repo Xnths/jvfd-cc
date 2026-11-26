@@ -35,13 +35,13 @@ type Lead = {
 type Candidate = { id: string; clickedAt: string; source: string; pageUrl: string; utmSource?: string | null; utmCampaign?: string | null; hasClickId: boolean }
 type Unmatched = { id: string; messageAt: string; reason: 'no_match' | 'ambiguous'; candidates: number; note: string }
 
-type Stage = 'whatsapp_click' | 'message_received' | 'appointment_booked'
+type Stage = 'whatsapp_click' | 'message_received' | 'appointment_booked' | 'payment_confirmed'
 type Upload = { status: 'pending' | 'retry' | 'succeeded' | 'failed' | 'skipped'; code?: string | null; message?: string | null; attempts: number
     google?: 'PROCESSING' | 'SUCCESS' | 'FAILURE' | null
     googleError?: string | null
 }
 
-const STAGE_LABEL: Record<Stage, string> = { whatsapp_click: 'Clique', message_received: 'Mensagem', appointment_booked: 'Consulta' }
+const STAGE_LABEL: Record<Stage, string> = { whatsapp_click: 'Clique', message_received: 'Mensagem', appointment_booked: 'Consulta', payment_confirmed: 'Pagamento' }
 const UPLOAD_LABEL: Record<Upload['status'], string> = {
     pending: 'na fila', retry: 'tentando de novo', succeeded: 'enviado', failed: 'falhou', skipped: 'não enviado',
 }
@@ -246,7 +246,7 @@ export function Leads() {
                                                         variant={l.paymentStatus === 'not_paid' ? 'destructive' : 'outline'}
                                                         disabled={l.paymentStatus === 'not_paid' || saving}
                                                         onClick={() => {
-                                                            if (window.confirm('Marcar como não paga? A conversão será retirada do Google Ads.')) void pay(l, 'not_paid')
+                                                            if (window.confirm('Marcar como não paga? A consulta será retirada do Google Ads.')) void pay(l, 'not_paid')
                                                         }}
                                                     >
                                                         Não pagou

@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log/slog"
+	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -78,52 +81,142 @@ func bookedAndUploaded(t *testing.T) (*testEnv, *adjUploader, *ads.Worker, strin
 	return e, up, w, tok
 }
 
-func TestPaidAmountRestatesTheBookingAfterGoogleHasIt(t *testing.T) {
+func TestPaidEnqueuesThePaymentActionWithValueTimeAndOrderID(t *testing.T) {
 	e, up, w, tok := bookedAndUploaded(t)
-	if c := e.pay(tok, leadA, `{"status":"paid","value":400}`); c != 200 {
-		t.Fatalf("paid: %d", c)
-	}
-	if typ, st, v, ok := e.adjustment(leadA); !ok || typ != "RESTATEMENT" || st != "pending" || v == nil || *v != 400 {
-		t.Fatalf("adjustment %s %s %v %v", typ, st, v, ok)
-	}
-	res, err := w.AdjustPending(t.Context())
-	if err != nil || res.Succeeded != 1 {
-		t.Fatalf("res=%+v err=%v", res, err)
-	}
-	a := up.adjSent[0]
-	if a.Type != "RESTATEMENT" || a.OrderID != leadA+":appointment_booked" || a.Action != "ca/appt" || a.Value == nil || *a.Value != 400 {
-		t.Fatalf("sent %+v", a)
-	}
-	if res, _ = w.AdjustPending(t.Context()); res.Sent != 0 {
-		t.Fatalf("resent %d", res.Sent)
-	}
-}
-
-func TestPaidEqualToBookedValueQueuesNothing(t *testing.T) {
-	e, _, _, tok := bookedAndUploaded(t)
-	if c := e.pay(tok, leadA, `{"status":"paid","value":350}`); c != 200 {
+	e.exec(`UPDATE leads SET clicked_at = '2026-11-23T09:02:00-03:00' WHERE id::text = $1`, leadA)
+	paidAt := "2026-11-24T13:08:00-03:00"
+	if c := e.pay(tok, leadA, `{"status":"paid","value":2300,"paidAt":"`+paidAt+`"}`); c != 200 {
 		t.Fatalf("paid: %d", c)
 	}
 	if _, _, _, ok := e.adjustment(leadA); ok {
-		t.Fatal("adjustment queued for an unchanged value")
+		t.Fatal("payment touched the booking")
+	}
+	up.sent = nil
+	res, err := w.UploadPending(t.Context())
+	if err != nil || res.Succeeded != 1 || len(up.sent) != 1 {
+		t.Fatalf("res=%+v err=%v sent=%+v", res, err, up.sent)
+	}
+	c := up.sent[0]
+	want, _ := time.Parse(time.RFC3339, paidAt)
+	if c.Action != "ca/pay" || c.Gclid != "G1" || c.Value == nil || *c.Value != 2300 || !c.Time.Equal(want) || c.OrderID != leadA+"-pago" {
+		t.Fatalf("sent %+v", c)
+	}
+	if uploadStatus(e, leadA, "payment_confirmed") != "succeeded" {
+		t.Fatal("payment not recorded")
+	}
+	if c := e.pay(tok, leadA, `{"status":"paid","value":2300}`); c != 200 {
+		t.Fatalf("paid again: %d", c)
+	}
+	if res, _ := w.UploadPending(t.Context()); res.Sent != 0 {
+		t.Fatalf("resent a succeeded payment: %+v", res)
 	}
 }
 
-func TestPaidBeforeGoogleHasTheBookingEditsTheUploadInstead(t *testing.T) {
+func TestMarcadaCarriesNoPaymentValue(t *testing.T) {
 	e := newTestEnv(t)
 	tok := e.token(authn.RoleAdminClinical)
 	e.do("POST", "/api/leads", `{"id":"`+leadA+`","gclid":"G1"}`, "")
-	e.booked(tok, leadA, `{"status":"converted"}`)
+	e.booked(tok, leadA, `{"status":"converted","value":500}`)
 	if c := e.pay(tok, leadA, `{"status":"paid","value":420}`); c != 200 {
 		t.Fatalf("paid: %d", c)
 	}
-	if _, _, _, ok := e.adjustment(leadA); ok {
-		t.Fatal("adjustment queued although the booking is still pending")
+	up := &adjUploader{}
+	w := adsWorker(e, up)
+	if _, err := w.UploadPending(t.Context()); err != nil {
+		t.Fatal(err)
 	}
+	var booking, payment *ads.Conversion
+	for i := range up.sent {
+		switch up.sent[i].Action {
+		case "ca/appt":
+			booking = &up.sent[i]
+		case "ca/pay":
+			payment = &up.sent[i]
+		}
+	}
+	if booking == nil || booking.Value != nil || booking.OrderID != leadA+":appointment_booked" {
+		t.Fatalf("booking %+v", booking)
+	}
+	if payment == nil || payment.Value == nil || *payment.Value != 420 {
+		t.Fatalf("payment %+v", payment)
+	}
+	if _, _, _, ok := e.adjustment(leadA); ok {
+		t.Fatal("adjustment queued")
+	}
+}
+
+func TestBraidLeadsSkipThePaymentAction(t *testing.T) {
+	e := newTestEnv(t)
+	tok := e.token(authn.RoleAdminClinical)
+	e.do("POST", "/api/leads", `{"id":"`+leadA+`","gbraid":"GB1"}`, "")
+	e.booked(tok, leadA, `{"status":"converted"}`)
+	if c := e.pay(tok, leadA, `{"status":"paid","value":300}`); c != 200 {
+		t.Fatalf("paid: %d", c)
+	}
+	var st, code string
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT status, coalesce(last_error_code,'') FROM conversion_uploads WHERE lead_id::text=$1 AND stage='payment_confirmed'`, leadA).Scan(&st, &code)
+	if st != "skipped" || code != ads.BraidNotPermitted {
+		t.Fatalf("payment row %s %s", st, code)
+	}
+	up := &adjUploader{}
+	if _, err := adsWorker(e, up).UploadPending(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range up.sent {
+		if c.Action == "ca/pay" {
+			t.Fatalf("braid payment sent: %+v", c)
+		}
+	}
+}
+
+func TestPaymentWaitsWhileTheActionIsNotConfigured(t *testing.T) {
+	e, _, _, tok := bookedAndUploaded(t)
+	e.pay(tok, leadA, `{"status":"paid","value":100}`)
+	up := &fakeUploader{}
+	w := ads.NewWorker(e.srv.Pool, up, ads.Config{ActionClick: "ca/click", ActionAppointment: "ca/appt"}, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	if res, _ := w.UploadPending(t.Context()); res.Sent != 0 || uploadStatus(e, leadA, "payment_confirmed") != "pending" {
+		t.Fatalf("res=%+v", res)
+	}
+}
+
+func TestPaymentBackfillIsIdempotent(t *testing.T) {
+	e := newTestEnv(t)
+	tok := e.token(authn.RoleAdminClinical)
+	gclid := "CjwKCAiA5Y_YBhBbEiwAK5Dl7cYzC0xDoBiEoVRf3TKzuFd72aT6d2qM2Px7NFR7Reze1PG2tZ5iiRoCEGUQAvD_BwE"
+	e.do("POST", "/api/leads", `{"id":"`+leadA+`","gclid":"`+gclid+`"}`, "")
+	e.do("POST", "/api/leads", `{"id":"`+leadB+`","wbraid":"WB1"}`, "")
+	e.booked(tok, leadA, `{"status":"converted"}`)
+	e.booked(tok, leadB, `{"status":"converted"}`)
+	e.exec(`UPDATE leads SET payment_status = 'paid', paid_value = 2300, paid_at = NULL WHERE id::text = $1`, leadA)
+	e.exec(`UPDATE leads SET payment_status = 'paid', paid_value = 500, paid_at = now() WHERE id::text = $1`, leadB)
+	raw, err := os.ReadFile("../../migrations/0020_payment_conversion.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	up := strings.SplitN(strings.SplitN(string(raw), "-- +goose Down", 2)[0], "-- +goose Up", 2)[1]
+	for i := 0; i < 2; i++ {
+		if _, err := e.srv.Pool.Exec(t.Context(), up); err != nil {
+			t.Fatalf("run %d: %v", i, err)
+		}
+	}
+	var n int
+	var at time.Time
 	var v float64
-	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT value::float8 FROM conversion_uploads WHERE lead_id::text=$1 AND stage='appointment_booked'`, leadA).Scan(&v)
-	if v != 420 {
-		t.Fatalf("upload value %v", v)
+	var st string
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT count(*) OVER (), conversion_time, value::float8, status FROM conversion_uploads WHERE lead_id::text=$1 AND stage='payment_confirmed'`, leadA).Scan(&n, &at, &v, &st)
+	want, _ := time.Parse(time.RFC3339, "2026-11-24T13:08:00-03:00")
+	if n != 1 || !at.Equal(want) || v != 2300 || st != "pending" {
+		t.Fatalf("backfill %d %v %v %s", n, at, v, st)
+	}
+	var code string
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT status, last_error_code FROM conversion_uploads WHERE lead_id::text=$1 AND stage='payment_confirmed'`, leadB).Scan(&st, &code)
+	if st != "skipped" || code != ads.BraidNotPermitted {
+		t.Fatalf("braid backfill %s %s", st, code)
+	}
+	var total int
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT count(*) FROM conversion_uploads WHERE stage='payment_confirmed'`).Scan(&total)
+	if total != 2 {
+		t.Fatalf("rows %d", total)
 	}
 }
 
@@ -146,9 +239,8 @@ func TestNotPaidRetractsAndAdjustmentWaitsForTheBooking(t *testing.T) {
 	if res, _ := w.AdjustPending(t.Context()); res.Succeeded != 1 || up.adjSent[0].Type != "RETRACTION" || up.adjSent[0].Value != nil {
 		t.Fatalf("res=%+v sent=%+v", res, up.adjSent)
 	}
-	// A retracted conversion cannot be restated.
-	if c := e.pay(tok, leadA, `{"status":"paid","value":400}`); c != 409 {
-		t.Fatalf("paid after retraction: %d", c)
+	if st := uploadStatus(e, leadA, "payment_confirmed"); st != "" {
+		t.Fatalf("payment row on not paid: %s", st)
 	}
 }
 
@@ -164,19 +256,6 @@ func TestPaymentNeedsABookedLeadAndAValue(t *testing.T) {
 		if c := e.pay(tok, leadA, bad); c != 400 {
 			t.Errorf("%s => %d, want 400", bad, c)
 		}
-	}
-}
-
-func TestEditingTheBookedValueAfterUploadRestates(t *testing.T) {
-	e, _, _, tok := bookedAndUploaded(t)
-	e.booked(tok, leadA, `{"status":"converted","value":500}`)
-	if typ, _, v, ok := e.adjustment(leadA); !ok || typ != "RESTATEMENT" || *v != 500 {
-		t.Fatalf("adjustment %s %v %v", typ, v, ok)
-	}
-	// Setting it back to what Google has (350) drops the queued correction.
-	e.booked(tok, leadA, `{"status":"converted","value":350}`)
-	if _, _, _, ok := e.adjustment(leadA); ok {
-		t.Fatal("stale adjustment kept")
 	}
 }
 

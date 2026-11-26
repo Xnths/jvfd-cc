@@ -298,11 +298,16 @@ never double count. Clicks without a Google click id are kept but `skipped` (`NO
 - **Message matching** ("Registrar mensagem" on /admin/leads): João reports when a new person wrote (t_msg). The panel lists the clicks in the
   30 minutes before. Exactly one candidate: mark it (uploads `message_received` with conversion time = t_msg). None or several: record
   "Sem correspondência" / "Ambígua" (table `messages_unmatched`, counted in n_3, never uploaded: a wrong match teaches Google the wrong pattern).
-- **Payment** ("Pago (R$)" / "Não pagou" on booked leads with a click id): the paid amount is sent as a `RESTATEMENT` of the booking when it
-  differs from the booked value; "Não pagou" sends a `RETRACTION`. Both go through `ConversionAdjustmentUploadService` (job `ads.adjust`,
-  `conversion_adjustments`, one row per lead, latest decision wins) with `order_id = <lead id>:appointment_booked`, and wait until the booking
-  itself was accepted. Editing the value of an already-uploaded "Marcada" queues a restatement too. Nothing is retracted automatically:
-  bookings older than 60 days without a decision are listed on /admin/funil and in the Monday alert email. A retracted conversion cannot be restated.
+- **Payment** ("Pago (R$)" / "Não pagou" on booked leads with a click id): "Pago" stores `paid_value`/`paid_at` and enqueues a
+  `payment_confirmed` upload on its own action, "WA – Pagamento confirmado" (`GOOGLE_ADS_ACTION_PAGAMENTO`, ID 7917766229, category Compra,
+  count Uma), with value = paid amount in BRL, conversion time = `paid_at` (sent with the -03:00 offset) and transaction id `<lead id>-pago`.
+  The booking ("Marcada", 7516601732) is uploaded with no value and the paid amount never goes to it. Leads with only gbraid/wbraid are
+  stored as "não enviado" (`ONE_PER_CLICK_CONVERSION_ACTION_NOT_PERMITTED_WITH_BRAID`: a "Uma" action rejects braids). Without
+  `GOOGLE_ADS_ACTION_PAGAMENTO` the row waits in the queue. `TOO_RECENT_CONVERSION_ACTION` (action under ~6 h old) is retried hourly.
+  "Não pagou" sends a `RETRACTION` of the booking through `ConversionAdjustmentUploadService` (job `ads.adjust`, `conversion_adjustments`,
+  `order_id = <lead id>:appointment_booked`), waiting until the booking itself was accepted. Nothing is retracted automatically:
+  bookings older than 60 days without a decision are listed on /admin/funil and in the Monday alert email. Migration 0020 backfilled the
+  payment upload for leads already marked Pago.
 - **Funnel** (/admin/funil): n_2..n_5 and rates for 7/30/90 days, the stage to optimize (deepest of B, M, Q with at least 30 conversions that
   carry a click id; P is never primary), the registered primary stage with the 21-day rule between switches (a record only: the switch itself is
   made in Google Ads), per-campaign counts.
