@@ -69,6 +69,8 @@ type Conversion struct {
 	Time                  time.Time
 	Value                 *float64
 	OrderID               string
+	// PhoneHash is the SHA-256 hex of the E.164 phone (leads.phone_sha256), sent as user-provided data.
+	PhoneHash string
 }
 
 // Failure is the partial-failure error Google returned for one conversion.
@@ -201,6 +203,11 @@ type dmEvent struct {
 	ConversionValue *float64          `json:"conversionValue,omitempty"`
 	Currency        string            `json:"currency,omitempty"`
 	EventSource     string            `json:"eventSource"`
+	UserData        *dmUserData       `json:"userData,omitempty"`
+}
+
+type dmUserData struct {
+	UserIdentifiers []map[string]string `json:"userIdentifiers"`
 }
 
 // Upload sends the click conversions through the Data Manager API (Google Ads' UploadClickConversions is closed to
@@ -272,6 +279,9 @@ func (c *Client) dmEvent(v Conversion) dmEvent {
 	if v.Value != nil {
 		e.ConversionValue, e.Currency = v.Value, "BRL"
 	}
+	if v.PhoneHash != "" {
+		e.UserData = &dmUserData{UserIdentifiers: []map[string]string{{"phoneNumber": v.PhoneHash}}}
+	}
 	return e
 }
 
@@ -290,7 +300,14 @@ func (c *Client) ingest(ctx context.Context, action string, events []dmEvent) (i
 	} else {
 		dest["loginAccount"] = map[string]string{"accountType": "GOOGLE_ADS", "accountId": c.Cfg.CustomerID}
 	}
-	raw, _ := json.Marshal(map[string]any{"destinations": []any{dest}, "events": events, "validateOnly": c.Cfg.ValidateOnly})
+	body := map[string]any{"destinations": []any{dest}, "events": events, "validateOnly": c.Cfg.ValidateOnly}
+	for _, e := range events {
+		if e.UserData != nil { // required with hashed user identifiers; left out otherwise so plain gclid uploads stay as before
+			body["encoding"] = "HEX"
+			break
+		}
+	}
+	raw, _ := json.Marshal(body)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.DMBase+"/v1/events:ingest", bytes.NewReader(raw))
 	if err != nil {
 		return 0, nil, err

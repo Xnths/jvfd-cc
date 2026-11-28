@@ -33,6 +33,8 @@ func TestClassify(t *testing.T) {
 		{"tenth attempt fails", row{attempts: 9}, fail("TRANSIENT_ERROR"), "failed", 0, "TRANSIENT_ERROR"},
 		{"request 5xx", row{}, Outcome{Err: errTest, Transient: true}, "retry", 2 * time.Minute, "REQUEST_ERROR"},
 		{"request rejected", row{}, Outcome{Err: errTest}, "failed", 0, "REQUEST_REJECTED"},
+		{"network error keeps retrying inside the click window", row{attempts: 9, clickedAt: now.Add(-7 * 24 * time.Hour)}, Outcome{Err: errTest, Transient: true}, "retry", 6 * time.Hour, "REQUEST_ERROR"},
+		{"network error gives up once the click is too old", row{attempts: 9, clickedAt: now.Add(-30 * 24 * time.Hour)}, Outcome{Err: errTest, Transient: true}, "failed", 0, "REQUEST_ERROR"},
 	}
 	for _, c := range cases {
 		status, next, code, _ := w.classify(c.r, 0, c.out)

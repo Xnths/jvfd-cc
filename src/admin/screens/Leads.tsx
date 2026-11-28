@@ -453,6 +453,7 @@ function AdsPanel() {
 // Exactly one candidate is highlighted, but marking it is always a click; zero or several are recorded as unmatched.
 function MessagePanel({ onDone }: { onDone: () => Promise<void> | void }) {
     const [when, setWhen] = useState('')
+    const [phone, setPhone] = useState('')
     const [candidates, setCandidates] = useState<Candidate[] | null>(null)
     const [busy, setBusy] = useState(false)
     const unmatched = useResource<{ unmatched: Unmatched[] }>('/messages')
@@ -484,6 +485,7 @@ function MessagePanel({ onDone }: { onDone: () => Promise<void> | void }) {
             await api('/messages', { method: 'POST', json: { at, ...body } })
             toast.success(done)
             setCandidates(null)
+            setPhone('')
             await Promise.all([onDone(), unmatched.reload()])
         } catch (e) {
             toast.error(errorMessage(e))
@@ -504,8 +506,23 @@ function MessagePanel({ onDone }: { onDone: () => Promise<void> | void }) {
                     Horário da mensagem
                     <Input type="datetime-local" value={when} onChange={(e) => { setWhen(e.target.value); setCandidates(null) }} />
                 </label>
+                <label className="grid gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    WhatsApp do paciente (opcional)
+                    <Input
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="off"
+                        placeholder="11 91234-5678"
+                        className="text-base md:text-sm"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                    />
+                </label>
                 <Button size="sm" disabled={busy || !when} onClick={search}>Buscar cliques</Button>
             </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+                O número não é guardado: só um código (hash) vai para o Google Ads, para melhorar a atribuição das conversões.
+            </p>
             {candidates && (
                 <div className="mt-3 grid gap-2">
                     <p className="text-xs text-muted-foreground">
@@ -522,7 +539,7 @@ function MessagePanel({ onDone }: { onDone: () => Promise<void> | void }) {
                                     {c.pageUrl} · {c.utmCampaign || c.utmSource || (c.hasClickId ? 'Google (identificador)' : 'sem identificador')}
                                 </div>
                             </div>
-                            <Button size="sm" disabled={busy} onClick={() => register({ leadId: c.id }, 'Mensagem marcada')}>Marcar</Button>
+                            <Button size="sm" disabled={busy} onClick={() => register(phone.trim() ? { leadId: c.id, phone } : { leadId: c.id }, 'Mensagem marcada')}>Marcar</Button>
                         </div>
                     ))}
                     <div className="flex flex-wrap gap-2">

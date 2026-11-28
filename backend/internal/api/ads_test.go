@@ -316,3 +316,43 @@ func TestDiagnosticsStoreGoogleVerdictAndRequeueOnce(t *testing.T) {
 		t.Fatalf("good=%s bad=%s", good, bad)
 	}
 }
+
+func TestRegisteredPhoneIsStoredHashedAndSentWithMessageOnly(t *testing.T) {
+	e := newTestEnv(t)
+	tok := e.token(authn.RoleAdminClinical)
+	e.do("POST", "/api/leads", `{"id":"`+leadA+`","gclid":"G1","source":"hero_cta"}`, "")
+	at := time.Now().Add(time.Minute).UTC().Format(time.RFC3339)
+	msg := func(phone string) int {
+		return e.do("POST", "/api/v1/admin/messages", `{"at":"`+at+`","leadId":"`+leadA+`","phone":"`+phone+`"}`, tok).Code
+	}
+	if c := msg("11 9123"); c != 400 {
+		t.Fatalf("bad phone: %d", c)
+	}
+	if c := msg("(11) 91234-5678"); c != 200 {
+		t.Fatalf("register message: %d", c)
+	}
+	var stored string
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT coalesce(phone_sha256,'') FROM leads`).Scan(&stored)
+	const want = "195563c1d879cb1564e2cdd6d89363ecb1f091ac0eeac094760f06139eae6077"
+	if stored != want {
+		t.Fatalf("phone_sha256 = %q", stored)
+	}
+	var leaked bool
+	_ = e.srv.Pool.QueryRow(t.Context(), `SELECT EXISTS (SELECT 1 FROM leads l WHERE row_to_json(l)::text LIKE '%91234%')
+		OR EXISTS (SELECT 1 FROM audit_log a WHERE a::text LIKE '%91234%')`).Scan(&leaked)
+	if leaked {
+		t.Fatal("raw phone stored")
+	}
+	up := &fakeUploader{}
+	if _, err := adsWorker(e, up).UploadPending(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range up.sent {
+		if strings.HasSuffix(c.OrderID, ":message_received") != (c.PhoneHash == want) {
+			t.Errorf("%s: phone hash %q", c.OrderID, c.PhoneHash)
+		}
+	}
+	if len(up.sent) != 2 {
+		t.Fatalf("sent %d", len(up.sent))
+	}
+}

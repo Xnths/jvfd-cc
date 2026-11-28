@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -100,10 +101,21 @@ func (s *Server) adminRegisterMessage(w http.ResponseWriter, r *http.Request) {
 		LeadID string `json:"leadId"`
 		Reason string `json:"reason"` // no_match | ambiguous, when there is no leadId
 		Note   string `json:"note"`
+		Phone  string `json:"phone"` // optional, with leadId; only its SHA-256 is stored
 	}
 	if !decode(w, r, &in, 2048) {
 		return
 	}
+	var phoneHash any
+	if in.LeadID != "" && strings.TrimSpace(in.Phone) != "" {
+		h, ok := hashPhoneBR(in.Phone)
+		if !ok {
+			badRequest(w, "Telefone inválido: use DDD + número (ex.: 11 91234-5678).")
+			return
+		}
+		phoneHash = h
+	}
+	in.Phone = ""
 	at, win, ok := s.messageWindow(in.At, "")
 	if !ok {
 		badRequest(w, "Horário inválido.")
@@ -124,9 +136,10 @@ func (s *Server) adminRegisterMessage(w http.ResponseWriter, r *http.Request) {
 	if in.LeadID != "" {
 		var hasID bool
 		err = tx.QueryRow(ctx, `UPDATE leads SET status = 'qualified', qualified_at = greatest($2::timestamptz, clicked_at + interval '1 second'),
-			  message_at = greatest($2::timestamptz, clicked_at + interval '1 second')
+			  message_at = greatest($2::timestamptz, clicked_at + interval '1 second'),
+			  phone_sha256 = coalesce($3, phone_sha256)
 			WHERE id::text = $1 AND status = 'clicked' AND message_at IS NULL AND clicked_at < $2::timestamptz + interval '1 minute'
-			RETURNING gclid IS NOT NULL OR gbraid IS NOT NULL OR wbraid IS NOT NULL`, in.LeadID, at).Scan(&hasID)
+			RETURNING gclid IS NOT NULL OR gbraid IS NOT NULL OR wbraid IS NOT NULL`, in.LeadID, at, phoneHash).Scan(&hasID)
 		if isNoRows(err) {
 			httpx.Problem(w, http.StatusConflict, "Esse lead já tem mensagem registrada ou o clique é posterior ao horário.")
 			return

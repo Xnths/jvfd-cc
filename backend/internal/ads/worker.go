@@ -14,6 +14,10 @@ import (
 
 const maxAttempts = 10
 
+// transientWindow is how long after the click a conversion keeps retrying through network errors (the
+// conversion actions use a 30-day click window).
+const transientWindow = 29 * 24 * time.Hour
+
 // Worker sends due conversion_uploads rows. Kick() wakes it right after an insert; the ticker is the safety net.
 type Worker struct {
 	Pool  *pgxpool.Pool
@@ -86,6 +90,7 @@ type row struct {
 	clickedAt             time.Time
 	req                   RequestRef
 	messageAt             *time.Time
+	phoneHash             *string
 }
 
 // UploadPending locks due rows (SKIP LOCKED, so two workers never send the same conversion), uploads them in one
@@ -98,7 +103,7 @@ func (w *Worker) UploadPending(ctx context.Context) (Result, error) {
 	}
 	defer tx.Rollback(ctx)
 	rs, err := tx.Query(ctx, `SELECT cu.id::text, cu.lead_id::text, cu.stage, cu.conversion_time, cu.value::float8, cu.attempts,
-		l.gclid, l.gbraid, l.wbraid, l.clicked_at, l.message_at
+		l.gclid, l.gbraid, l.wbraid, l.clicked_at, l.message_at, l.phone_sha256
 		FROM conversion_uploads cu JOIN leads l ON l.id = cu.lead_id
 		WHERE cu.status IN ('pending','retry') AND cu.next_attempt_at <= now() AND (cu.stage <> $2 OR $3)
 		ORDER BY cu.next_attempt_at LIMIT $1 FOR UPDATE OF cu SKIP LOCKED`, w.Batch, StagePayment, w.Cfg.ActionPayment != "")
@@ -108,7 +113,7 @@ func (w *Worker) UploadPending(ctx context.Context) (Result, error) {
 	var rows []row
 	for rs.Next() {
 		var r row
-		if err := rs.Scan(&r.id, &r.leadID, &r.stage, &r.at, &r.value, &r.attempts, &r.gclid, &r.gbraid, &r.wbraid, &r.clickedAt, &r.messageAt); err != nil {
+		if err := rs.Scan(&r.id, &r.leadID, &r.stage, &r.at, &r.value, &r.attempts, &r.gclid, &r.gbraid, &r.wbraid, &r.clickedAt, &r.messageAt, &r.phoneHash); err != nil {
 			rs.Close()
 			return res, err
 		}
@@ -143,6 +148,9 @@ func (w *Worker) UploadPending(ctx context.Context) (Result, error) {
 		r := rows[i]
 		convs[i] = Conversion{Gclid: deref(r.gclid), Gbraid: deref(r.gbraid), Wbraid: deref(r.wbraid),
 			Action: w.Cfg.action(r.stage), Time: r.at, Value: r.value, OrderID: OrderID(r.leadID, r.stage)}
+		if r.stage != StageClick { // the click itself carries no identity: the phone is only known once the message arrives
+			convs[i].PhoneHash = deref(r.phoneHash)
+		}
 	}
 	out := w.Up.Upload(ctx, convs)
 	if errors.Is(out.Err, ErrAuth) {
@@ -253,6 +261,12 @@ func (w *Worker) classify(r row, i int, out Outcome) (status string, next time.T
 	attempts := r.attempts + 1
 	if out.Err != nil {
 		if out.Transient {
+			// A network/DNS outage says nothing about the conversion itself: keep retrying (backoff capped at 6 h)
+			// while the click is still inside the 30-day window, instead of giving up after maxAttempts.
+			// (A DNS outage on 2026-11-20 used up all 10 attempts in ~17 h and dropped 6 uploads.)
+			if !r.clickedAt.IsZero() && now.Sub(r.clickedAt) < transientWindow {
+				return "retry", now.Add(backoff(attempts)), "REQUEST_ERROR", out.Err.Error()
+			}
 			return retryOrFail(attempts, now, backoff(attempts), "REQUEST_ERROR", out.Err.Error())
 		}
 		return "failed", now, "REQUEST_REJECTED", out.Err.Error()

@@ -202,10 +202,21 @@ func (s *Server) adminLeadStatus(w http.ResponseWriter, r *http.Request) {
 		ConvertedAt *string  `json:"convertedAt"`
 		QualifiedAt *string  `json:"qualifiedAt"`
 		Value       *float64 `json:"value"`
+		Phone       string   `json:"phone"` // optional; only its SHA-256 is stored
 	}
 	if !decode(w, r, &in, 1024) {
 		return
 	}
+	var phoneHash any
+	if strings.TrimSpace(in.Phone) != "" {
+		h, ok := hashPhoneBR(in.Phone)
+		if !ok {
+			badRequest(w, "Telefone inválido: use DDD + número (ex.: 11 91234-5678).")
+			return
+		}
+		phoneHash = h
+	}
+	in.Phone = ""
 	if in.Status != "clicked" && in.Status != "qualified" && in.Status != "converted" {
 		badRequest(w, "Status inválido.")
 		return
@@ -245,10 +256,11 @@ func (s *Server) adminLeadStatus(w http.ResponseWriter, r *http.Request) {
 		converted_at = CASE WHEN $2 = 'converted' THEN greatest(coalesce($3, converted_at, now()), clicked_at + interval '1 second') ELSE converted_at END,
 		qualified_at = CASE WHEN $2 = 'qualified' THEN greatest(coalesce($4, qualified_at, now()), clicked_at + interval '1 second') ELSE qualified_at END,
 		message_at = CASE WHEN $2 = 'qualified' THEN greatest(coalesce($4, qualified_at, now()), clicked_at + interval '1 second') ELSE message_at END,
-		converted_value = CASE WHEN $2 = 'converted' THEN coalesce($5::numeric, converted_value) ELSE converted_value END
+		converted_value = CASE WHEN $2 = 'converted' THEN coalesce($5::numeric, converted_value) ELSE converted_value END,
+		phone_sha256 = coalesce($6, phone_sha256)
 		WHERE id::text = $1 RETURNING qualified_at, converted_at, source, page_url, converted_value::float8,
 		  gclid IS NOT NULL OR gbraid IS NOT NULL OR wbraid IS NOT NULL`,
-		r.PathValue("id"), in.Status, conv, qual, in.Value).Scan(&qAt, &cAt, &source, &pageURL, &stored, &hasID)
+		r.PathValue("id"), in.Status, conv, qual, in.Value, phoneHash).Scan(&qAt, &cAt, &source, &pageURL, &stored, &hasID)
 	if isNoRows(err) {
 		notFound(w)
 		return

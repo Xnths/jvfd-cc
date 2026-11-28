@@ -66,7 +66,7 @@ func TestUploadBody(t *testing.T) {
 	at := time.Date(2026, 10, 30, 15, 4, 5, 0, time.UTC)
 	out := c.Upload(context.Background(), []Conversion{
 		{Gclid: "G1", Action: "customers/123/conversionActions/1", Time: at, OrderID: "l:whatsapp_click"},
-		{Gbraid: "B1", Action: "customers/123/conversionActions/3", Time: at, Value: &v, OrderID: "l:appointment_booked"},
+		{Gbraid: "B1", Action: "customers/123/conversionActions/3", Time: at, Value: &v, OrderID: "l:appointment_booked", PhoneHash: "abc123"},
 	})
 	if out.Err != nil || len(out.Failures) != 0 || len(bodies) != 2 {
 		t.Fatalf("outcome: %+v bodies=%d", out, len(bodies))
@@ -77,12 +77,17 @@ func TestUploadBody(t *testing.T) {
 	}
 	first := bodies[0]["events"].([]any)[0].(map[string]any)
 	if first["eventTimestamp"] != "2026-10-30T12:04:05-03:00" || first["transactionId"] != "l:whatsapp_click" ||
-		first["adIdentifiers"].(map[string]any)["gclid"] != "G1" || first["conversionValue"] != nil {
+		first["adIdentifiers"].(map[string]any)["gclid"] != "G1" || first["conversionValue"] != nil || first["userData"] != nil ||
+		bodies[0]["encoding"] != nil || bodies[1]["encoding"] != "HEX" {
 		t.Errorf("first: %v", first)
 	}
 	second := bodies[1]["events"].([]any)[0].(map[string]any)
 	if second["adIdentifiers"].(map[string]any)["gbraid"] != "B1" || second["conversionValue"] != 350.0 || second["currency"] != "BRL" {
 		t.Errorf("second: %v", second)
+	}
+	ids := second["userData"].(map[string]any)["userIdentifiers"].([]any)
+	if len(ids) != 1 || ids[0].(map[string]any)["phoneNumber"] != "abc123" {
+		t.Errorf("userData: %v", second["userData"])
 	}
 }
 
